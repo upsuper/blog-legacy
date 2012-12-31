@@ -1,7 +1,7 @@
 Title: 鼠标控制音乐播放的小程序
 Date: 2009-11-03 20:06
 Tags: Python, GTK
-Category: Program
+Category: Script
 Slug: use-mouse-as-music-player-controller
 Author: Xidorn Quan
 
