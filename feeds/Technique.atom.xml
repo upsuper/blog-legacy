@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/Technique.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2010-03-31T10:31:00+08:00</updated><entry><title>在 tty 里添加一个开机自启动的任务管理器</title><link href="http://upsuper.github.com/blog/automatically-run-top-in-tty.html" rel="alternate"></link><updated>2010-03-31T10:31:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2010-03-31:automatically-run-top-in-tty.html</id><summary type="html">&lt;p&gt;每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 &lt;code&gt;top&lt;/code&gt; 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。&lt;/p&gt;
+&lt;p&gt;既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 &lt;code&gt;top&lt;/code&gt; 无疑最方便了~&lt;/p&gt;
+&lt;p&gt;首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 &lt;code&gt;/etc/init/ttyX.conf&lt;/code&gt;，其中的 X 便是 tty 的编号，我这里选择了 &lt;code&gt;tty6.conf&lt;/code&gt;。打开这个文件，结构简单极了，看到里面&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;exec&lt;/span&gt; /sbin/getty -8 38400 tty6
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;就知道，肯定和 &lt;code&gt;getty&lt;/code&gt; 有关系。&lt;code&gt;man getty&lt;/code&gt; 里面查到可以通过 &lt;code&gt;-l&lt;/code&gt; 参数设置登入程序替代 &lt;code&gt;/bin/login&lt;/code&gt;。查了一下 &lt;code&gt;man login&lt;/code&gt;，发现可以通过 &lt;code&gt;-f username&lt;/code&gt; 的方式不进行验证地登入。&lt;/p&gt;
+&lt;p&gt;于是我就在 &lt;code&gt;/bin&lt;/code&gt; 下面新建了一个 &lt;code&gt;autologin&lt;/code&gt; 文件（其实理论上放哪里都可以，不过最好要用 root 权限创建，不然可以乱改就不好了），里面写上&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/sh&lt;/span&gt;
+/bin/login -f upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;给这个文件加上可执行属性，接着将 &lt;code&gt;/etc/init/tty6.conf&lt;/code&gt; 里面刚才那一行改成&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;exec&lt;/span&gt; /sbin/getty -8 -l &lt;span class="s1"&gt;&amp;#39;/bin/autologin&amp;#39;&lt;/span&gt; 38400 tty6
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;重启。&lt;/p&gt;
+&lt;p&gt;进入 tty6 发现没有效果，还是提示用户名，无语……于是输入了用户名 upsuper，结果发现没有要求密码，直接进入了。我退出登入，再输入 root，发现依然没有要求密码而直接进入了 upsuper 权限。&lt;/p&gt;
+&lt;p&gt;再查查 &lt;code&gt;man getty&lt;/code&gt;，发现那个请求用户名是 &lt;code&gt;getty&lt;/code&gt; 输出的，里面提到了 &lt;code&gt;-n&lt;/code&gt; 参数，可以消除对用户名的请求，以及 &lt;code&gt;-i&lt;/code&gt; 参数，不输出请求前的文字（在我的 Ubuntu 里面就是“Ubuntu 9.10”）。于是上面那行被改成了&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;exec&lt;/span&gt; /sbin/getty -8in -l &lt;span class="s1"&gt;&amp;#39;/bin/autologin&amp;#39;&lt;/span&gt; 38400 tty6
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;重新启动，发现已经可以自动进入。&lt;/p&gt;
+&lt;p&gt;不过我要的不是这个效果~&lt;/p&gt;
+&lt;p&gt;其实简单地说，我那个要实现也不难，按照现在的情况，就是在 &lt;code&gt;~/.bashrc&lt;/code&gt; 里面加上一行判断的事情了。不过我可不想这样。这样的话如果退出了 &lt;code&gt;top&lt;/code&gt; 就会进入命令行。我的想法是，永远不让他进入命令行，这样看过去比较爽~&lt;/p&gt;
+&lt;p&gt;于是我就倒腾起了 &lt;code&gt;login&lt;/code&gt; 程序的 &lt;code&gt;FAKE_SHELL&lt;/code&gt;，如果在 &lt;code&gt;autologin&lt;/code&gt; 脚本里改变环境变量，根本影响不了 &lt;code&gt;login&lt;/code&gt; 程序，无论我改 &lt;code&gt;FAKE_SHELL&lt;/code&gt;，还是 &lt;code&gt;SHELL&lt;/code&gt;，都没有用，&lt;code&gt;login&lt;/code&gt; 仍然义无反顾地进入了 &lt;code&gt;bash&lt;/code&gt;……&lt;/p&gt;
+&lt;p&gt;最后我就想，唉，其实 &lt;code&gt;autologin&lt;/code&gt; 脚本就是一正常脚本，只不过在登入的时候以 root 权限运行嘛，那我直接在里面运行 &lt;code&gt;top&lt;/code&gt; 不久行了~考虑到权限因素，就是用 &lt;code&gt;su&lt;/code&gt; 把权限改一下，不就解决问题了么？&lt;/p&gt;
+&lt;p&gt;于是最终版的 &lt;code&gt;autologin&lt;/code&gt; 就出炉了：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/sh&lt;/span&gt;
+su -c &lt;span class="s1"&gt;&amp;#39;/usr/bin/top&amp;#39;&lt;/span&gt; upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个最后效果是什么样的呢？就是 &lt;code&gt;top&lt;/code&gt; 以我的用户权限运行，然后点击 &lt;code&gt;q&lt;/code&gt; 退出就会重新启动一个 &lt;code&gt;top&lt;/code&gt;。这就是我要得效果了~很好很强大~算是合理的利用了一个 tty 了。现在只要点击 Ctrl-Alt-F6 就可以有现成的任务管理器了~&lt;/p&gt;
+&lt;p&gt;其实根据这个思路，tty 可以做的事情还很多。本来那个什么 &lt;code&gt;-l&lt;/code&gt; 啦，&lt;code&gt;-n&lt;/code&gt; 什么的，是拿来做自定义登入验证方式的，我觉得这个也大有文章可做~最后再感叹一下，Linux 实在太强大了~&lt;/p&gt;
+&lt;p&gt;补充：&lt;/p&gt;
+&lt;p&gt;这篇文章被我投递到了 LinuxTOY 上面，然后下面有人提到使用 &lt;code&gt;htop&lt;/code&gt; 代替 &lt;code&gt;top&lt;/code&gt;，我试了一下，貌似 &lt;code&gt;htop&lt;/code&gt; 的资源占用要比 &lt;code&gt;top&lt;/code&gt; 高出许多，因此我最后没有替换。&lt;/p&gt;
+&lt;p&gt;不过 &lt;code&gt;htop&lt;/code&gt; 貌似确实好用很多，如果需要的话，只要安装 &lt;code&gt;htop&lt;/code&gt; 后（Ubuntu 源里是有的），然后把 &lt;code&gt;autologin&lt;/code&gt; 里面的&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;su -c &lt;span class="s1"&gt;&amp;#39;/usr/bin/top&amp;#39;&lt;/span&gt; upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;改成&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;su -c &lt;span class="s1"&gt;&amp;#39;/usr/bin/htop&amp;#39;&lt;/span&gt; upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下面只要进入那个 tty 点 &lt;code&gt;q&lt;/code&gt; 退出当前 &lt;code&gt;top&lt;/code&gt;，马上就会自动替换为 &lt;code&gt;htop&lt;/code&gt; 启动了~&lt;/p&gt;</summary><category term="Linux"></category></entry><entry><title>写了个小小的 vc-fix</title><link href="http://upsuper.github.com/blog/little-vc6-fix.md.html" rel="alternate"></link><updated>2010-03-21T10:40:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2010-03-21:little-vc6-fix.md.html</id><summary type="html">&lt;p&gt;我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……&lt;/p&gt;
+&lt;p&gt;我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用&lt;a href="./simple-script-for-using-vc6-compiler.html"&gt;上次安装的 VC6&lt;/a&gt; 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。&lt;/p&gt;
+&lt;p&gt;其中我觉得最讨厌的莫过于 &lt;code&gt;for&lt;/code&gt; 循环的循环变量不被视为 &lt;code&gt;for&lt;/code&gt; 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。&lt;/p&gt;
+&lt;p&gt;在网上一找，还真找到一个简单的方法：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;#define for if(0) ; else for&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其实我也不知道这个是什么机理，不过真的很管用！&lt;/p&gt;
+&lt;p&gt;另外一个就是 VC6 的标准库中没有 &lt;code&gt;max&lt;/code&gt; 和 &lt;code&gt;min&lt;/code&gt; 函数，这个也很囧，于是也自己写了一个。&lt;/p&gt;
+&lt;p&gt;以前做网页的时候经常写 &lt;code&gt;ie-fix.css&lt;/code&gt; 文件，今天我弄 VC6 遇到这些问题，于是我也写了个 &lt;code&gt;vc-fix.h&lt;/code&gt; 文件。M$ 真是一个需要 fix 的公司，什么时候出一个 &lt;code&gt;m$-fix.com&lt;/code&gt; 好了……&lt;/p&gt;
+&lt;p&gt;最后贴出我的 &lt;code&gt;vc-fix.h&lt;/code&gt;，主要解决 VC6 下 &lt;code&gt;for&lt;/code&gt; 循环变量的问题和 &lt;code&gt;max&lt;/code&gt;、&lt;code&gt;min&lt;/code&gt; 函数未定义的问题：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;#ifndef _H_UPSUPER_VC_FIX_&lt;/span&gt;
+&lt;span class="cp"&gt;#define _H_UPSUPER_VC_FIX_&lt;/span&gt;
+
+&lt;span class="cp"&gt;#ifdef _MSC_VER&lt;/span&gt;
+&lt;span class="cp"&gt;#   if _MSC_VER &amp;lt;= 1200&lt;/span&gt;
+&lt;span class="cp"&gt;#       define for if (0); else for&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="cp"&gt;#   endif&lt;/span&gt;
+&lt;span class="cp"&gt;#endif&lt;/span&gt;
+
+&lt;span class="cp"&gt;#endif &lt;/span&gt;&lt;span class="c1"&gt;// _H_UPSUPER_VC_FIX_&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后要解决的就是警告的问题。其实我很无语的是，所有的警告都是在 VC6 自己的头文件里面的……VC6 自己提示可以添加 &lt;code&gt;/GX&lt;/code&gt; 来消除那些警告。于是我不得不再次修改我的编译脚本：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+&lt;span class="c"&gt;# - * - coding: UTF-8 - * -&lt;/span&gt;
+
+&lt;span class="nv"&gt;VC6_DIR&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;这里写上VC6的安装地址&amp;quot;&lt;/span&gt;
+
+&lt;span class="nv"&gt;BIN&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Bin&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export &lt;/span&gt;&lt;span class="nv"&gt;INCLUDE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Include&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export &lt;/span&gt;&lt;span class="nv"&gt;LIB&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Lib&amp;quot;&lt;/span&gt;
+
+&lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+
+&lt;span class="k"&gt;while &lt;/span&gt;&lt;span class="nb"&gt;getopts&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;o:cG:&amp;quot;&lt;/span&gt; optname
+&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;span class="k"&gt;    case&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;$optname&amp;quot;&lt;/span&gt; in
+    &lt;span class="s2"&gt;&amp;quot;o&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /o$OPTARG&amp;quot;&lt;/span&gt;
+    ;;
+    &lt;span class="s2"&gt;&amp;quot;c&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /c&amp;quot;&lt;/span&gt;
+    ;;
+    &lt;span class="s2"&gt;&amp;quot;G&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /G$OPTARG&amp;quot;&lt;/span&gt;
+    ;;
+    &lt;span class="k"&gt;esac&lt;/span&gt;
+&lt;span class="k"&gt;done&lt;/span&gt;
+
+wine &lt;span class="s2"&gt;&amp;quot;$BIN/CL.EXE&amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;$ARGS&lt;/span&gt; &lt;span class="k"&gt;${&lt;/span&gt;&lt;span class="p"&gt;@:&lt;/span&gt;&lt;span class="nv"&gt;$OPTIND&lt;/span&gt;&lt;span class="k"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;到了最后，再补充一点点吧。VC6 发现了两个额外的错误，我觉得应该不是不兼容的问题。就是我重载的 &lt;code&gt;operator++&lt;/code&gt; 和 &lt;code&gt;operator--&lt;/code&gt; 不小心忘记写 &lt;code&gt;return *this;&lt;/code&gt; 了，g++ 没有给我任何提示的编译通过了，而 VC6 则将这个视为错误。&lt;/p&gt;
+&lt;p&gt;在这个问题上，我同意 VC6 的看法，虽然我怀疑可能 g++ 自己加上了那句话，不过我觉得这个应该至少给出一个警告而非什么都不说。当然，可能一个 fatal error 太过了点……&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://www.rugesy.cn/it/u20091012_22_34fe5127-ddfe-44fe-86f1-13afc360a794.html"&gt;VC6中FOR语句的变量声明问题&lt;/a&gt; 回复的7楼&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://topic.csdn.net/t/20041101/19/3511737.html"&gt;如何在程序调试阶段，判断当前的编译器是vc6的编译器还是intel8.0的编译器？ – CSDN社区&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.cplusplus.com/reference/algorithm/max/"&gt;max – C++ Reference&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://panpan.blog.51cto.com/489034/103074/"&gt;VC6.0不支持标准库函数max和min – C++技术 – 51CTO技术博客&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://topic.csdn.net/t/20040909/19/3357414.html"&gt;warning C4530:C++ exception handler used, but unwind semantics are not enabled. Specify -GX – CSDN社区&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://baike.baidu.com/view/1276757.html"&gt;_MSC_VER_百度百科&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="C"></category><category term="Microsoft"></category></entry><entry><title>基于 jQuery 的 CSS 更换术</title><link href="http://upsuper.github.com/blog/replacing-css-via-jquery.html" rel="alternate"></link><updated>2009-10-18T20:57:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-10-18:replacing-css-via-jquery.html</id><summary type="html">&lt;p&gt;最近开始写一中的新选歌系统，这次要大改，顺便练手。&lt;/p&gt;
+&lt;p&gt;想加入换肤功能（不然女生肯定觉得老是蓝色不好……），而且我想到的换肤，最简单的方式就是换 CSS，把界面颜色、图形相关的内容放入皮肤的 CSS 中就很容易了~不过问题是换肤呢？&lt;/p&gt;
+&lt;p&gt;正好新系统中因为客户端代码可能非常强大，准备引入 jQuery 框架来简化开发，便学了一些。于是我就想，能不能通过 jQuery 来解决呢？&lt;/p&gt;
+&lt;p&gt;首先，我给出了下面这个简单的页面：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;!DOCTYPE html PUBLIC &amp;quot;-//W3C//DTD XHTML 1.0 Transitional//EN&amp;quot;&lt;/span&gt;
+&lt;span class="cp"&gt;  &amp;quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;html&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/1999/xhtml&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;xml:lang=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;zh-CN&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;head&lt;/span&gt; &lt;span class="na"&gt;profile=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://gmpg.org/xfn/11&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;meta&lt;/span&gt; &lt;span class="na"&gt;http-equiv=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Content-Type&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;content=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/html; charset=UTF-8&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;title&amp;gt;&lt;/span&gt;福州一中 学校音乐征集&lt;span class="nt"&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;link&lt;/span&gt; &lt;span class="na"&gt;rel=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;stylesheet&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;href=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;id=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;theme&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/css&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;media=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;all&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;script &lt;/span&gt;&lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;src=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;jquery.js&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;script &lt;/span&gt;&lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;src=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;theme.js&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;style &lt;/span&gt;&lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/css&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;html&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="nt"&gt;body&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="k"&gt;height&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;100&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="k"&gt;width&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;100&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+Hello world!
+&lt;span class="nt"&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后我开始用了一段 jQuery 手册里的某段示例代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; 
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;quot; id=&amp;quot;theme&amp;quot; type=&amp;quot;text/css&amp;quot; media=&amp;quot;all&amp;quot; /&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;appendTo&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;head&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;成功了，不过查看处理后的代码，发现大量冗余代码出现在 head 尾部……又查了查，发现了 jQuery 里面的另外一个好用的函数，于是上面代码就改为：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; 
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;quot; id=&amp;quot;theme&amp;quot; type=&amp;quot;text/css&amp;quot; media=&amp;quot;all&amp;quot; /&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;replaceAll&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;#theme&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;没有冗余代码出现，而且 IE6 都可以正常使用！jQuery 的兼容性果然超群……&lt;/p&gt;
+&lt;p&gt;然后我们想，这样每次都要重建标签，会不会很慢呢？如果能直接改属性或许不错~再查查，我们发现下面方法：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;#theme&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;attr&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt; &lt;span class="nx"&gt;href&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;#39;&lt;/span&gt; &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;又简洁看过去又高效~再试试 IE6，仍然没有问题哦~&lt;/p&gt;
+&lt;p&gt;最后给出实验用各完整代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;t&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;document&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;body&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;click&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;#theme&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;attr&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt; &lt;span class="nx"&gt;href&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;#39;&lt;/span&gt; &lt;span class="p"&gt;});&lt;/span&gt;
+  &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;span class="p"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第一个 CSS 文件：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nt"&gt;body&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;background&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;blue&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;color&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;yellow&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第二个 CSS 文件：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nt"&gt;body&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;background&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;#000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;color&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;#fff&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary></entry><entry><title>PHP 空间也做 LaTeX 公式显示</title><link href="http://upsuper.github.com/blog/php-show-latex-formula.html" rel="alternate"></link><updated>2009-04-03T10:43:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-04-03:php-show-latex-formula.html</id><summary type="html">&lt;p&gt;原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。&lt;/p&gt;
+&lt;p&gt;今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！&lt;/p&gt;
+&lt;p&gt;要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。&lt;/p&gt;
+&lt;p&gt;如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：&lt;a href="http://www.forkosh.com/mimetex.zip"&gt;mimetex.zip&lt;/a&gt;。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?php&lt;/span&gt;
+    &lt;span class="k"&gt;echo&lt;/span&gt; &lt;span class="sb"&gt;`cc -DAA mimetex.c gifsave.c -lm -o mimetex.cgi &amp;gt; cc1 2&amp;gt; cc2`&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="cp"&gt;?&amp;gt;&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后通过浏览器访问这个 PHP，再查看 cc1 和 cc2 文件。如果不出意外，cc1 和 cc2 应该都是没有内容的空文件。
+接下来，把这个 mimetex.cgi 移动到你想要的文件夹，并给它加上执行权限（不然可能出现 500 错误）。&lt;/p&gt;
+&lt;p&gt;如果服务器是 Windows 的，因为 Windows 似乎对兼容做得比较不错，因此可以直接编译好放上去。&lt;/p&gt;
+&lt;p&gt;下面，在你安放 mimetex.cgi 的文件夹下新建一个 .htaccess 文件，并设置如下内容：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;Options&lt;/span&gt; +ExecCGI
+&lt;span class="nb"&gt;AddHandler&lt;/span&gt; cgi-script cgi
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果你不想让别人借你的服务器生成图片的话，还可以输入以下内容：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;Order&lt;/span&gt; deny,allow
+&lt;span class="nb"&gt;Deny&lt;/span&gt; from &lt;span class="k"&gt;all&lt;/span&gt;
+&lt;span class="nb"&gt;Allow&lt;/span&gt; from &lt;span class="m"&gt;127.0.0.0/255&lt;/span&gt;.0.0.0 ::1/128
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;当然，这样你就只能在 PHP 中用 curl 访问了~虽然我也推荐这样做。&lt;/p&gt;
+&lt;p&gt;上面这样就可以了，然后如果要生成某个 LaTeX 的图片，只要访问 &lt;code&gt;mimetex.cgi?你的公式&lt;/code&gt; 就可以了，如&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;mimetex&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cgi&lt;/span&gt;?&lt;span class="o"&gt;\&lt;/span&gt;&lt;span class="nb"&gt;sqrt&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;2&lt;span class="p"&gt;}&lt;/span&gt;^2&lt;span class="p"&gt;=&lt;/span&gt;2
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样，漂亮的 gif 图片就出来了。&lt;/p&gt;
+&lt;p&gt;最后再说说，我个人觉得，直接让客户端访问这个并不好，所以推荐加上权限控制，然后在 PHP 中是用 curl 获取，并做一次缓存。毕竟不管怎样，生成这个是要花费不少的 CPU，如果遇到大量公式的时候，应该会相当可怕……所以这种时候做一个缓存应该是很好的选择，毕竟那些 gif 都不大。这段代码就不写了，我想应该是很简单的~&lt;/p&gt;
+&lt;p&gt;说回来，如果认真看这个程序的 README 还会发现，如果加上编译参数 -DCACHEPATH=地址 就可以在 cgi 级别使用 MD5 Hash 的文件缓存。不过再想想，其实没什么必要，一个是用 PHP 控制缓存文件要更方便，同时考虑到文件系统在一个目录下文件多于 10000 个时会出现严重性能问题，最好使用多级目录来做缓存，不过看代码似乎没有多级缓存。除此之外，我想还有一些不错的方法可以做一些初级判重，这些用 PHP 实现会比改 cgi 要简单的多了~建议大家可以自己再多看看编译说明，似乎有不少有趣的编译参数~&lt;/p&gt;</summary><category term="PHP"></category><category term="LaTeX"></category></entry></feed>

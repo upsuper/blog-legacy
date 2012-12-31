@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>鬼の领地 - LaTeX</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie.css"/>
+                <script src="../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="../">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="../category/blog.html">Blog</a></li>
+                                    <li ><a href="../category/research.html">Research</a></li>
+                                    <li ><a href="../category/script.html">Script</a></li>
+                                    <li ><a href="../category/study.html">Study</a></li>
+                                    <li ><a href="../category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+                
+            
+
+                            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../php-show-latex-formula.html">PHP 空间也做 LaTeX 公式显示</a></h1> 
+                    <footer class="post-info">
+        <abbr class="published" title="2009-04-03T10:43:00">
+                五 03 四月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/php.html">PHP</a><a href="../tag/latex.html">LaTeX</a></p>
+</footer><!-- /.post-info --><p>原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。</p>
+<p>今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！</p>
+<p>要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。</p>
+<p>如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：<a href="http://www.forkosh.com/mimetex.zip">mimetex.zip</a>。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入</p>
+<div class="codehilite"><pre><span class="cp">&lt;?php</span>
+    <span class="k">echo</span> <span class="sb">`cc -DAA mimetex.c gifsave.c -lm -o mimetex.cgi &gt; cc1 2&gt; cc2`</span><span class="p">;</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+
+
+<p>然后通过浏览器访问这个 PHP，再查看 cc1 和 cc2 文件。如果不出意外，cc1 和 cc2 应该都是没有内容的空文件。
+接下来，把这个 mimetex.cgi 移动到你想要的文件夹，并给它加上执行权限（不然可能出现 500 错误）。</p>
+<p>如果服务器是 Windows 的，因为 Windows 似乎对兼容做得比较不错，因此可以直接编译好放上去。</p>
+<p>下面，在你安放 mimetex.cgi 的文件夹下新建一个 .htaccess 文件，并设置如下内容：</p>
+<div class="codehilite"><pre><span class="nb">Options</span> +ExecCGI
+<span class="nb">AddHandler</span> cgi-script cgi
+</pre></div>
+
+
+<p>如果你不想让别人借你的服务器生成图片的话，还可以输入以下内容：</p>
+<div class="codehilite"><pre><span class="nb">Order</span> deny,allow
+<span class="nb">Deny</span> from <span class="k">all</span>
+<span class="nb">Allow</span> from <span class="m">127.0.0.0/255</span>.0.0.0 ::1/128
+</pre></div>
+
+
+<p>当然，这样你就只能在 PHP 中用 curl 访问了~虽然我也推荐这样做。</p>
+<p>上面这样就可以了，然后如果要生成某个 LaTeX 的图片，只要访问 <code>mimetex.cgi?你的公式</code> 就可以了，如</p>
+<div class="codehilite"><pre><span class="n">mimetex</span><span class="p">.</span><span class="n">cgi</span>?<span class="o">\</span><span class="nb">sqrt</span><span class="p">{</span>2<span class="p">}</span>^2<span class="p">=</span>2
+</pre></div>
+
+
+<p>这样，漂亮的 gif 图片就出来了。</p>
+<p>最后再说说，我个人觉得，直接让客户端访问这个并不好，所以推荐加上权限控制，然后在 PHP 中是用 curl 获取，并做一次缓存。毕竟不管怎样，生成这个是要花费不少的 CPU，如果遇到大量公式的时候，应该会相当可怕……所以这种时候做一个缓存应该是很好的选择，毕竟那些 gif 都不大。这段代码就不写了，我想应该是很简单的~</p>
+<p>说回来，如果认真看这个程序的 README 还会发现，如果加上编译参数 -DCACHEPATH=地址 就可以在 cgi 级别使用 MD5 Hash 的文件缓存。不过再想想，其实没什么必要，一个是用 PHP 控制缓存文件要更方便，同时考虑到文件系统在一个目录下文件多于 10000 个时会出现严重性能问题，最好使用多级目录来做缓存，不过看代码似乎没有多级缓存。除此之外，我想还有一些不错的方法可以做一些初级判重，这些用 PHP 实现会比改 cgi 要简单的多了~建议大家可以自己再多看看编译说明，似乎有不少有趣的编译参数~</p>                </article>
+                                    <p class="paginator">
+        Page 1 / 1
+    </p>
+                            </aside><!-- /#featured -->
+                                                </ol><!-- /#posts-list -->
+                        </section><!-- /#content -->
+                    <section id="extras" class="body">
+                        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

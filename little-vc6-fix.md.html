@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>写了个小小的 vc-fix</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="./theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie.css"/>
+                <script src="./js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="./">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="./category/blog.html">Blog</a></li>
+                                    <li ><a href="./category/research.html">Research</a></li>
+                                    <li ><a href="./category/script.html">Script</a></li>
+                                    <li ><a href="./category/study.html">Study</a></li>
+                                    <li class="active"><a href="./category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+        <section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="./little-vc6-fix.md.html" rel="bookmark"
+           title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
+          </header>
+
+    <div class="entry-content">
+      <footer class="post-info">
+        <abbr class="published" title="2010-03-21T10:40:00">
+                日 21 三月 2010
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/c.html">C</a><a href="./tag/microsoft.html">Microsoft</a></p>
+</footer><!-- /.post-info -->      <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
+<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="./simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
+<p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
+<p>在网上一找，还真找到一个简单的方法：</p>
+<div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
+</pre></div>
+
+
+<p>其实我也不知道这个是什么机理，不过真的很管用！</p>
+<p>另外一个就是 VC6 的标准库中没有 <code>max</code> 和 <code>min</code> 函数，这个也很囧，于是也自己写了一个。</p>
+<p>以前做网页的时候经常写 <code>ie-fix.css</code> 文件，今天我弄 VC6 遇到这些问题，于是我也写了个 <code>vc-fix.h</code> 文件。M$ 真是一个需要 fix 的公司，什么时候出一个 <code>m$-fix.com</code> 好了……</p>
+<p>最后贴出我的 <code>vc-fix.h</code>，主要解决 VC6 下 <code>for</code> 循环变量的问题和 <code>max</code>、<code>min</code> 函数未定义的问题：</p>
+<div class="codehilite"><pre><span class="cp">#ifndef _H_UPSUPER_VC_FIX_</span>
+<span class="cp">#define _H_UPSUPER_VC_FIX_</span>
+
+<span class="cp">#ifdef _MSC_VER</span>
+<span class="cp">#   if _MSC_VER &lt;= 1200</span>
+<span class="cp">#       define for if (0); else for</span>
+
+<span class="n">template</span> <span class="o">&lt;</span><span class="n">class</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kr">inline</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">max</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="n">b</span> <span class="o">?</span> <span class="n">a</span> <span class="o">:</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">template</span> <span class="o">&lt;</span><span class="n">class</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kr">inline</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">min</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span> <span class="o">?</span> <span class="n">a</span> <span class="o">:</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">template</span> <span class="o">&lt;</span><span class="n">class</span> <span class="n">T</span><span class="p">,</span> <span class="n">class</span> <span class="n">Compare</span><span class="o">&gt;</span>
+<span class="kr">inline</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">max</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">b</span><span class="p">,</span> <span class="n">Compare</span> <span class="n">comp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">comp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">?</span> <span class="n">b</span> <span class="o">:</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">template</span> <span class="o">&lt;</span><span class="n">class</span> <span class="n">T</span><span class="p">,</span> <span class="n">class</span> <span class="n">Compare</span><span class="o">&gt;</span>
+<span class="kr">inline</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">min</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">b</span><span class="p">,</span> <span class="n">Compare</span> <span class="n">comp</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">comp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">?</span> <span class="n">a</span> <span class="o">:</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="cp">#   endif</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#endif </span><span class="c1">// _H_UPSUPER_VC_FIX_</span>
+</pre></div>
+
+
+<p>最后要解决的就是警告的问题。其实我很无语的是，所有的警告都是在 VC6 自己的头文件里面的……VC6 自己提示可以添加 <code>/GX</code> 来消除那些警告。于是我不得不再次修改我的编译脚本：</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+<span class="c"># - * - coding: UTF-8 - * -</span>
+
+<span class="nv">VC6_DIR</span><span class="o">=</span><span class="s2">&quot;这里写上VC6的安装地址&quot;</span>
+
+<span class="nv">BIN</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Bin&quot;</span>
+<span class="nb">export </span><span class="nv">INCLUDE</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Include&quot;</span>
+<span class="nb">export </span><span class="nv">LIB</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Lib&quot;</span>
+
+<span class="nv">ARGS</span><span class="o">=</span>
+
+<span class="k">while </span><span class="nb">getopts</span> <span class="s2">&quot;o:cG:&quot;</span> optname
+<span class="k">do</span>
+<span class="k">    case</span> <span class="s2">&quot;$optname&quot;</span> in
+    <span class="s2">&quot;o&quot;</span><span class="o">)</span>
+        <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;$ARGS /o$OPTARG&quot;</span>
+    ;;
+    <span class="s2">&quot;c&quot;</span><span class="o">)</span>
+        <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;$ARGS /c&quot;</span>
+    ;;
+    <span class="s2">&quot;G&quot;</span><span class="o">)</span>
+        <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;$ARGS /G$OPTARG&quot;</span>
+    ;;
+    <span class="k">esac</span>
+<span class="k">done</span>
+
+wine <span class="s2">&quot;$BIN/CL.EXE&quot;</span> <span class="nv">$ARGS</span> <span class="k">${</span><span class="p">@:</span><span class="nv">$OPTIND</span><span class="k">}</span>
+</pre></div>
+
+
+<p>到了最后，再补充一点点吧。VC6 发现了两个额外的错误，我觉得应该不是不兼容的问题。就是我重载的 <code>operator++</code> 和 <code>operator--</code> 不小心忘记写 <code>return *this;</code> 了，g++ 没有给我任何提示的编译通过了，而 VC6 则将这个视为错误。</p>
+<p>在这个问题上，我同意 VC6 的看法，虽然我怀疑可能 g++ 自己加上了那句话，不过我觉得这个应该至少给出一个警告而非什么都不说。当然，可能一个 fatal error 太过了点……</p>
+<p>参考资料：</p>
+<ul>
+<li><a href="http://www.rugesy.cn/it/u20091012_22_34fe5127-ddfe-44fe-86f1-13afc360a794.html">VC6中FOR语句的变量声明问题</a> 回复的7楼</li>
+<li><a href="http://topic.csdn.net/t/20041101/19/3511737.html">如何在程序调试阶段，判断当前的编译器是vc6的编译器还是intel8.0的编译器？ – CSDN社区</a></li>
+<li><a href="http://www.cplusplus.com/reference/algorithm/max/">max – C++ Reference</a></li>
+<li><a href="http://panpan.blog.51cto.com/489034/103074/">VC6.0不支持标准库函数max和min – C++技术 – 51CTO技术博客</a></li>
+<li><a href="http://topic.csdn.net/t/20040909/19/3357414.html">warning C4530:C++ exception handler used, but unwind semantics are not enabled. Specify -GX – CSDN社区</a></li>
+<li><a href="http://baike.baidu.com/view/1276757.html">_MSC_VER_百度百科</a></li>
+</ul>
+    </div><!-- /.entry-content -->
+    
+  </article>
+</section>
+        <section id="extras" class="body">
+                        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

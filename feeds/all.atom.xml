@@ -2,4 +2,906 @@
 <feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/all.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2012-12-31T00:00:00+08:00</updated><entry><title>在 GitHub 上建一个新的博客</title><link href="http://upsuper.github.com/blog/new-blog-in-github.html" rel="alternate"></link><updated>2012-12-31T00:00:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2012-12-31:new-blog-in-github.html</id><summary type="html">&lt;p&gt;一直想着将技术向博客迁移到 GitHub Pages 上，觉得这样大概可以使我显得更 Geek 一点吧？不过呢，因为一直以来各种事情很多，所以一直没有去做。（其实跟事情多也没什么关系吧，看看你自己都多久没写博客了……）最近看到之前买的虚拟空间快要到期了，因为不怎么打算继续续下去了，所以估量着把里面的东西迁移出来。另一方面，末日的2012过去了，新世界2013年到来了，顺便也就盘算着重新开始写博客？不过果然还是觉得有点麻烦呢……&lt;/p&gt;
 &lt;p&gt;既然是将这里定位于技术向的博客的话，自然除了关于这个博客本身的事情以外，其他都是技术讨论了。我其实也一直想把技术之外的一些内容单独放在一个博客里，只不过因为太懒了也是一直没去建的，估计在短时间内也不会去做吧，现在都没什么写东西的激情了呢。&lt;/p&gt;
 &lt;p&gt;这个博客的标题“鬼の领地”是延续自之前的博客的，它取自我中二的年代，正如我的常用 ID upsuper 一样。同时与之前我的每一个博客一样，我会把过去的内容挑选一些放入新的博客里面。另外原来参与 &lt;a href="https://twitter.com/fanzeyi"&gt;@fanzeyi&lt;/a&gt; 同学的 &lt;a href="https://github.com/PyCodersCN"&gt;PyCodersCN&lt;/a&gt; 项目的时候翻译过的一些文章也准备放进来。因为实在懒于写自己的东西（大多只是一些小东西，就不想单独写文章了），所以也考虑不定期的译一些自己觉得不错的文章放在这个博客里，就当练练中英文水平好了（其实是为了充数吧）。&lt;/p&gt;
-&lt;p&gt;关于这个博客本身，目前是准备使用 &lt;a href="http://docs.getpelican.com/"&gt;Pelican&lt;/a&gt; 来组织博客，使用 &lt;a href="http://daringfireball.net/projects/markdown/"&gt;Markdown&lt;/a&gt; 来编写。很多人都推荐 &lt;a href="http://docutils.sourceforge.net/rst.html"&gt;reStructuredText&lt;/a&gt;，但我始终是觉得那个东西比 Markdown 蛋疼得多。之后一段时间还有许许多多的工作要做呢这个博客，比如主题啦，之前文章的迁移，还有评论系统什么之类的。总之就这样吧，先用起来好了（虽然我觉得我也未必会坚持很久呢）。&lt;/p&gt;</summary><category term="Blog"></category><category term="GitHub"></category></entry></feed>
+&lt;p&gt;关于这个博客本身，目前是准备使用 &lt;a href="http://docs.getpelican.com/"&gt;Pelican&lt;/a&gt; 来组织博客，使用 &lt;a href="http://daringfireball.net/projects/markdown/"&gt;Markdown&lt;/a&gt; 来编写。很多人都推荐 &lt;a href="http://docutils.sourceforge.net/rst.html"&gt;reStructuredText&lt;/a&gt;，但我始终是觉得那个东西比 Markdown 蛋疼得多。之后一段时间还有许许多多的工作要做呢这个博客，比如主题啦，之前文章的迁移，还有评论系统什么之类的。总之就这样吧，先用起来好了（虽然我觉得我也未必会坚持很久呢）。&lt;/p&gt;</summary><category term="Blog"></category><category term="GitHub"></category></entry><entry><title>在 tty 里添加一个开机自启动的任务管理器</title><link href="http://upsuper.github.com/blog/automatically-run-top-in-tty.html" rel="alternate"></link><updated>2010-03-31T10:31:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2010-03-31:automatically-run-top-in-tty.html</id><summary type="html">&lt;p&gt;每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 &lt;code&gt;top&lt;/code&gt; 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。&lt;/p&gt;
+&lt;p&gt;既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 &lt;code&gt;top&lt;/code&gt; 无疑最方便了~&lt;/p&gt;
+&lt;p&gt;首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 &lt;code&gt;/etc/init/ttyX.conf&lt;/code&gt;，其中的 X 便是 tty 的编号，我这里选择了 &lt;code&gt;tty6.conf&lt;/code&gt;。打开这个文件，结构简单极了，看到里面&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;exec&lt;/span&gt; /sbin/getty -8 38400 tty6
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;就知道，肯定和 &lt;code&gt;getty&lt;/code&gt; 有关系。&lt;code&gt;man getty&lt;/code&gt; 里面查到可以通过 &lt;code&gt;-l&lt;/code&gt; 参数设置登入程序替代 &lt;code&gt;/bin/login&lt;/code&gt;。查了一下 &lt;code&gt;man login&lt;/code&gt;，发现可以通过 &lt;code&gt;-f username&lt;/code&gt; 的方式不进行验证地登入。&lt;/p&gt;
+&lt;p&gt;于是我就在 &lt;code&gt;/bin&lt;/code&gt; 下面新建了一个 &lt;code&gt;autologin&lt;/code&gt; 文件（其实理论上放哪里都可以，不过最好要用 root 权限创建，不然可以乱改就不好了），里面写上&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/sh&lt;/span&gt;
+/bin/login -f upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;给这个文件加上可执行属性，接着将 &lt;code&gt;/etc/init/tty6.conf&lt;/code&gt; 里面刚才那一行改成&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;exec&lt;/span&gt; /sbin/getty -8 -l &lt;span class="s1"&gt;&amp;#39;/bin/autologin&amp;#39;&lt;/span&gt; 38400 tty6
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;重启。&lt;/p&gt;
+&lt;p&gt;进入 tty6 发现没有效果，还是提示用户名，无语……于是输入了用户名 upsuper，结果发现没有要求密码，直接进入了。我退出登入，再输入 root，发现依然没有要求密码而直接进入了 upsuper 权限。&lt;/p&gt;
+&lt;p&gt;再查查 &lt;code&gt;man getty&lt;/code&gt;，发现那个请求用户名是 &lt;code&gt;getty&lt;/code&gt; 输出的，里面提到了 &lt;code&gt;-n&lt;/code&gt; 参数，可以消除对用户名的请求，以及 &lt;code&gt;-i&lt;/code&gt; 参数，不输出请求前的文字（在我的 Ubuntu 里面就是“Ubuntu 9.10”）。于是上面那行被改成了&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;exec&lt;/span&gt; /sbin/getty -8in -l &lt;span class="s1"&gt;&amp;#39;/bin/autologin&amp;#39;&lt;/span&gt; 38400 tty6
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;重新启动，发现已经可以自动进入。&lt;/p&gt;
+&lt;p&gt;不过我要的不是这个效果~&lt;/p&gt;
+&lt;p&gt;其实简单地说，我那个要实现也不难，按照现在的情况，就是在 &lt;code&gt;~/.bashrc&lt;/code&gt; 里面加上一行判断的事情了。不过我可不想这样。这样的话如果退出了 &lt;code&gt;top&lt;/code&gt; 就会进入命令行。我的想法是，永远不让他进入命令行，这样看过去比较爽~&lt;/p&gt;
+&lt;p&gt;于是我就倒腾起了 &lt;code&gt;login&lt;/code&gt; 程序的 &lt;code&gt;FAKE_SHELL&lt;/code&gt;，如果在 &lt;code&gt;autologin&lt;/code&gt; 脚本里改变环境变量，根本影响不了 &lt;code&gt;login&lt;/code&gt; 程序，无论我改 &lt;code&gt;FAKE_SHELL&lt;/code&gt;，还是 &lt;code&gt;SHELL&lt;/code&gt;，都没有用，&lt;code&gt;login&lt;/code&gt; 仍然义无反顾地进入了 &lt;code&gt;bash&lt;/code&gt;……&lt;/p&gt;
+&lt;p&gt;最后我就想，唉，其实 &lt;code&gt;autologin&lt;/code&gt; 脚本就是一正常脚本，只不过在登入的时候以 root 权限运行嘛，那我直接在里面运行 &lt;code&gt;top&lt;/code&gt; 不久行了~考虑到权限因素，就是用 &lt;code&gt;su&lt;/code&gt; 把权限改一下，不就解决问题了么？&lt;/p&gt;
+&lt;p&gt;于是最终版的 &lt;code&gt;autologin&lt;/code&gt; 就出炉了：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/sh&lt;/span&gt;
+su -c &lt;span class="s1"&gt;&amp;#39;/usr/bin/top&amp;#39;&lt;/span&gt; upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个最后效果是什么样的呢？就是 &lt;code&gt;top&lt;/code&gt; 以我的用户权限运行，然后点击 &lt;code&gt;q&lt;/code&gt; 退出就会重新启动一个 &lt;code&gt;top&lt;/code&gt;。这就是我要得效果了~很好很强大~算是合理的利用了一个 tty 了。现在只要点击 Ctrl-Alt-F6 就可以有现成的任务管理器了~&lt;/p&gt;
+&lt;p&gt;其实根据这个思路，tty 可以做的事情还很多。本来那个什么 &lt;code&gt;-l&lt;/code&gt; 啦，&lt;code&gt;-n&lt;/code&gt; 什么的，是拿来做自定义登入验证方式的，我觉得这个也大有文章可做~最后再感叹一下，Linux 实在太强大了~&lt;/p&gt;
+&lt;p&gt;补充：&lt;/p&gt;
+&lt;p&gt;这篇文章被我投递到了 LinuxTOY 上面，然后下面有人提到使用 &lt;code&gt;htop&lt;/code&gt; 代替 &lt;code&gt;top&lt;/code&gt;，我试了一下，貌似 &lt;code&gt;htop&lt;/code&gt; 的资源占用要比 &lt;code&gt;top&lt;/code&gt; 高出许多，因此我最后没有替换。&lt;/p&gt;
+&lt;p&gt;不过 &lt;code&gt;htop&lt;/code&gt; 貌似确实好用很多，如果需要的话，只要安装 &lt;code&gt;htop&lt;/code&gt; 后（Ubuntu 源里是有的），然后把 &lt;code&gt;autologin&lt;/code&gt; 里面的&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;su -c &lt;span class="s1"&gt;&amp;#39;/usr/bin/top&amp;#39;&lt;/span&gt; upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;改成&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;su -c &lt;span class="s1"&gt;&amp;#39;/usr/bin/htop&amp;#39;&lt;/span&gt; upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下面只要进入那个 tty 点 &lt;code&gt;q&lt;/code&gt; 退出当前 &lt;code&gt;top&lt;/code&gt;，马上就会自动替换为 &lt;code&gt;htop&lt;/code&gt; 启动了~&lt;/p&gt;</summary><category term="Linux"></category></entry><entry><title>写了个小小的 vc-fix</title><link href="http://upsuper.github.com/blog/little-vc6-fix.md.html" rel="alternate"></link><updated>2010-03-21T10:40:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2010-03-21:little-vc6-fix.md.html</id><summary type="html">&lt;p&gt;我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……&lt;/p&gt;
+&lt;p&gt;我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用&lt;a href="./simple-script-for-using-vc6-compiler.html"&gt;上次安装的 VC6&lt;/a&gt; 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。&lt;/p&gt;
+&lt;p&gt;其中我觉得最讨厌的莫过于 &lt;code&gt;for&lt;/code&gt; 循环的循环变量不被视为 &lt;code&gt;for&lt;/code&gt; 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。&lt;/p&gt;
+&lt;p&gt;在网上一找，还真找到一个简单的方法：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;#define for if(0) ; else for&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其实我也不知道这个是什么机理，不过真的很管用！&lt;/p&gt;
+&lt;p&gt;另外一个就是 VC6 的标准库中没有 &lt;code&gt;max&lt;/code&gt; 和 &lt;code&gt;min&lt;/code&gt; 函数，这个也很囧，于是也自己写了一个。&lt;/p&gt;
+&lt;p&gt;以前做网页的时候经常写 &lt;code&gt;ie-fix.css&lt;/code&gt; 文件，今天我弄 VC6 遇到这些问题，于是我也写了个 &lt;code&gt;vc-fix.h&lt;/code&gt; 文件。M$ 真是一个需要 fix 的公司，什么时候出一个 &lt;code&gt;m$-fix.com&lt;/code&gt; 好了……&lt;/p&gt;
+&lt;p&gt;最后贴出我的 &lt;code&gt;vc-fix.h&lt;/code&gt;，主要解决 VC6 下 &lt;code&gt;for&lt;/code&gt; 循环变量的问题和 &lt;code&gt;max&lt;/code&gt;、&lt;code&gt;min&lt;/code&gt; 函数未定义的问题：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;#ifndef _H_UPSUPER_VC_FIX_&lt;/span&gt;
+&lt;span class="cp"&gt;#define _H_UPSUPER_VC_FIX_&lt;/span&gt;
+
+&lt;span class="cp"&gt;#ifdef _MSC_VER&lt;/span&gt;
+&lt;span class="cp"&gt;#   if _MSC_VER &amp;lt;= 1200&lt;/span&gt;
+&lt;span class="cp"&gt;#       define for if (0); else for&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;template&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="kr"&gt;inline&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;T&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Compare&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;comp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="cp"&gt;#   endif&lt;/span&gt;
+&lt;span class="cp"&gt;#endif&lt;/span&gt;
+
+&lt;span class="cp"&gt;#endif &lt;/span&gt;&lt;span class="c1"&gt;// _H_UPSUPER_VC_FIX_&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后要解决的就是警告的问题。其实我很无语的是，所有的警告都是在 VC6 自己的头文件里面的……VC6 自己提示可以添加 &lt;code&gt;/GX&lt;/code&gt; 来消除那些警告。于是我不得不再次修改我的编译脚本：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+&lt;span class="c"&gt;# - * - coding: UTF-8 - * -&lt;/span&gt;
+
+&lt;span class="nv"&gt;VC6_DIR&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;这里写上VC6的安装地址&amp;quot;&lt;/span&gt;
+
+&lt;span class="nv"&gt;BIN&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Bin&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export &lt;/span&gt;&lt;span class="nv"&gt;INCLUDE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Include&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export &lt;/span&gt;&lt;span class="nv"&gt;LIB&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Lib&amp;quot;&lt;/span&gt;
+
+&lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+
+&lt;span class="k"&gt;while &lt;/span&gt;&lt;span class="nb"&gt;getopts&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;o:cG:&amp;quot;&lt;/span&gt; optname
+&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;span class="k"&gt;    case&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;$optname&amp;quot;&lt;/span&gt; in
+    &lt;span class="s2"&gt;&amp;quot;o&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /o$OPTARG&amp;quot;&lt;/span&gt;
+    ;;
+    &lt;span class="s2"&gt;&amp;quot;c&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /c&amp;quot;&lt;/span&gt;
+    ;;
+    &lt;span class="s2"&gt;&amp;quot;G&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+        &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /G$OPTARG&amp;quot;&lt;/span&gt;
+    ;;
+    &lt;span class="k"&gt;esac&lt;/span&gt;
+&lt;span class="k"&gt;done&lt;/span&gt;
+
+wine &lt;span class="s2"&gt;&amp;quot;$BIN/CL.EXE&amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;$ARGS&lt;/span&gt; &lt;span class="k"&gt;${&lt;/span&gt;&lt;span class="p"&gt;@:&lt;/span&gt;&lt;span class="nv"&gt;$OPTIND&lt;/span&gt;&lt;span class="k"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;到了最后，再补充一点点吧。VC6 发现了两个额外的错误，我觉得应该不是不兼容的问题。就是我重载的 &lt;code&gt;operator++&lt;/code&gt; 和 &lt;code&gt;operator--&lt;/code&gt; 不小心忘记写 &lt;code&gt;return *this;&lt;/code&gt; 了，g++ 没有给我任何提示的编译通过了，而 VC6 则将这个视为错误。&lt;/p&gt;
+&lt;p&gt;在这个问题上，我同意 VC6 的看法，虽然我怀疑可能 g++ 自己加上了那句话，不过我觉得这个应该至少给出一个警告而非什么都不说。当然，可能一个 fatal error 太过了点……&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://www.rugesy.cn/it/u20091012_22_34fe5127-ddfe-44fe-86f1-13afc360a794.html"&gt;VC6中FOR语句的变量声明问题&lt;/a&gt; 回复的7楼&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://topic.csdn.net/t/20041101/19/3511737.html"&gt;如何在程序调试阶段，判断当前的编译器是vc6的编译器还是intel8.0的编译器？ – CSDN社区&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.cplusplus.com/reference/algorithm/max/"&gt;max – C++ Reference&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://panpan.blog.51cto.com/489034/103074/"&gt;VC6.0不支持标准库函数max和min – C++技术 – 51CTO技术博客&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://topic.csdn.net/t/20040909/19/3357414.html"&gt;warning C4530:C++ exception handler used, but unwind semantics are not enabled. Specify -GX – CSDN社区&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://baike.baidu.com/view/1276757.html"&gt;_MSC_VER_百度百科&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="C"></category><category term="Microsoft"></category></entry><entry><title>方便使用 VC6 编译器的小脚本</title><link href="http://upsuper.github.com/blog/simple-script-for-using-vc6-compiler.html" rel="alternate"></link><updated>2009-12-30T18:46:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-12-30:simple-script-for-using-vc6-compiler.html</id><summary type="html">&lt;p&gt;因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~&lt;/p&gt;
+&lt;p&gt;于是就有了下面这个小脚本：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+&lt;span class="c"&gt;# - * - coding: UTF-8 - * -&lt;/span&gt;
+
+&lt;span class="nv"&gt;VC6_DIR&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;这里写上VC6的安装地址&amp;quot;&lt;/span&gt;
+
+&lt;span class="nv"&gt;BIN&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Bin&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export &lt;/span&gt;&lt;span class="nv"&gt;INCLUDE&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Include&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;export &lt;/span&gt;&lt;span class="nv"&gt;LIB&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$VC6_DIR/VC98/Lib&amp;quot;&lt;/span&gt;
+
+&lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+
+&lt;span class="k"&gt;while &lt;/span&gt;&lt;span class="nb"&gt;getopts&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;o:c&amp;quot;&lt;/span&gt; optname
+&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;span class="k"&gt;  case&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;$optname&amp;quot;&lt;/span&gt; in
+  &lt;span class="s2"&gt;&amp;quot;o&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /o$OPTARG&amp;quot;&lt;/span&gt;
+    ;;
+  &lt;span class="s2"&gt;&amp;quot;c&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+    &lt;span class="nv"&gt;ARGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$ARGS /c&amp;quot;&lt;/span&gt;
+    ;;
+  &lt;span class="k"&gt;esac&lt;/span&gt;
+&lt;span class="k"&gt;done&lt;/span&gt;
+
+wine &lt;span class="s2"&gt;&amp;quot;$BIN/CL.EXE&amp;quot;&lt;/span&gt; &lt;span class="nv"&gt;$ARGS&lt;/span&gt; &lt;span class="k"&gt;${&lt;/span&gt;&lt;span class="p"&gt;@:&lt;/span&gt;&lt;span class="nv"&gt;$OPTIND&lt;/span&gt;&lt;span class="k"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后把他放在 PATH 里面的某个目录下 (我放在了用户级的 /home/upsuper/bin 里，这个似乎要自己添加就是了)，然后给这个文件加上可执行属性，最后只要在需要的地方执行：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;vc6 xxx.cpp
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;就解决了~&lt;/p&gt;
+&lt;p&gt;不过从这个脚本中也可以看出，它的功能还不太完善，不对，是很不完善。目前支持设置输出文件名和阻止执行连接。我很想加入很多其他的参数，不过不知道该怎么弄……&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://www.ibm.com/developerworks/cn/linux/l-bash-parameters.html"&gt;Linux 技巧: Bash 参数和参数扩展&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://topic.csdn.net/t/20060903/21/4995578.html"&gt;vc6.0的INCLUDE 和LIB路径如何修改? – CSDN社区&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="C"></category><category term="sh"></category><category term="wine"></category></entry><entry><title>鼠标控制音乐播放的小程序</title><link href="http://upsuper.github.com/blog/use-mouse-as-music-player-controller.html" rel="alternate"></link><updated>2009-11-03T20:06:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-11-03:use-mouse-as-music-player-controller.html</id><summary type="html">&lt;p&gt;看这个标题一定很奇怪：难道我以前控制音乐播放不用鼠标么？这个文章的标题看起来像鼠标刚刚发明的推广期的文章……不过，当然不是这样的！&lt;/p&gt;
+&lt;p&gt;其实只是想：如何把我的小本合上放书架上，当作一个音乐播放器+功放，并用我的无线6键鼠当遥控器遥控控制之。&lt;/p&gt;
+&lt;p&gt;想想其实还是蛮有意义的功能，这样我做作业的时候可以不用戴耳机，不用用MP3，直接把本当播放器；同时，我不会看到屏幕上的东西，可以安心做作业~再看看我的6键无限鼠，那额外的功能键平时根本不用，也想不出能有什么用……这么好的东西就这样被我浪费了……（话说，拿本当音乐播放器是不是更浪费？）&lt;/p&gt;
+&lt;p&gt;说干就干！&lt;/p&gt;
+&lt;p&gt;首先提出构想：左键用于暂停和播放，滚轮调节音量，侧边的两个功能键用来切换上一首和下一首。至于右键和中键……再说吧，说不定以后可以扩展更多功能？说不定以后高兴了弄个鼠标手势什么的~嘿嘿&lt;/p&gt;
+&lt;p&gt;接下来查找资料。印象中我的 Audacious 是可以用 D-Bus 控制的。简单地查阅了一下相关资料，发现了一个叫做 MPRIS 的播放器控制接口。为此，我还专门学习了一下 python-dbus 的使用。&lt;/p&gt;
+&lt;p&gt;插一句话：python-dbus 怎么没有中文教程啊！英文教程看得还是蛮吃力的……&lt;/p&gt;
+&lt;p&gt;连接播放器的代码很简单：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dbus&lt;/span&gt;
+&lt;span class="n"&gt;bus&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dbus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SessionBus&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;player&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;bus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_object&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;org.mpris.audacious&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/Player&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其中 &lt;code&gt;org.mpris.audacious&lt;/code&gt; 指的是 audacious，支持 MPRIS 的其他播放器还可以有如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;org.mpris.bmp&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;org.mpris.vlc&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;org.mpris.xmms2&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;至于那个 &lt;code&gt;/Player&lt;/code&gt; 指的是我们要获取的是一个叫 &lt;code&gt;Player&lt;/code&gt; 的对象，用于控制播放器。在 MPRIS 中除了 &lt;code&gt;Player&lt;/code&gt; 以外，还有根对象 (&lt;code&gt;/&lt;/code&gt;) 和 &lt;code&gt;TrackList&lt;/code&gt; 对象 (&lt;code&gt;/TrackList&lt;/code&gt;) 两个，具体的用法其文档里详细说明。这里我只用到了 &lt;code&gt;Player&lt;/code&gt; 对象……&lt;/p&gt;
+&lt;p&gt;看看 &lt;code&gt;Player&lt;/code&gt; 对象的方法还挺多，这里我用了这几个：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Next()&lt;/code&gt; - 切换到下一首歌曲&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Prev()&lt;/code&gt; - 切换到上一首歌曲&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Pause()&lt;/code&gt; - 暂停/继续&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Play()&lt;/code&gt; - 播放歌曲&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;VolumeGet()&lt;/code&gt; - 获取当前音量&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;VolumeSet()&lt;/code&gt; - 设置音量&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;根据前面写的需求，这些已经足够了~&lt;/p&gt;
+&lt;p&gt;怎么用这些？很简单嘛！就像平时在 Python 里面调用类的方法一样~类型转换？不，那完全不需要你关心！&lt;/p&gt;
+&lt;p&gt;Python 程序拥有控制播放器的能力了，可是鼠标呢？如何捕获鼠标的动作呢？&lt;/p&gt;
+&lt;p&gt;想想……屏幕都关了……你还能指望他为你显示什么呢？干脆建立一个窗口把整个屏幕盖住算了！然后让他截获鼠标事件。&lt;/p&gt;
+&lt;p&gt;快速学习了一下 pygtk 的用法（其实就是照着 Hello World 打了一遍），差不多就知道怎么用了。窗口的建立代码大约如下：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;window&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Window&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WINDOW_TOPLEVEL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fullscreen&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这段代码很好理解了，第一行就是创建窗口对象，第二行令其全屏，第三行设置其显示，第四行开始 GTK 的主循环。&lt;/p&gt;
+&lt;p&gt;下面就是鼠标事件的问题了~添加事件用的是类似下面的代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;key-press-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;key_press&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;destroy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;main_quit&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第一个是注册了键盘按键的事件捕获，将 &lt;code&gt;key-press-event&lt;/code&gt; 事件绑定上 &lt;code&gt;key_press&lt;/code&gt; 这个函数，而把窗口的销毁事件 &lt;code&gt;destroy&lt;/code&gt; 连接到退出 GTK 主循环。说一句废话，连接事件的语句要放在 &lt;code&gt;gtk.main()&lt;/code&gt; 之前……&lt;code&gt;key_press&lt;/code&gt; 主要用来实现当点击 escape 时退出：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;key_press&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;keyval_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;keyval&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Escape&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;destroy&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;好了，下面是鼠标点击事件 &lt;code&gt;button-press-event&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;button_press&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;button-press-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;button_press&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;试试？不行的！差了一番后，发现 Window 这个东西默认是不打开鼠标点击的事件捕获的，逼近大家很少会点窗口本身，都是点里面的按钮什么的……下面的代码要求窗口打开鼠标点击事件的捕获：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_events&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BUTTON_PRESS_MASK&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;接下来就可以了~&lt;code&gt;event.button&lt;/code&gt; 表示的是点击的键是哪个。检查了一下，左键是1，右键是3，中键是2，功能键1是8，功能键2是9。滚轮呢？&lt;/p&gt;
+&lt;p&gt;原来滚轮有自己的事件 &lt;code&gt;scroll&lt;/code&gt;。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;scroll&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;scroll-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scroll&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;直接可以用了。识别滚轮方向的是 &lt;code&gt;event.direction&lt;/code&gt;，应该是 &lt;code&gt;gtk.gdk.SCROLL_UP&lt;/code&gt;、&lt;code&gt;SCROLL_DOWN&lt;/code&gt;、&lt;code&gt;SCROLL_LEFT&lt;/code&gt;、&lt;code&gt;SCROLL_RIGHT&lt;/code&gt; 其中的一个。&lt;/p&gt;
+&lt;p&gt;下面根据最初的设想，把他们都拼起来就形成了最初的版本：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pygtk&lt;/span&gt;
+&lt;span class="n"&gt;pygtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;require&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;2.0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;gtk&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;gtk&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dbus&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;button_press&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;button&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;GetStatus&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Play&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Pause&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Prev&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Next&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;scroll&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;direction&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SCROLL_UP&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeSet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeGet&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;direction&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SCROLL_DOWN&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeSet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeGet&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;key_press&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;keyval_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;keyval&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Escape&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;destroy&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;bus&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dbus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SessionBus&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;player&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;bus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_object&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;org.mpris.audacious&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/Player&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;window&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Window&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WINDOW_TOPLEVEL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;destroy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;main_quit&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_events&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BUTTON_PRESS_MASK&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;button-press-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;button_press&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;key-press-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;key_press&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;scroll-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scroll&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fullscreen&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;OK 看起来不错了，也能控制了。可是，作为一个程序员，怎么能不考虑各种意外呢？试想，如果我们控制着控制着，突然，一个不明真相的窗口弹了出来怎么办呢？！这是一个问题……&lt;/p&gt;
+&lt;p&gt;最容易想到的方法：把这个窗口永久置顶！&lt;/p&gt;
+&lt;p&gt;事实上也确实找到了这么个方法，就是把窗体注册成 dock。我们知道 dock 是需要永久置顶的~&lt;/p&gt;
+&lt;p&gt;用如下方法可以让窗体变成 Dock：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;set_type_hint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WINDOW_TYPE_HINT_DOCK&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;但是问题又来了：dock 似乎没法接受键盘输入。因为 dock 只是形式上覆盖，并且可以拦截一切在他上面发生的鼠标事件，可键盘焦点就未必在他那里了~&lt;/p&gt;
+&lt;p&gt;那么我们就不要键盘事件了吧~于是我就把键盘退出给删了，改成了双击退出~查了下资料，双击事件也通过 &lt;code&gt;button-press-event&lt;/code&gt; 发送的，必须根据 &lt;code&gt;event.type&lt;/code&gt; 来判断是单击、双击还是三击。此外，双击和三击中的每一次点击都会引发一次单击事件。&lt;/p&gt;
+&lt;p&gt;OK，于是我们把 button_press 函数改成下面这样：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;button_press&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_2BUTTON_PRESS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;destroy&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_3BUTTON_PRESS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt;
+  &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;button&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;GetStatus&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Play&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Pause&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Prev&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Next&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后删掉键盘处理，最后就成了这样：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pygtk&lt;/span&gt;
+&lt;span class="n"&gt;pygtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;require&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;2.0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;gtk&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;gtk&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;dbus&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;button_press&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_2BUTTON_PRESS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;destroy&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_3BUTTON_PRESS&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt;
+  &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;button&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;GetStatus&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Play&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+      &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Pause&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Prev&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;button&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Next&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;scroll&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;direction&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SCROLL_UP&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeSet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeGet&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;direction&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SCROLL_DOWN&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeSet&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;player&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;VolumeGet&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;bus&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dbus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;SessionBus&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;player&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;bus&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_object&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;org.mpris.audacious&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/Player&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="n"&gt;window&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Window&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WINDOW_TOPLEVEL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;destroy&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;lambda&lt;/span&gt; &lt;span class="n"&gt;widget&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;main_quit&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_events&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BUTTON_PRESS_MASK&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;button-press-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;button_press&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;connect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;scroll-event&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;scroll&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;set_type_hint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gdk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WINDOW_TYPE_HINT_DOCK&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fullscreen&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;window&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;show&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;gtk&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;完成了！&lt;/p&gt;
+&lt;p&gt;以后就可以拿我的小本来当音乐播放器+功放啦~&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://wiki.xmms2.xmms.se/wiki/MPRIS"&gt;MPRIS – XMMS2&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://dbus.freedesktop.org/doc/dbus-python/doc/tutorial.html"&gt;dbus-python tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.pygtk.org/pygtk2tutorial/index.html"&gt;PyGTK 2.0 Tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://library.gnome.org/devel/pygtk/stable/"&gt;PyGTK 2.0 Reference Manual&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.daa.com.au/pipermail/pygtk/2004-January/006832.html"&gt;[pygtk] how to generate scroll wheel mouse event.&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://topic.csdn.net/t/20030910/11/2243673.html"&gt;如何让窗口置顶？ Linux/Unix社区 / 程序开发区 – CSDN社区 community.csdn.net&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Python"></category><category term="GTK"></category></entry><entry><title>基于 jQuery 的 CSS 更换术</title><link href="http://upsuper.github.com/blog/replacing-css-via-jquery.html" rel="alternate"></link><updated>2009-10-18T20:57:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-10-18:replacing-css-via-jquery.html</id><summary type="html">&lt;p&gt;最近开始写一中的新选歌系统，这次要大改，顺便练手。&lt;/p&gt;
+&lt;p&gt;想加入换肤功能（不然女生肯定觉得老是蓝色不好……），而且我想到的换肤，最简单的方式就是换 CSS，把界面颜色、图形相关的内容放入皮肤的 CSS 中就很容易了~不过问题是换肤呢？&lt;/p&gt;
+&lt;p&gt;正好新系统中因为客户端代码可能非常强大，准备引入 jQuery 框架来简化开发，便学了一些。于是我就想，能不能通过 jQuery 来解决呢？&lt;/p&gt;
+&lt;p&gt;首先，我给出了下面这个简单的页面：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;!DOCTYPE html PUBLIC &amp;quot;-//W3C//DTD XHTML 1.0 Transitional//EN&amp;quot;&lt;/span&gt;
+&lt;span class="cp"&gt;  &amp;quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;html&lt;/span&gt; &lt;span class="na"&gt;xmlns=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://www.w3.org/1999/xhtml&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;xml:lang=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;zh-CN&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;head&lt;/span&gt; &lt;span class="na"&gt;profile=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;http://gmpg.org/xfn/11&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;meta&lt;/span&gt; &lt;span class="na"&gt;http-equiv=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Content-Type&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;content=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/html; charset=UTF-8&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;title&amp;gt;&lt;/span&gt;福州一中 学校音乐征集&lt;span class="nt"&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;link&lt;/span&gt; &lt;span class="na"&gt;rel=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;stylesheet&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;href=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;id=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;theme&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/css&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;media=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;all&amp;quot;&lt;/span&gt; &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;script &lt;/span&gt;&lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;src=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;jquery.js&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;script &lt;/span&gt;&lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/javascript&amp;quot;&lt;/span&gt; &lt;span class="na"&gt;src=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;theme.js&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;style &lt;/span&gt;&lt;span class="na"&gt;type=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;text/css&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;html&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="nt"&gt;body&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="k"&gt;height&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;100&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="k"&gt;width&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;100&lt;/span&gt;&lt;span class="o"&gt;%&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+Hello world!
+&lt;span class="nt"&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class="nt"&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后我开始用了一段 jQuery 手册里的某段示例代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; 
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;quot; id=&amp;quot;theme&amp;quot; type=&amp;quot;text/css&amp;quot; media=&amp;quot;all&amp;quot; /&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;appendTo&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;head&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;成功了，不过查看处理后的代码，发现大量冗余代码出现在 head 尾部……又查了查，发现了 jQuery 里面的另外一个好用的函数，于是上面代码就改为：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; 
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;quot; id=&amp;quot;theme&amp;quot; type=&amp;quot;text/css&amp;quot; media=&amp;quot;all&amp;quot; /&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;replaceAll&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;#theme&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;没有冗余代码出现，而且 IE6 都可以正常使用！jQuery 的兼容性果然超群……&lt;/p&gt;
+&lt;p&gt;然后我们想，这样每次都要重建标签，会不会很慢呢？如果能直接改属性或许不错~再查查，我们发现下面方法：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;#theme&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;attr&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt; &lt;span class="nx"&gt;href&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;#39;&lt;/span&gt; &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;又简洁看过去又高效~再试试 IE6，仍然没有问题哦~&lt;/p&gt;
+&lt;p&gt;最后给出实验用各完整代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;t&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;document&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;body&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;click&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;#theme&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;attr&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt; &lt;span class="nx"&gt;href&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;t&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;.css&amp;#39;&lt;/span&gt; &lt;span class="p"&gt;});&lt;/span&gt;
+  &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;span class="p"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第一个 CSS 文件：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nt"&gt;body&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;background&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;blue&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;color&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nb"&gt;yellow&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第二个 CSS 文件：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nt"&gt;body&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;background&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;#000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;color&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;#fff&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary></entry><entry><title>闰年判断的优化及其他</title><link href="http://upsuper.github.com/blog/optimize-leap-year-checking.html" rel="alternate"></link><updated>2009-10-10T21:11:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-10-10:optimize-leap-year-checking.html</id><summary type="html">&lt;p&gt;今天 Javran 发来短信给了一个短小的论年判断代码，并且问我是否认为有更简单的表达。下面是他最初给的代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;一切的探究就从这个代码开始了。&lt;/p&gt;
+&lt;p&gt;当然，这个代码是错的，因为疏忽了运算符的优先级，为达到本来的目的，这段代码大概应该这样改（测试代码3）：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(((&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;接着，我将其中“!=0”和“==0”可以进一步缩短，现在代码现在变成这样（测试代码4）：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;!!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="o"&gt;!!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;OK，对于抑或得到的思路，精简到这里差不多了。Javran 随后又给我了一个代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="o"&gt;!!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我说这比我的代码长，他解释说这段代码模的规模比较小，应该快一些。我说再快快不过 if 句。话说，经过实验，这条语句似乎是错误的……&lt;/p&gt;
+&lt;p&gt;不过，这让我突然想起了对于 &amp;amp;&amp;amp; 和 || 这样逻辑运算符的优化，我便想看看这个判断最快能至何~&lt;/p&gt;
+&lt;p&gt;我们先看看最传统的判断代码（测试代码1）：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后我们做点小小的优化（测试代码2）：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;接着我就按着这个的判断方式的思路进行一点缩减：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后根据前面的方式缩短行（测试代码5）：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看出，这是目前最短的一个判断方式。&lt;/p&gt;
+&lt;p&gt;下面我做了30轮，每轮每个代码执行2,000,000次，取最短时间，得到如下结果：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.043275&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.043562&lt;/span&gt;
+&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.093261&lt;/span&gt;
+&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.093184&lt;/span&gt;
+&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.036421&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;首先我们观察到，我最后推出的那个最短的式子是最快的，为什么？这是源于逻辑运算符的运算规则：对于 &amp;amp;&amp;amp;，如果前面项为假则不计算后项；对于 ||，如果前项为真则不计算后项。这就像 if 语句的递推作用：不做无谓的计算。而很显然，3和4的速度很慢，因为使用了异或运算，由于异或运算本身无法预测结果，必须把每一项都计算出来才行，因此慢了很多（比传统算法慢了一倍）。事实上按位运算应该都是这样。&lt;/p&gt;
+&lt;p&gt;接着我们看到，我对 Javran 最初代码的优化版本效率有一定提高，可能是因为将减法（比较运算实质是做减法）化为了位操作吧。而对传统代码的优化却反而减慢了它，或许是修改规则导致的副作用吧……不过我的最终优化代码还是快了不少，原因不明，或许 if 并不快？&lt;/p&gt;
+&lt;p&gt;应该有人会觉得奇怪，为什么要取最短时间，而不是平均值呢？事实上，我想在进行效率测试的时候，应该看最短时间。我们考虑测量效率时引入的误差出现在什么地方：CPU 肯定不会因为某个函数突然超频加速。那么有什么问题呢？因为我们用的都是分时系统，系统会不断的调度不同的线程使用 CPU。误差就在这里：时间会因为任务的切换而变长！因此测量结果只可能比实际值长，不可能比实际值短。所以要取最短时间。&lt;/p&gt;
+&lt;p&gt;OK，对闰年的探索暂告一段落。我们突然想起前面 Javran 所给出的“缩小模的规模带来效率提升”的论断。&lt;/p&gt;
+&lt;p&gt;因此我的测试程序增加了3个测试代码（测试代码6-8）：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;得到的结果让人吃惊：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.106022&lt;/span&gt;
+&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.098434&lt;/span&gt;
+&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mf"&gt;0.098487&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;模25最慢，400次之，而100最快，一样原因不明。看起来难道模的速度和模的数有关系？&lt;/p&gt;
+&lt;p&gt;嗯，讨论了这么多，其实最初的问题——闰年判断的简化和优化——比较无聊，因为这段代码本身就不长，也几乎不可能被用于热点处。不过从这个过程中，我们看到了一些有趣的优化方式，虽然不能如算法改进那样降低复杂度，但这里有的时候常数也很重要，不是么？此外，还有一些关于效率测试的讨论。最后，我们还看到了一点神奇的结果，有待进一步探究咯~&lt;/p&gt;
+&lt;p&gt;最后贴出测试代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;#include &amp;lt;stdio.h&amp;gt;&lt;/span&gt;
+&lt;span class="cp"&gt;#include &amp;lt;sys/time.h&amp;gt;&lt;/span&gt;
+
+&lt;span class="cp"&gt;#define TRUE  1&lt;/span&gt;
+&lt;span class="cp"&gt;#define FALSE 0&lt;/span&gt;
+
+&lt;span class="cp"&gt;#define CHECK(NUM)  if (check##NUM(i) != a) printf(#NUM)&lt;/span&gt;
+
+&lt;span class="cp"&gt;#define YEAR_AMOUNT 2000000&lt;/span&gt;
+&lt;span class="cp"&gt;#define TEST(NUM) \&lt;/span&gt;
+&lt;span class="cp"&gt;  gettimeofday(&amp;amp;tv_s, &amp;amp;tz); \&lt;/span&gt;
+&lt;span class="cp"&gt;  for (j = 1; j &amp;lt;= YEAR_AMOUNT; ++j) \&lt;/span&gt;
+&lt;span class="cp"&gt;    check##NUM(j); \&lt;/span&gt;
+&lt;span class="cp"&gt;  gettimeofday(&amp;amp;tv_e, &amp;amp;tz); \&lt;/span&gt;
+&lt;span class="cp"&gt;  timeval_subtract(&amp;amp;tv_d, &amp;amp;tv_e, &amp;amp;tv_s); \&lt;/span&gt;
+&lt;span class="cp"&gt;  if (mtime[NUM].tv_sec == 0 &amp;amp;&amp;amp; \&lt;/span&gt;
+&lt;span class="cp"&gt;      mtime[NUM].tv_usec == 0 || \&lt;/span&gt;
+&lt;span class="cp"&gt;      tv_d.tv_sec &amp;lt; mtime[NUM].tv_sec || \&lt;/span&gt;
+&lt;span class="cp"&gt;      tv_d.tv_sec == mtime[NUM].tv_sec &amp;amp;&amp;amp; \&lt;/span&gt;
+&lt;span class="cp"&gt;      tv_d.tv_usec &amp;lt; mtime[NUM].tv_usec) \&lt;/span&gt;
+&lt;span class="cp"&gt;    mtime[NUM] = tv_d; \&lt;/span&gt;
+&lt;span class="cp"&gt;  printf(#NUM &amp;quot; &amp;quot;)&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;timeval&lt;/span&gt; &lt;span class="n"&gt;mtime&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;timezone&lt;/span&gt; &lt;span class="n"&gt;tz&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FALSE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;TRUE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FALSE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;TRUE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FALSE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;TRUE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;TRUE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FALSE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check3&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check4&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;!!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;^&lt;/span&gt; &lt;span class="o"&gt;!!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check5&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check6&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;25&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check7&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;check8&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="mi"&gt;400&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="c1"&gt;// 时间减法&lt;/span&gt;
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;timeval_subtract&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+       &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;timeval&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;nsec&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;1000000&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="mi"&gt;1000000&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;nsec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;nsec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;1000000&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;nsec&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;1000000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1000000&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;nsec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="n"&gt;nsec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+
+  &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;j&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+  &lt;span class="c1"&gt;// 验证代码正确性&lt;/span&gt;
+  &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="n"&gt;YEAR_AMOUNT&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;check1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;CHECK&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt; &lt;span class="n"&gt;CHECK&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt; &lt;span class="n"&gt;CHECK&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt; &lt;span class="n"&gt;CHECK&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+  &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;Check complete!&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+  &lt;span class="c1"&gt;// 开始计时&lt;/span&gt;
+  &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;timeval&lt;/span&gt; &lt;span class="n"&gt;tv_s&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;tv_e&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;timeval&lt;/span&gt; &lt;span class="n"&gt;tv_d&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+  &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%d: &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;TEST&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="p"&gt;}&lt;/span&gt;
+
+  &lt;span class="c1"&gt;// 输出结果&lt;/span&gt;
+  &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%d: %ld.%06ld&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mtime&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;tv_sec&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mtime&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;tv_usec&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;很久没写这种东西了……唉……&lt;/p&gt;</summary><category term="C"></category><category term="Optimize"></category></entry><entry><title>Linux 死机了该怎么办？</title><link href="http://upsuper.github.com/blog/what-to-do-if-linux-crash.html" rel="alternate"></link><updated>2009-07-28T23:20:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-07-28:what-to-do-if-linux-crash.html</id><summary type="html">&lt;p&gt;Linux 会死机么？我可以很肯定地说，会！如何？很简单，&lt;a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9"&gt;fork 炸弹&lt;/a&gt;就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。&lt;/p&gt;
+&lt;p&gt;Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？&lt;/p&gt;
+&lt;p&gt;不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的。下面在提示符后面输入 top 回车，这时会看到一张动态的表，上面列出了耗用资源最多的进程。观察它刷新一两次，按q退出，然后输入 kill ，其中的 PID 你可以在 top 里面看到。这个时候应该会快了不少，如果你发现没有成功结束掉，就再输入 kill -KILL ，这次基本上就没问题了。&lt;/p&gt;
+&lt;p&gt;除了上面这种情况外，一些底层软件的 bug 也可能导致一些奇怪的死机问题。我某位同学近日就因为莫名其妙的死机强制重启把 ext4 的分区给伤了。（最后是 sysreccd 修复了，貌似是分区表部分损坏）据其说，死机是键鼠均无反应。一般来说，系统负载高导致的死机，在可怕键盘也会有反应，有人说如果死机到键盘无响应“负载都无限大了”，亦有人说这可能是 X Server 与驱动配合有问题导致的。不过我们考虑一下遇到这种情况怎么办？&lt;/p&gt;
+&lt;p&gt;OK，这是今天才学到的方法，叫做 reisub，这个方法可以在各种情况下安全地重启计算机。大家在键盘上找，可以找到一个叫做“Sys Rq”的键，在台机的键盘上通常与 Prt Sc 共键，在笔记本可能在其他位置，如 Delete。以台机为例，要使用这种方法需要按住 Alt-Print(Sys Rq)，然后依次按下 reisub 这几个键，按完 b 系统就会重启。&lt;/p&gt;
+&lt;p&gt;下面解释一下这个方法：其实 Sys Rq 是一种叫做系统请求的东西，按住 Alt-Print 的时候就相当于按住了 Sys Rq 键，这个时候输入的一切都会直接由 Linux 内核来处理，它可以进行许多低级操作。这个时候 reisub 中的每一个字母都是一个独立操作，他们分别表示：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;unRaw&lt;/span&gt;      将键盘控制从 &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;Server&lt;/span&gt; 那里抢回来
+ &lt;span class="n"&gt;tErminate&lt;/span&gt; 给所有进程发送 &lt;span class="n"&gt;SIGTERM&lt;/span&gt; 信号，让他们自己解决善后
+ &lt;span class="n"&gt;kIll&lt;/span&gt;      给所有进程发送 &lt;span class="n"&gt;SIGKILL&lt;/span&gt; 信号，强制他们马上关闭
+  &lt;span class="n"&gt;Sync&lt;/span&gt;     将所有数据同步至磁盘
+  &lt;span class="n"&gt;Unmount&lt;/span&gt;  将所有分区挂载为只读模式
+&lt;span class="n"&gt;reBoot&lt;/span&gt;     重启
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这6个字母的顺序是不可以记错的。那怎么记呢？这里提供一个个人认为比较好的方法：单词 busier（busy 的比较级，更忙）倒过来就是了。&lt;/p&gt;
+&lt;p&gt;基本上就这样了，Linux 的死机本来就不多见，现在见了也可以安全解决，多好~&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://en.wikipedia.org/wiki/Magic_SysRq_key"&gt;Magic SysRq key – Wikipedia, the free encyclopedia&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Linux"></category></entry><entry><title>探秘 Linux 权限控制</title><link href="http://upsuper.github.com/blog/access-control-of-linux.html" rel="alternate"></link><updated>2009-07-06T16:08:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-07-06:access-control-of-linux.html</id><summary type="html">&lt;p&gt;众所周知，Linux 的权限控制虽然很简单，但却十分严格和有效的。（和 Windows 复杂却没用的权限控制形成鲜明对比……）由于最近编写测评机，希望利用 Linux 的高安全性做运行级恶意代码防护，因此就顺带地研究了一下 Linux 的权限控制。经过这次探秘，我对 Linux 的权限有了更新的认识，确实是一个很强大的东西啊！&lt;/p&gt;
+&lt;p&gt;由于本人的能力有限，文章中的不足和谬误也请大家多多指教！&lt;/p&gt;
+&lt;p&gt;我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux 又是如何确定这些权限的呢？&lt;/p&gt;
+&lt;p&gt;说到 Linux 下的权限，一定要先说的是 Linux 下文件权限的控制。在 Linux 下，每个文件都有“所有者”和“所在组”这两个基本属性，而各种权限也是根据所有者、所在组和其他人划分的。每个文件的权限，最简单的情况下可以表示为一个3位八进制数，每一位八进制数表示一系列人的权限，如八进制数751就标示所有者有7的权限，所在组的其他人有5的权限，而既不是所有者也不在所在组的人只有1的权限。至于一位的八进制数表示的意义，我们应该将其进一步转换为3位二进制数，如7对应111，5对应101，1对应001。在这个二进制数上最高位如果为1则表示有读权限，第二位表示写权限，而最后一位表示执行权限。（说到这里我就想再插一句了，Linux 的文件是什么类型或可不可以执行，几乎完全不是根据扩展名，只有有执行权限的文件才能执行，而文件类型也是根据 MIME Type 来决定的。）&lt;/p&gt;
+&lt;p&gt;由于 Linux 里面大量的东西都可以转化为文件操作，因此这一简洁明了的设计解决了大多数权限控制的问题。不过文件归文件，那文件夹呢？文件夹应该说也是一类特殊的文件，因此也有权限控制。可对于文件夹，什么样叫“可读”，什么样叫“可写”？最奇怪的是，“可执行”？对于文件夹来说，可读就是可以列举文件列表，也就是 Linux 下的 ls 命令可以列出东西；可写就是可以在文件夹中创建文件（或许有人会问，为什么不是文件夹中文件可写？想一想~）；可执行是比较奇怪的……就是将这个文件夹当作当前文件夹的权限，在 Linux 命令中表现为 cd 是否可以使用。&lt;/p&gt;
+&lt;p&gt;好了，说完文件们，再来看看进程们。&lt;/p&gt;
+&lt;p&gt;进程的权限控制就更简单了，说白了就一句话：一个进程不能控制与其不是同一个用户下运行的进程，除非被控制的是它的子进程。事实上，一个进程有至少两个 UID 和 GID，它们分别是 EUID、RUID 和 EGID、RGID，其中，E 表示 effective，即所有权限控制参考的是 EUID 和 EGID，进程创建的文件的所有者和所在组也是 EUID 和 EGID 表示的用户和组。那么有人就问，R- 的那两个又是拿来干什么的呢？打酱油？非也，R 表示 real，即运行者的信息。其实一个进程可以改变自己这些 UID 和 GID，而 E- 可以修改为的值为其本身和对应的 R- 的值。不过一个程序在加载的时候 E- 和 R- 的值似乎都根据运行者的信息设置了相同的值，看起来好像没什么用，是吗？我们这里暂且不管他。&lt;/p&gt;
+&lt;p&gt;下面我们深入一步，看看进程调度中的 nice 值和进程的资源限制。不知道大家有没有用系统监视器调整过进程的 nice 值，nice 值是 Linux 核心调度进程的一个参考值，nice 值越高表示这个进程越不重要，优先级越低，越可以慢慢来；nice 值越低表示这个进程越重要，越要快些做。调过 nice 的人就知道，将可以控制的某个进程的 nice 值调高（优先级降低）是随便做的，但要把一个进程的 nice 值调低（提高优先级）却要输入密码（进入 root）。做过一些 Linux 相关的编程的人也应该知道，调紧一个可控进程的资源限制是可以随意调的，但调宽松也要由 root 来进行。&lt;/p&gt;
+&lt;p&gt;啊，root 出现了！root 是什么？root 对于 Linux 来说就是神。为什么这么说？你上面看到的所有权限控制，在 root 面前都是没用的，root 在 Linux 里可以为所欲为。是的，root 是一个完全不受权限限制的用户，这就是它可怕的地方。比如，我们在前面看到进程只能将 EUID 调整为 EUID 或 RUID，但如果 EUID 为 0（即为 root），这个进程将可以把 EUID 和 RUID 调整为任意值；同样的，这个进程将可以把 EGID 和 RGID 调整为任意值。&lt;/p&gt;
+&lt;p&gt;我们知道 Linux 内核加载的时候开始执行的进程 init 是以 root 运行的，而后 init 加载各个启动脚本，把各项服务封入单独的用户运作，最后根据登入信息加载用户进程。这整个过程中，只有由上而下，由 root 到普通用户的过程。理由就是 root 可以任意调整 E- 和 R-。不过如果仅是这样，这个系统估计什么也干不了……&lt;/p&gt;
+&lt;p&gt;我在原来的一篇日志中提到过 Linux 创建子进程和运行程序的方法——fork 和 exec* 函数：fork 运行成功返回两次，一次在生成的子进程中返回0，另一次在调用的父进程中返回子进程的 pid。此时，子进程迅速继承了父进程的所有权限、变量等等等等。（Linux 的子进程采用 copy-on-write 技术分享父进程的内存）而我们前面又知道，一个进程只能让自己从 root 到普通用户，优先级从高到低，资源限制从宽到严，就像水只能从高流向低一样。但，人是往高出走的，有时我们需要 root 的权限，问：路在何方？&lt;/p&gt;
+&lt;p&gt;就在这时候，sudo 出现了！sudo 在 Linux 中可为无人不知无人不晓。对于 sudo 来说，只要你这个用户在 sudoer 的列表中，输入你的密码就可以让你成为 root 了，或者你输入其他用户的密码可以让你使用其他用户。可是，我们前面刚刚说过，进程只能让自己从 root 变成普通用户，那这 sudo 又是哪冒出来的呢？&lt;/p&gt;
+&lt;p&gt;这又要回到文件权限设置了。其实，文件权限实际上有4位八进制数。我们原来说的是3位，那还有一位是什么呢？那一位对应的3个二进制位又是三个开关，分别标示 SUID、SGID 和粘着位。SUID 是什么？它表示 saved set-user-ID，设置了它的程序在运行时有了新的选择——程序所有者的权限！也就是说，EUID 的取值在 EUID、RUID 之外多了一个选择——SUID。事实上，有设置 SUID 的程序在执行时都会自动将 EUID 设置为 SUID，这时 EUID 和 RUID 就不再是同一个值了，我们前面又知道，只要 EUID 为0这个程序就无敌了。这个过程在 fork 中无法完成，我猜想是在 exec* 函数的调用过程中进行的。我们看到，sudo 这个程序的所有者是 root，而又有设置 SUID，这表示，我们一运行 sudo，它就以 root 在运行了！很神奇不是么？通过 SUID 这种特别的机制，原来许多不可能的事成为了可能。SGID 表示的含义亦是类似的；而至于粘着位表示这个文件对于任何人都可写，但只有所有者能删除。&lt;/p&gt;
+&lt;p&gt;到这里，我把 Linux 基本的权限控制机制都说了一番。当然，为了更精确地进行权限控制，Linux 内核还引入了 Linux 安全模块，并可以加入 SELinux 和 AppArmor 等增强的安全机制，这让 Linux 更加安全和坚不可摧。（Windows 的权限控制在这些面前简直就是幼稚园小孩在大学教授面前……）这些我就不细致展开了，更多的信息网上很容易找到。&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://linuxtoy.org/docs/guide/ch17s08.html"&gt;权限管理 – 开源世界旅行手册&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.cndw.com/tech/server/2006040430540.asp"&gt;Solaris下究竟如何使用setuid/seteuid/setreuid&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://lxr.linux.no/"&gt;the Linux Cross Reference&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://tech.ccidnet.com/art/741/20090623/1806969_1.html"&gt;Linux系统进程的几个用户ID及其转换方法&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://idcnews.net/html/edu/20070101/291393.html"&gt;用户信息 /etc/passwd，getuid(), getpwuid()&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://hi.baidu.com/phps/blog/item/7e3ba44410cf9580b3b7dc81.html"&gt;C语言系统资源控制（getrlimit &amp;amp;&amp;amp; setrlimit)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://bytes.com/groups/python/36126-permission-problem-os-setuid"&gt;permission problem with os.setuid&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Linux"></category><category term="Security"></category></entry><entry><title>探索 Python 的变量、类型和引用</title><link href="http://upsuper.github.com/blog/python-variable-type-and-reference.html" rel="alternate"></link><updated>2009-06-25T22:23:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-06-25:python-variable-type-and-reference.html</id><summary type="html">&lt;p&gt;我一开始为 Python 的强大和简洁所震撼，看了些 Python 的教程，学了不少东西。前面那些探索就以后再写吧……今天先讲讲今天知道的东西。&lt;/p&gt;
+&lt;p&gt;在探索到 Python 函数的参数传递的时候，我不禁赞叹 Python 灵活的参数设计，但慢慢的，开始迷惑与传递参数的修改和返回。&lt;/p&gt;
+&lt;p&gt;众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。&lt;/p&gt;
+&lt;p&gt;Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类：一类是可修改的，一类是不可修改的。&lt;/p&gt;
+&lt;p&gt;现在，我插入在此先说说函数参数的问题，我们有下面一个实验：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;func1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;func2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;span class="n"&gt;t1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;span class="n"&gt;func1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;t1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;t1&lt;/span&gt;
+&lt;span class="n"&gt;t2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;func2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;t2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;t2&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;结果是：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;0
+&lt;span class="p"&gt;[&lt;/span&gt;0&lt;span class="p"&gt;,&lt;/span&gt; 2&lt;span class="p"&gt;,&lt;/span&gt; 3&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;看看结果会不会很惊异？第一个看起来像传值，第二个看起来却像传引用？看到这里你是不是觉得 Python 是一种莫名其妙的语言？其实当时我也有这种想法……但 Python 果然没哟让我失望，它如同 UNIX 一样，一开始设计得就如此优美。继续往下看~&lt;/p&gt;
+&lt;p&gt;不可修改的对象是我们最常用和最熟悉，几乎在任何一个语言中都能看到的——整数、实数、字符串和元组。有人说，怎么不可变啊？我随便给他们赋值！是的，在 Python 里几乎一切都是可以改变的，甚至有人说“如果你愿意，None 的值也是可以变的”（当然我不知道怎么变……）。但是如果注意观察，会发现所谓的改变其实是——&lt;strong&gt;扔了旧的建个新的！&lt;/strong&gt;验证这个的实验很简单：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;类似的实验想怎么做怎么做，只要那两个是不可变对象，你就一定会发现 id 变了！为什么？因为对象不可变。那什么可变？变量的引用是可变的！&lt;/p&gt;
+&lt;p&gt;好，那么自然剩下的就是可变的对象了，上面的实验亦可以很容易的证实字典、列表、集合和类实例等对象是可变的。那么，这意味着什么呢？&lt;/p&gt;
+&lt;p&gt;下面，我们回到函数传值的问题。我们知道了可变对象和不可变对象的区别，不是吗？对于可变对象，对于对象的操作不会重建对象，而对于不可变对象，每一次操作就重建新的对象。那么函数参数到底是个什么东西呢？&lt;strong&gt;其实说白了也简单，就是把参数里传入的东西对相应对象的引用依次赋给对应的内部变量&lt;/strong&gt;（有点晕吗？）。看看第一个实验，有没有明白些什么？其实都是将一个指向对象的引用传个一个名为“参数”的本地变量，所以 func1 中给 a 的是一个值为 0 的整数对象的引用，但我们知道，整数对象是不可变的，所以当 func1 对 a 进行修改的时候，实际上是修改本地变量 a 的引用到一个新的值为 1 的整数对象的引用。那么很显然，func2 修改的是一个可变的对象，也就是说即使 func2 修改了 a，本地变量 a 和全局变量 t2 指向的还是同一个对象，虽然他们不是同一个变量！这样一切情况都明了了，不是么？不明了的话再看看下面这个实验：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt;
+&lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输出一定是：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="p"&gt;[[&lt;/span&gt;0&lt;span class="p"&gt;,&lt;/span&gt; 2&lt;span class="p"&gt;,&lt;/span&gt; 3&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;4&lt;span class="p"&gt;,&lt;/span&gt; 5&lt;span class="p"&gt;,&lt;/span&gt; 6&lt;span class="p"&gt;]]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其实原理和参数的传递是一致的。&lt;/p&gt;
+&lt;p&gt;我们下面来看看全局变量和本地变量的问题。如果一个函数里面使用了一个变量，那么 Python 会先看看有没有对应的本地变量，如果没有找到，但找到一个全局变量，那么 Python 会&lt;strong&gt;把那个全局变量的引用赋给一个新的本地变量&lt;/strong&gt;。所以，现在在函数里的那个变量和全局变量其实不是同一个变量，他们只不过暂时有了相同的引用。这样其实可以看作 Python 为你做了隐式的参数传递。因此我们发现，他和参数一样，传值传引用表面上看过去漂移不定。那么如何修改一个指向不可变全局变量的值呢？靠返回值显然不那么优美。好在 Python 像 PHP 那样提供了一个叫 global 的语法，被 global 的变量&lt;strong&gt;使得本地变量成为相应全局变量的一个别名&lt;/strong&gt;，也就是说这个语句使他们成为同一个变量，这一点很重要！&lt;/p&gt;
+&lt;p&gt;现在看到了 Python 优美的设计。那下面的问题是，如果我们一定要复制一个可变对象的副本怎么办？简单的等号赋值显然被证明无效了。Python 也提供了方法——copy 模块。copy 模块是每一个 Python 都有的，专门用于生成可变对象的副本。copy 模块中有两个函数：copy.copy 和 copy.deepcopy。其中 copy 叫做潜复制，它仅仅复制了第一你给它的东西，下面的不管了。而 deepcopy 叫做深复制，它将所有能复制的都复制了。这样说比较抽象，我们来看下面实验：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt;
+&lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;
+&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;copy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;copy&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;copy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deepcopy&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;15&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输出结果：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;[[1, 2, 3], [4, 5, 10], 15]&lt;/span&gt;
+&lt;span class="k"&gt;[[1, 2, 3], [4, 5, 10], 15]&lt;/span&gt;
+&lt;span class="k"&gt;[[1, 2, 3], [4, 5, 10]]&lt;/span&gt;
+&lt;span class="k"&gt;[[1, 2, 3], [4, 5, 6]]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我想，效果不言而喻了。&lt;/p&gt;
+&lt;p&gt;此外，我还看到一个叫做弱引用 (weakref) 的模块，暂时不知道是干嘛的……下次研究了再说……&lt;/p&gt;
+&lt;p&gt;参考：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://blog.csdn.net/winterTTr/archive/2008/06/27/2590741.aspx"&gt;Python的函数参数传递：传值？引用？&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.jb51.net/article/15714.htm"&gt;Python 拷贝对象（深拷贝deepcopy与浅拷贝copy）&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.cnblogs.com/sislcb/archive/2008/09/05/1284828.html"&gt;Python 学习笔记 – 8.引用(Reference)&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Python"></category></entry><entry><title>PHP 空间也做 LaTeX 公式显示</title><link href="http://upsuper.github.com/blog/php-show-latex-formula.html" rel="alternate"></link><updated>2009-04-03T10:43:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-04-03:php-show-latex-formula.html</id><summary type="html">&lt;p&gt;原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。&lt;/p&gt;
+&lt;p&gt;今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！&lt;/p&gt;
+&lt;p&gt;要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。&lt;/p&gt;
+&lt;p&gt;如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：&lt;a href="http://www.forkosh.com/mimetex.zip"&gt;mimetex.zip&lt;/a&gt;。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?php&lt;/span&gt;
+    &lt;span class="k"&gt;echo&lt;/span&gt; &lt;span class="sb"&gt;`cc -DAA mimetex.c gifsave.c -lm -o mimetex.cgi &amp;gt; cc1 2&amp;gt; cc2`&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="cp"&gt;?&amp;gt;&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后通过浏览器访问这个 PHP，再查看 cc1 和 cc2 文件。如果不出意外，cc1 和 cc2 应该都是没有内容的空文件。
+接下来，把这个 mimetex.cgi 移动到你想要的文件夹，并给它加上执行权限（不然可能出现 500 错误）。&lt;/p&gt;
+&lt;p&gt;如果服务器是 Windows 的，因为 Windows 似乎对兼容做得比较不错，因此可以直接编译好放上去。&lt;/p&gt;
+&lt;p&gt;下面，在你安放 mimetex.cgi 的文件夹下新建一个 .htaccess 文件，并设置如下内容：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;Options&lt;/span&gt; +ExecCGI
+&lt;span class="nb"&gt;AddHandler&lt;/span&gt; cgi-script cgi
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果你不想让别人借你的服务器生成图片的话，还可以输入以下内容：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;Order&lt;/span&gt; deny,allow
+&lt;span class="nb"&gt;Deny&lt;/span&gt; from &lt;span class="k"&gt;all&lt;/span&gt;
+&lt;span class="nb"&gt;Allow&lt;/span&gt; from &lt;span class="m"&gt;127.0.0.0/255&lt;/span&gt;.0.0.0 ::1/128
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;当然，这样你就只能在 PHP 中用 curl 访问了~虽然我也推荐这样做。&lt;/p&gt;
+&lt;p&gt;上面这样就可以了，然后如果要生成某个 LaTeX 的图片，只要访问 &lt;code&gt;mimetex.cgi?你的公式&lt;/code&gt; 就可以了，如&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;mimetex&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cgi&lt;/span&gt;?&lt;span class="o"&gt;\&lt;/span&gt;&lt;span class="nb"&gt;sqrt&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;2&lt;span class="p"&gt;}&lt;/span&gt;^2&lt;span class="p"&gt;=&lt;/span&gt;2
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样，漂亮的 gif 图片就出来了。&lt;/p&gt;
+&lt;p&gt;最后再说说，我个人觉得，直接让客户端访问这个并不好，所以推荐加上权限控制，然后在 PHP 中是用 curl 获取，并做一次缓存。毕竟不管怎样，生成这个是要花费不少的 CPU，如果遇到大量公式的时候，应该会相当可怕……所以这种时候做一个缓存应该是很好的选择，毕竟那些 gif 都不大。这段代码就不写了，我想应该是很简单的~&lt;/p&gt;
+&lt;p&gt;说回来，如果认真看这个程序的 README 还会发现，如果加上编译参数 -DCACHEPATH=地址 就可以在 cgi 级别使用 MD5 Hash 的文件缓存。不过再想想，其实没什么必要，一个是用 PHP 控制缓存文件要更方便，同时考虑到文件系统在一个目录下文件多于 10000 个时会出现严重性能问题，最好使用多级目录来做缓存，不过看代码似乎没有多级缓存。除此之外，我想还有一些不错的方法可以做一些初级判重，这些用 PHP 实现会比改 cgi 要简单的多了~建议大家可以自己再多看看编译说明，似乎有不少有趣的编译参数~&lt;/p&gt;</summary><category term="PHP"></category><category term="LaTeX"></category></entry><entry><title>对字符串加长和数组合并的效率比较</title><link href="http://upsuper.github.com/blog/benchmark-of-string-combining-methods.html" rel="alternate"></link><updated>2009-02-13T12:59:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-02-13:benchmark-of-string-combining-methods.html</id><summary type="html">&lt;p&gt;对于字符串累加的处理，在 PHP 或 JavaScript 中似乎都可以通过类似 += (.= for PHP) 的方式实现，但有不少人抱怨道，这种方式效率很低。事实上，在我还在用 VB 的时候我就注意到这样的效率很低，当时的效率低是因为累加需要反复申请内存，而解决方法也很简单，就是用 Space$ 命令事先申请内存，然后用 Mid$ 来修改，这样效率大大提高！&lt;/p&gt;
+&lt;p&gt;然而在这里就不一样了，PHP 和 JavaScript 的内存机制我不是非常了解，同时我们似乎也不再使用预申请的方法来加速了（似乎也比较困难……），而是直接用上了 += 这样的符号。&lt;/p&gt;
+&lt;p&gt;下面就是问题了：这样的效率低吗？&lt;/p&gt;
+&lt;p&gt;很多人（包括我自己最初）根据自己的想象，认为使用添加数组内容，最后合并数组为字符串，这样效率比简单的 += 要快，但我经过反复实验认为并不是这样的。首先是 JavaScript，我使用的测试代码如下：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;getTime&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="nb"&gt;Date&lt;/span&gt;&lt;span class="p"&gt;()).&lt;/span&gt;&lt;span class="nx"&gt;getTime&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;testit&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;st&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;et&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;ta&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;tb&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nx"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nx"&gt;st&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;getTime&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="nx"&gt;t&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;j&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;100000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nx"&gt;j&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="nx"&gt;t&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;test&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="nx"&gt;et&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;getTime&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="nx"&gt;ta&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;et&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nx"&gt;st&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+        &lt;span class="nx"&gt;st&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;getTime&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="nx"&gt;a&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[];&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nx"&gt;j&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;100000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nx"&gt;j&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="nx"&gt;a&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;push&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;test&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="nx"&gt;t&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;a&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;join&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="nx"&gt;et&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;getTime&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="nx"&gt;tb&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;et&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nx"&gt;st&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="nx"&gt;console&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;ta&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39; &amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;tb&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以下是我在 Firefox 3.0.6 下执行的结果：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;196 207
+195 215
+199 203
+196 203
+200 197
+110 111
+104 111
+107 111
+108 113
+105 107
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看出，+= 的效率并不比数组合并低，甚至略快于数组合并。&lt;/p&gt;
+&lt;p&gt;下面我们看看 PHP 呢？&lt;/p&gt;
+&lt;p&gt;下面是测试用 PHP 代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;&amp;lt;?php&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nv"&gt;$i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nv"&gt;$i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="nv"&gt;$st&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;microtime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="nv"&gt;$str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nv"&gt;$j&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nv"&gt;$j&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nv"&gt;$str&lt;/span&gt; &lt;span class="o"&gt;.=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;test&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="nv"&gt;$et&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;microtime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="nb"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;%.7F&lt;/span&gt;&lt;span class="se"&gt;\t&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;$et&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nv"&gt;$st&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+    &lt;span class="nv"&gt;$st&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;microtime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="nv"&gt;$arr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;array&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$j&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="nv"&gt;$j&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;10000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="nv"&gt;$j&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="nv"&gt;$arr&lt;/span&gt;&lt;span class="p"&gt;[]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;test&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="nv"&gt;$str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;implode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;$arr&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="nv"&gt;$et&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;microtime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;true&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="nb"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;%.7F&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;$et&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="nv"&gt;$st&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="cp"&gt;?&amp;gt;&lt;/span&gt;&lt;span class="x"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;结果则如下：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;0&lt;span class="p"&gt;.&lt;/span&gt;0039599   0&lt;span class="p"&gt;.&lt;/span&gt;0461071
+0&lt;span class="p"&gt;.&lt;/span&gt;0070710   0&lt;span class="p"&gt;.&lt;/span&gt;0408709
+0&lt;span class="p"&gt;.&lt;/span&gt;0052779   0&lt;span class="p"&gt;.&lt;/span&gt;0322330
+0&lt;span class="p"&gt;.&lt;/span&gt;0061541   0&lt;span class="p"&gt;.&lt;/span&gt;0294971
+0&lt;span class="p"&gt;.&lt;/span&gt;0051920   0&lt;span class="p"&gt;.&lt;/span&gt;0230181
+0&lt;span class="p"&gt;.&lt;/span&gt;0039949   0&lt;span class="p"&gt;.&lt;/span&gt;0204601
+0&lt;span class="p"&gt;.&lt;/span&gt;0038750   0&lt;span class="p"&gt;.&lt;/span&gt;0246589
+0&lt;span class="p"&gt;.&lt;/span&gt;0043111   0&lt;span class="p"&gt;.&lt;/span&gt;0245950
+0&lt;span class="p"&gt;.&lt;/span&gt;0047810   0&lt;span class="p"&gt;.&lt;/span&gt;0232542
+0&lt;span class="p"&gt;.&lt;/span&gt;0038841   0&lt;span class="p"&gt;.&lt;/span&gt;0230379
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看出，数组合并的效率远低于字符串直接叠加！&lt;/p&gt;
+&lt;p&gt;上一次用 spidermonkey-bin 中的 js 命令做了一下实验，结果在这种条件下，字符串叠加的效率也是远优于数组合并，而不像在 Firefox 中这样。&lt;/p&gt;
+&lt;p&gt;我对于这些脚本语言对字符串和数组的具体实现机理不是很清楚，但可以肯定的是，个个常用的脚本引擎都对字符串处理做了许多优化，我猜测（因为 Ubuntu 下暂时没有 stable 的 Chrome）Chrome 的 V8 引擎中，字符串直接叠加的效率将继续远超数组。因此，我们不应该想当然地认为某某方式效率高，而应该用测试结果说话……&lt;/p&gt;</summary><category term="Javascript"></category><category term="PHP"></category><category term="Benchmark"></category></entry></feed>

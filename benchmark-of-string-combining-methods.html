@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>对字符串加长和数组合并的效率比较</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="./theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie.css"/>
+                <script src="./js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="./">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="./category/blog.html">Blog</a></li>
+                                    <li class="active"><a href="./category/research.html">Research</a></li>
+                                    <li ><a href="./category/script.html">Script</a></li>
+                                    <li ><a href="./category/study.html">Study</a></li>
+                                    <li ><a href="./category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+        <section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="./benchmark-of-string-combining-methods.html" rel="bookmark"
+           title="Permalink to 对字符串加长和数组合并的效率比较">对字符串加长和数组合并的效率比较</a></h1>
+          </header>
+
+    <div class="entry-content">
+      <footer class="post-info">
+        <abbr class="published" title="2009-02-13T12:59:00">
+                五 13 二月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/research.html">Research</a>. </p>
+<p>tags: <a href="./tag/javascript.html">Javascript</a><a href="./tag/php.html">PHP</a><a href="./tag/benchmark.html">Benchmark</a></p>
+</footer><!-- /.post-info -->      <p>对于字符串累加的处理，在 PHP 或 JavaScript 中似乎都可以通过类似 += (.= for PHP) 的方式实现，但有不少人抱怨道，这种方式效率很低。事实上，在我还在用 VB 的时候我就注意到这样的效率很低，当时的效率低是因为累加需要反复申请内存，而解决方法也很简单，就是用 Space$ 命令事先申请内存，然后用 Mid$ 来修改，这样效率大大提高！</p>
+<p>然而在这里就不一样了，PHP 和 JavaScript 的内存机制我不是非常了解，同时我们似乎也不再使用预申请的方法来加速了（似乎也比较困难……），而是直接用上了 += 这样的符号。</p>
+<p>下面就是问题了：这样的效率低吗？</p>
+<p>很多人（包括我自己最初）根据自己的想象，认为使用添加数组内容，最后合并数组为字符串，这样效率比简单的 += 要快，但我经过反复实验认为并不是这样的。首先是 JavaScript，我使用的测试代码如下：</p>
+<div class="codehilite"><pre><span class="kd">function</span> <span class="nx">getTime</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">new</span> <span class="nb">Date</span><span class="p">()).</span><span class="nx">getTime</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">testit</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">st</span><span class="p">,</span> <span class="nx">et</span><span class="p">,</span> <span class="nx">ta</span><span class="p">,</span> <span class="nx">tb</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">st</span> <span class="o">=</span> <span class="nx">getTime</span><span class="p">();</span>
+        <span class="nx">t</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">;</span> <span class="o">++</span><span class="nx">j</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">t</span> <span class="o">+=</span> <span class="s1">&#39;test&#39;</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nx">et</span> <span class="o">=</span> <span class="nx">getTime</span><span class="p">();</span>
+        <span class="nx">ta</span> <span class="o">=</span> <span class="nx">et</span> <span class="o">-</span> <span class="nx">st</span><span class="p">;</span>
+
+        <span class="nx">st</span> <span class="o">=</span> <span class="nx">getTime</span><span class="p">();</span>
+        <span class="nx">a</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="k">for</span> <span class="p">(</span><span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="mi">100000</span><span class="p">;</span> <span class="o">++</span><span class="nx">j</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">a</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="nx">t</span> <span class="o">=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">join</span><span class="p">();</span>
+        <span class="nx">et</span> <span class="o">=</span> <span class="nx">getTime</span><span class="p">();</span>
+        <span class="nx">tb</span> <span class="o">=</span> <span class="nx">et</span> <span class="o">-</span> <span class="nx">st</span><span class="p">;</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">ta</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="nx">tb</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>以下是我在 Firefox 3.0.6 下执行的结果：</p>
+<div class="codehilite"><pre>196 207
+195 215
+199 203
+196 203
+200 197
+110 111
+104 111
+107 111
+108 113
+105 107
+</pre></div>
+
+
+<p>可以看出，+= 的效率并不比数组合并低，甚至略快于数组合并。</p>
+<p>下面我们看看 PHP 呢？</p>
+<p>下面是测试用 PHP 代码：</p>
+<div class="codehilite"><pre><span class="cp">&lt;?php</span>
+<span class="k">for</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="o">++</span><span class="nv">$i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">$st</span> <span class="o">=</span> <span class="nb">microtime</span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+    <span class="nv">$str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$j</span> <span class="o">&lt;</span> <span class="mi">10000</span><span class="p">;</span> <span class="o">++</span><span class="nv">$j</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$str</span> <span class="o">.=</span> <span class="s1">&#39;test&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nv">$et</span> <span class="o">=</span> <span class="nb">microtime</span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s2">&quot;%.7F</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$et</span> <span class="o">-</span> <span class="nv">$st</span><span class="p">);</span>
+
+    <span class="nv">$st</span> <span class="o">=</span> <span class="nb">microtime</span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+    <span class="nv">$arr</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$j</span> <span class="o">&lt;</span> <span class="mi">10000</span><span class="p">;</span> <span class="o">++</span><span class="nv">$j</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nv">$arr</span><span class="p">[]</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nv">$str</span> <span class="o">=</span> <span class="nb">implode</span><span class="p">(</span><span class="nv">$arr</span><span class="p">);</span>
+    <span class="nv">$et</span> <span class="o">=</span> <span class="nb">microtime</span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+    <span class="nb">printf</span><span class="p">(</span><span class="s2">&quot;%.7F</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nv">$et</span> <span class="o">-</span> <span class="nv">$st</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="cp">?&gt;</span><span class="x"></span>
+</pre></div>
+
+
+<p>结果则如下：</p>
+<div class="codehilite"><pre>0<span class="p">.</span>0039599   0<span class="p">.</span>0461071
+0<span class="p">.</span>0070710   0<span class="p">.</span>0408709
+0<span class="p">.</span>0052779   0<span class="p">.</span>0322330
+0<span class="p">.</span>0061541   0<span class="p">.</span>0294971
+0<span class="p">.</span>0051920   0<span class="p">.</span>0230181
+0<span class="p">.</span>0039949   0<span class="p">.</span>0204601
+0<span class="p">.</span>0038750   0<span class="p">.</span>0246589
+0<span class="p">.</span>0043111   0<span class="p">.</span>0245950
+0<span class="p">.</span>0047810   0<span class="p">.</span>0232542
+0<span class="p">.</span>0038841   0<span class="p">.</span>0230379
+</pre></div>
+
+
+<p>可以看出，数组合并的效率远低于字符串直接叠加！</p>
+<p>上一次用 spidermonkey-bin 中的 js 命令做了一下实验，结果在这种条件下，字符串叠加的效率也是远优于数组合并，而不像在 Firefox 中这样。</p>
+<p>我对于这些脚本语言对字符串和数组的具体实现机理不是很清楚，但可以肯定的是，个个常用的脚本引擎都对字符串处理做了许多优化，我猜测（因为 Ubuntu 下暂时没有 stable 的 Chrome）Chrome 的 V8 引擎中，字符串直接叠加的效率将继续远超数组。因此，我们不应该想当然地认为某某方式效率高，而应该用测试结果说话……</p>
+    </div><!-- /.entry-content -->
+    
+  </article>
+</section>
+        <section id="extras" class="body">
+                        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

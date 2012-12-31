@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>鬼の领地 - Optimize</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie.css"/>
+                <script src="../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="../">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="../category/blog.html">Blog</a></li>
+                                    <li ><a href="../category/research.html">Research</a></li>
+                                    <li ><a href="../category/script.html">Script</a></li>
+                                    <li ><a href="../category/study.html">Study</a></li>
+                                    <li ><a href="../category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+                
+            
+
+                            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../optimize-leap-year-checking.html">闰年判断的优化及其他</a></h1> 
+                    <footer class="post-info">
+        <abbr class="published" title="2009-10-10T21:11:00">
+                六 10 十月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/research.html">Research</a>. </p>
+<p>tags: <a href="../tag/c.html">C</a><a href="../tag/optimize.html">Optimize</a></p>
+</footer><!-- /.post-info --><p>今天 Javran 发来短信给了一个短小的论年判断代码，并且问我是否认为有更简单的表达。下面是他最初给的代码：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="p">((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
+</pre></div>
+
+
+<p>一切的探究就从这个代码开始了。</p>
+<p>当然，这个代码是错的，因为疏忽了运算符的优先级，为达到本来的目的，这段代码大概应该这样改（测试代码3）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="p">(((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
+</pre></div>
+
+
+<p>接着，我将其中“!=0”和“==0”可以进一步缩短，现在代码现在变成这样（测试代码4）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">^</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">^</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">);</span>
+</pre></div>
+
+
+<p>OK，对于抑或得到的思路，精简到这里差不多了。Javran 随后又给我了一个代码：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">25</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">4</span><span class="p">))</span> <span class="o">|</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">25</span><span class="p">));</span>
+</pre></div>
+
+
+<p>我说这比我的代码长，他解释说这段代码模的规模比较小，应该快一些。我说再快快不过 if 句。话说，经过实验，这条语句似乎是错误的……</p>
+<p>不过，这让我突然想起了对于 &amp;&amp; 和 || 这样逻辑运算符的优化，我便想看看这个判断最快能至何~</p>
+<p>我们先看看最传统的判断代码（测试代码1）：</p>
+<div class="codehilite"><pre><span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">else</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</pre></div>
+
+
+<p>然后我们做点小小的优化（测试代码2）：</p>
+<div class="codehilite"><pre><span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">))</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="k">else</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</pre></div>
+
+
+<p>接着我就按着这个的判断方式的思路进行一点缩减：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+</pre></div>
+
+
+<p>然后根据前面的方式缩短行（测试代码5）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">||</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">));</span>
+</pre></div>
+
+
+<p>可以看出，这是目前最短的一个判断方式。</p>
+<p>下面我做了30轮，每轮每个代码执行2,000,000次，取最短时间，得到如下结果：</p>
+<div class="codehilite"><pre><span class="mi">1</span><span class="o">:</span> <span class="mf">0.043275</span>
+<span class="mi">2</span><span class="o">:</span> <span class="mf">0.043562</span>
+<span class="mi">3</span><span class="o">:</span> <span class="mf">0.093261</span>
+<span class="mi">4</span><span class="o">:</span> <span class="mf">0.093184</span>
+<span class="mi">5</span><span class="o">:</span> <span class="mf">0.036421</span>
+</pre></div>
+
+
+<p>首先我们观察到，我最后推出的那个最短的式子是最快的，为什么？这是源于逻辑运算符的运算规则：对于 &amp;&amp;，如果前面项为假则不计算后项；对于 ||，如果前项为真则不计算后项。这就像 if 语句的递推作用：不做无谓的计算。而很显然，3和4的速度很慢，因为使用了异或运算，由于异或运算本身无法预测结果，必须把每一项都计算出来才行，因此慢了很多（比传统算法慢了一倍）。事实上按位运算应该都是这样。</p>
+<p>接着我们看到，我对 Javran 最初代码的优化版本效率有一定提高，可能是因为将减法（比较运算实质是做减法）化为了位操作吧。而对传统代码的优化却反而减慢了它，或许是修改规则导致的副作用吧……不过我的最终优化代码还是快了不少，原因不明，或许 if 并不快？</p>
+<p>应该有人会觉得奇怪，为什么要取最短时间，而不是平均值呢？事实上，我想在进行效率测试的时候，应该看最短时间。我们考虑测量效率时引入的误差出现在什么地方：CPU 肯定不会因为某个函数突然超频加速。那么有什么问题呢？因为我们用的都是分时系统，系统会不断的调度不同的线程使用 CPU。误差就在这里：时间会因为任务的切换而变长！因此测量结果只可能比实际值长，不可能比实际值短。所以要取最短时间。</p>
+<p>OK，对闰年的探索暂告一段落。我们突然想起前面 Javran 所给出的“缩小模的规模带来效率提升”的论断。</p>
+<p>因此我的测试程序增加了3个测试代码（测试代码6-8）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">25</span><span class="p">;</span>
+<span class="k">return</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">;</span>
+<span class="k">return</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">;</span>
+</pre></div>
+
+
+<p>得到的结果让人吃惊：</p>
+<div class="codehilite"><pre><span class="mi">6</span><span class="o">:</span> <span class="mf">0.106022</span>
+<span class="mi">7</span><span class="o">:</span> <span class="mf">0.098434</span>
+<span class="mi">8</span><span class="o">:</span> <span class="mf">0.098487</span>
+</pre></div>
+
+
+<p>模25最慢，400次之，而100最快，一样原因不明。看起来难道模的速度和模的数有关系？</p>
+<p>嗯，讨论了这么多，其实最初的问题——闰年判断的简化和优化——比较无聊，因为这段代码本身就不长，也几乎不可能被用于热点处。不过从这个过程中，我们看到了一些有趣的优化方式，虽然不能如算法改进那样降低复杂度，但这里有的时候常数也很重要，不是么？此外，还有一些关于效率测试的讨论。最后，我们还看到了一点神奇的结果，有待进一步探究咯~</p>
+<p>最后贴出测试代码：</p>
+<div class="codehilite"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;sys/time.h&gt;</span>
+
+<span class="cp">#define TRUE  1</span>
+<span class="cp">#define FALSE 0</span>
+
+<span class="cp">#define CHECK(NUM)  if (check##NUM(i) != a) printf(#NUM)</span>
+
+<span class="cp">#define YEAR_AMOUNT 2000000</span>
+<span class="cp">#define TEST(NUM) \</span>
+<span class="cp">  gettimeofday(&amp;tv_s, &amp;tz); \</span>
+<span class="cp">  for (j = 1; j &lt;= YEAR_AMOUNT; ++j) \</span>
+<span class="cp">    check##NUM(j); \</span>
+<span class="cp">  gettimeofday(&amp;tv_e, &amp;tz); \</span>
+<span class="cp">  timeval_subtract(&amp;tv_d, &amp;tv_e, &amp;tv_s); \</span>
+<span class="cp">  if (mtime[NUM].tv_sec == 0 &amp;&amp; \</span>
+<span class="cp">      mtime[NUM].tv_usec == 0 || \</span>
+<span class="cp">      tv_d.tv_sec &lt; mtime[NUM].tv_sec || \</span>
+<span class="cp">      tv_d.tv_sec == mtime[NUM].tv_sec &amp;&amp; \</span>
+<span class="cp">      tv_d.tv_usec &lt; mtime[NUM].tv_usec) \</span>
+<span class="cp">    mtime[NUM] = tv_d; \</span>
+<span class="cp">  printf(#NUM &quot; &quot;)</span>
+
+<span class="kt">int</span> <span class="n">y</span><span class="p">;</span>
+<span class="k">struct</span> <span class="n">timeval</span> <span class="n">mtime</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+<span class="k">struct</span> <span class="n">timezone</span> <span class="n">tz</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">check1</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">FALSE</span><span class="p">;</span>
+  <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">TRUE</span><span class="p">;</span>
+  <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">FALSE</span><span class="p">;</span>
+  <span class="k">else</span> <span class="k">return</span> <span class="n">TRUE</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">check2</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="k">return</span> <span class="n">FALSE</span><span class="p">;</span>
+  <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">))</span> <span class="k">return</span> <span class="n">TRUE</span><span class="p">;</span>
+  <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="k">return</span> <span class="n">TRUE</span><span class="p">;</span>
+  <span class="k">else</span> <span class="k">return</span> <span class="n">FALSE</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">check3</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">check4</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">^</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">^</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">check5</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">||</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">check6</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">25</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">check7</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">check8</span><span class="p">(</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// 时间减法</span>
+<span class="kt">int</span> <span class="n">timeval_subtract</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+       <span class="k">struct</span> <span class="n">timeval</span> <span class="o">*</span><span class="n">result</span><span class="p">,</span> <span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">y</span><span class="p">;</span>
+<span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">&lt;</span> <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_usec</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">nsec</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">-</span> <span class="n">x</span><span class="o">-&gt;</span><span class="n">tv_usec</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000000</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">-=</span> <span class="mi">1000000</span> <span class="o">*</span> <span class="n">nsec</span><span class="p">;</span>
+    <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_sec</span> <span class="o">+=</span> <span class="n">nsec</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">-</span> <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">&gt;</span> <span class="mi">1000000</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">nsec</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">-</span> <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_usec</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000000</span><span class="p">;</span>
+    <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">+=</span> <span class="mi">1000000</span> <span class="o">*</span> <span class="n">nsec</span><span class="p">;</span>
+    <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_sec</span> <span class="o">-=</span> <span class="n">nsec</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="n">result</span><span class="o">-&gt;</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="n">x</span><span class="o">-&gt;</span><span class="n">tv_sec</span> <span class="o">-</span> <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_sec</span><span class="p">;</span>
+  <span class="n">result</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">=</span> <span class="n">x</span><span class="o">-&gt;</span><span class="n">tv_usec</span> <span class="o">-</span> <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_usec</span><span class="p">;</span>
+
+  <span class="k">return</span> <span class="n">x</span><span class="o">-&gt;</span><span class="n">tv_sec</span> <span class="o">&lt;</span> <span class="n">y</span><span class="o">-&gt;</span><span class="n">tv_sec</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">;</span>
+
+  <span class="c1">// 验证代码正确性</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">YEAR_AMOUNT</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">check1</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+    <span class="n">CHECK</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="n">CHECK</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span> <span class="n">CHECK</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span> <span class="n">CHECK</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">Check complete!</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+
+  <span class="c1">// 开始计时</span>
+  <span class="k">struct</span> <span class="n">timeval</span> <span class="n">tv_s</span><span class="p">,</span> <span class="n">tv_e</span><span class="p">;</span>
+  <span class="k">struct</span> <span class="n">timeval</span> <span class="n">tv_d</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d: &quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">6</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">7</span><span class="p">);</span>
+    <span class="n">TEST</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="c1">// 输出结果</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d: %ld.%06ld</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">mtime</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">tv_sec</span><span class="p">,</span> <span class="n">mtime</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">tv_usec</span><span class="p">);</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>很久没写这种东西了……唉……</p>                </article>
+                                    <p class="paginator">
+        Page 1 / 1
+    </p>
+                            </aside><!-- /#featured -->
+                                                </ol><!-- /#posts-list -->
+                        </section><!-- /#content -->
+                    <section id="extras" class="body">
+                        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

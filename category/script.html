@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>鬼の领地 - Script</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie.css"/>
+                <script src="../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="../">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="../category/blog.html">Blog</a></li>
+                                    <li ><a href="../category/research.html">Research</a></li>
+                                    <li class="active"><a href="../category/script.html">Script</a></li>
+                                    <li ><a href="../category/study.html">Study</a></li>
+                                    <li ><a href="../category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+                
+            
+
+                            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../simple-script-for-using-vc6-compiler.html">方便使用 VC6 编译器的小脚本</a></h1> 
+                    <footer class="post-info">
+        <abbr class="published" title="2009-12-30T18:46:00">
+                三 30 十二月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/c.html">C</a><a href="../tag/sh.html">sh</a><a href="../tag/wine.html">wine</a></p>
+</footer><!-- /.post-info --><p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
+<p>于是就有了下面这个小脚本：</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+<span class="c"># - * - coding: UTF-8 - * -</span>
+
+<span class="nv">VC6_DIR</span><span class="o">=</span><span class="s2">&quot;这里写上VC6的安装地址&quot;</span>
+
+<span class="nv">BIN</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Bin&quot;</span>
+<span class="nb">export </span><span class="nv">INCLUDE</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Include&quot;</span>
+<span class="nb">export </span><span class="nv">LIB</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Lib&quot;</span>
+
+<span class="nv">ARGS</span><span class="o">=</span>
+
+<span class="k">while </span><span class="nb">getopts</span> <span class="s2">&quot;o:c&quot;</span> optname
+<span class="k">do</span>
+<span class="k">  case</span> <span class="s2">&quot;$optname&quot;</span> in
+  <span class="s2">&quot;o&quot;</span><span class="o">)</span>
+    <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;$ARGS /o$OPTARG&quot;</span>
+    ;;
+  <span class="s2">&quot;c&quot;</span><span class="o">)</span>
+    <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;$ARGS /c&quot;</span>
+    ;;
+  <span class="k">esac</span>
+<span class="k">done</span>
+
+wine <span class="s2">&quot;$BIN/CL.EXE&quot;</span> <span class="nv">$ARGS</span> <span class="k">${</span><span class="p">@:</span><span class="nv">$OPTIND</span><span class="k">}</span>
+</pre></div>
+
+
+<p>然后把他放在 PATH 里面的某个目录下 (我放在了用户级的 /home/upsuper/bin 里，这个似乎要自己添加就是了)，然后给这个文件加上可执行属性，最后只要在需要的地方执行：</p>
+<div class="codehilite"><pre>vc6 xxx.cpp
+</pre></div>
+
+
+<p>就解决了~</p>
+<p>不过从这个脚本中也可以看出，它的功能还不太完善，不对，是很不完善。目前支持设置输出文件名和阻止执行连接。我很想加入很多其他的参数，不过不知道该怎么弄……</p>
+<p>参考资料：</p>
+<ul>
+<li><a href="http://www.ibm.com/developerworks/cn/linux/l-bash-parameters.html">Linux 技巧: Bash 参数和参数扩展</a></li>
+<li><a href="http://topic.csdn.net/t/20060903/21/4995578.html">vc6.0的INCLUDE 和LIB路径如何修改? – CSDN社区</a></li>
+</ul>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../use-mouse-as-music-player-controller.html" rel="bookmark"
+                           title="Permalink to 鼠标控制音乐播放的小程序">鼠标控制音乐播放的小程序</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-11-03T20:06:00">
+                二 03 十一月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/gtk.html">GTK</a></p>
+</footer><!-- /.post-info -->                <p>看这个标题一定很奇怪：难道我以前控制音乐播放不用鼠标么？这个文章的标题看起来像鼠标刚刚发明的推广期的文章……不过，当然不是这样的！</p>
+<p>其实只是想：如何把我的小本合上放书架上，当作一个音乐播放器+功放，并用我的无线6键鼠当遥控器遥控控制之。</p>
+<p>想想其实还是蛮有意义的功能，这样我做作业的时候可以不用戴耳机，不用用MP3，直接把本当播放器；同时，我不会看到屏幕上的东西，可以安心做作业~再看看我的6键无限鼠，那额外的功能键平时根本不用，也想不出能有什么用……这么好的东西就这样被我浪费了……（话说，拿本当音乐播放器是不是更浪费？）</p>
+<p>说干就干！</p>
+<p>首先提出构想：左键用于暂停和播放，滚轮调节音量，侧边的两个功能键用来切换上一首和下一首。至于右键和中键……再说吧，说不定以后可以扩展更多功能？说不定以后高兴了弄个鼠标手势什么的~嘿嘿</p>
+<p>接下来查找资料。印象中我的 Audacious 是可以用 D-Bus 控制的。简单地查阅了一下相关资料，发现了一个叫做 MPRIS 的播放器控制接口。为此，我还专门学习了一下 python-dbus 的使用。</p>
+<p>插一句话：python-dbus 怎么没有中文教程啊 ...</p>
+                <a class="readmore" href="../use-mouse-as-music-player-controller.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            </ol><!-- /#posts-list -->
+                            <p class="paginator">
+        Page 1 / 1
+    </p>
+                        </section><!-- /#content -->
+                    <section id="extras" class="body">
+                        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

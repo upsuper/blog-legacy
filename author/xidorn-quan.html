@@ -23,6 +23,10 @@
                 <h1><a href="../">鬼の领地 </a></h1>
                 <nav><ul>
                                                                                                     <li ><a href="../category/blog.html">Blog</a></li>
+                                    <li ><a href="../category/research.html">Research</a></li>
+                                    <li ><a href="../category/script.html">Script</a></li>
+                                    <li ><a href="../category/study.html">Study</a></li>
+                                    <li ><a href="../category/technique.html">Technique</a></li>
                                 </ul></nav>
         </header><!-- /#banner -->
                 
@@ -30,8 +34,145 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../new-blog-in-github.html">在 GitHub 上建一个新的博客</a></h1> 
+                    <h1 class="entry-title"><a href="../access-control-of-linux.html">探秘 Linux 权限控制</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2009-07-06T16:08:00">
+                一 06 七月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a><a href="../tag/security.html">Security</a></p>
+</footer><!-- /.post-info --><p>众所周知，Linux 的权限控制虽然很简单，但却十分严格和有效的。（和 Windows 复杂却没用的权限控制形成鲜明对比……）由于最近编写测评机，希望利用 Linux 的高安全性做运行级恶意代码防护，因此就顺带地研究了一下 Linux 的权限控制。经过这次探秘，我对 Linux 的权限有了更新的认识，确实是一个很强大的东西啊！</p>
+<p>由于本人的能力有限，文章中的不足和谬误也请大家多多指教！</p>
+<p>我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux 又是如何确定这些权限的呢？</p>
+<p>说到 Linux 下的权限，一定要先说的是 Linux 下文件权限的控制。在 Linux 下，每个文件都有“所有者”和“所在组”这两个基本属性，而各种权限也是根据所有者、所在组和其他人划分的。每个文件的权限，最简单的情况下可以表示为一个3位八进制数，每一位八进制数表示一系列人的权限，如八进制数751就标示所有者有7的权限，所在组的其他人有5的权限，而既不是所有者也不在所在组的人只有1的权限。至于一位的八进制数表示的意义，我们应该将其进一步转换为3位二进制数，如7对应111，5对应101，1对应001。在这个二进制数上最高位如果为1则表示有读权限，第二位表示写权限，而最后一位表示执行权限。（说到这里我就想再插一句了，Linux 的文件是什么类型或可不可以执行，几乎完全不是根据扩展名，只有有执行权限的文件才能执行，而文件类型也是根据 MIME Type 来决定的。）</p>
+<p>由于 Linux 里面大量的东西都可以转化为文件操作，因此这一简洁明了的设计解决了大多数权限控制的问题。不过文件归文件，那文件夹呢？文件夹应该说也是一类特殊的文件，因此也有权限控制。可对于文件夹，什么样叫“可读”，什么样叫“可写”？最奇怪的是，“可执行”？对于文件夹来说，可读就是可以列举文件列表，也就是 Linux 下的 ls 命令可以列出东西；可写就是可以在文件夹中创建文件（或许有人会问，为什么不是文件夹中文件可写？想一想~）；可执行是比较奇怪的……就是将这个文件夹当作当前文件夹的权限，在 Linux 命令中表现为 cd 是否可以使用。</p>
+<p>好了，说完文件们，再来看看进程们。</p>
+<p>进程的权限控制就更简单了，说白了就一句话：一个进程不能控制与其不是同一个用户下运行的进程，除非被控制的是它的子进程。事实上，一个进程有至少两个 UID 和 GID，它们分别是 EUID、RUID 和 EGID、RGID，其中，E 表示 effective，即所有权限控制参考的是 EUID 和 EGID，进程创建的文件的所有者和所在组也是 EUID 和 EGID 表示的用户和组。那么有人就问，R- 的那两个又是拿来干什么的呢？打酱油？非也，R 表示 real，即运行者的信息。其实一个进程可以改变自己这些 UID 和 GID，而 E- 可以修改为的值为其本身和对应的 R- 的值。不过一个程序在加载的时候 E- 和 R- 的值似乎都根据运行者的信息设置了相同的值，看起来好像没什么用，是吗？我们这里暂且不管他。</p>
+<p>下面我们深入一步，看看进程调度中的 nice 值和进程的资源限制。不知道大家有没有用系统监视器调整过进程的 nice 值，nice 值是 Linux 核心调度进程的一个参考值，nice 值越高表示这个进程越不重要，优先级越低，越可以慢慢来；nice 值越低表示这个进程越重要，越要快些做。调过 nice 的人就知道，将可以控制的某个进程的 nice 值调高（优先级降低）是随便做的，但要把一个进程的 nice 值调低（提高优先级）却要输入密码（进入 root）。做过一些 Linux 相关的编程的人也应该知道，调紧一个可控进程的资源限制是可以随意调的，但调宽松也要由 root 来进行。</p>
+<p>啊，root 出现了！root 是什么？root 对于 Linux 来说就是神。为什么这么说？你上面看到的所有权限控制，在 root 面前都是没用的，root 在 Linux 里可以为所欲为。是的，root 是一个完全不受权限限制的用户，这就是它可怕的地方。比如，我们在前面看到进程只能将 EUID 调整为 EUID 或 RUID，但如果 EUID 为 0（即为 root），这个进程将可以把 EUID 和 RUID 调整为任意值；同样的，这个进程将可以把 EGID 和 RGID 调整为任意值。</p>
+<p>我们知道 Linux 内核加载的时候开始执行的进程 init 是以 root 运行的，而后 init 加载各个启动脚本，把各项服务封入单独的用户运作，最后根据登入信息加载用户进程。这整个过程中，只有由上而下，由 root 到普通用户的过程。理由就是 root 可以任意调整 E- 和 R-。不过如果仅是这样，这个系统估计什么也干不了……</p>
+<p>我在原来的一篇日志中提到过 Linux 创建子进程和运行程序的方法——fork 和 exec* 函数：fork 运行成功返回两次，一次在生成的子进程中返回0，另一次在调用的父进程中返回子进程的 pid。此时，子进程迅速继承了父进程的所有权限、变量等等等等。（Linux 的子进程采用 copy-on-write 技术分享父进程的内存）而我们前面又知道，一个进程只能让自己从 root 到普通用户，优先级从高到低，资源限制从宽到严，就像水只能从高流向低一样。但，人是往高出走的，有时我们需要 root 的权限，问：路在何方？</p>
+<p>就在这时候，sudo 出现了！sudo 在 Linux 中可为无人不知无人不晓。对于 sudo 来说，只要你这个用户在 sudoer 的列表中，输入你的密码就可以让你成为 root 了，或者你输入其他用户的密码可以让你使用其他用户。可是，我们前面刚刚说过，进程只能让自己从 root 变成普通用户，那这 sudo 又是哪冒出来的呢？</p>
+<p>这又要回到文件权限设置了。其实，文件权限实际上有4位八进制数。我们原来说的是3位，那还有一位是什么呢？那一位对应的3个二进制位又是三个开关，分别标示 SUID、SGID 和粘着位。SUID 是什么？它表示 saved set-user-ID，设置了它的程序在运行时有了新的选择——程序所有者的权限！也就是说，EUID 的取值在 EUID、RUID 之外多了一个选择——SUID。事实上，有设置 SUID 的程序在执行时都会自动将 EUID 设置为 SUID，这时 EUID 和 RUID 就不再是同一个值了，我们前面又知道，只要 EUID 为0这个程序就无敌了。这个过程在 fork 中无法完成，我猜想是在 exec* 函数的调用过程中进行的。我们看到，sudo 这个程序的所有者是 root，而又有设置 SUID，这表示，我们一运行 sudo，它就以 root 在运行了！很神奇不是么？通过 SUID 这种特别的机制，原来许多不可能的事成为了可能。SGID 表示的含义亦是类似的；而至于粘着位表示这个文件对于任何人都可写，但只有所有者能删除。</p>
+<p>到这里，我把 Linux 基本的权限控制机制都说了一番。当然，为了更精确地进行权限控制，Linux 内核还引入了 Linux 安全模块，并可以加入 SELinux 和 AppArmor 等增强的安全机制，这让 Linux 更加安全和坚不可摧。（Windows 的权限控制在这些面前简直就是幼稚园小孩在大学教授面前……）这些我就不细致展开了，更多的信息网上很容易找到。</p>
+<p>参考资料：</p>
+<ul>
+<li><a href="http://linuxtoy.org/docs/guide/ch17s08.html">权限管理 – 开源世界旅行手册</a></li>
+<li><a href="http://www.cndw.com/tech/server/2006040430540.asp">Solaris下究竟如何使用setuid/seteuid/setreuid</a></li>
+<li><a href="http://lxr.linux.no/">the Linux Cross Reference</a></li>
+<li><a href="http://tech.ccidnet.com/art/741/20090623/1806969_1.html">Linux系统进程的几个用户ID及其转换方法</a></li>
+<li><a href="http://idcnews.net/html/edu/20070101/291393.html">用户信息 /etc/passwd，getuid(), getpwuid()</a></li>
+<li><a href="http://hi.baidu.com/phps/blog/item/7e3ba44410cf9580b3b7dc81.html">C语言系统资源控制（getrlimit &amp;&amp; setrlimit)</a></li>
+<li><a href="http://bytes.com/groups/python/36126-permission-problem-os-setuid">permission problem with os.setuid</a></li>
+</ul>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../automatically-run-top-in-tty.html" rel="bookmark"
+                           title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-03-31T10:31:00">
+                三 31 三月 2010
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
+<p>既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 <code>top</code> 无疑最方便了~</p>
+<p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
+<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
+                <a class="readmore" href="../automatically-run-top-in-tty.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../benchmark-of-string-combining-methods.html" rel="bookmark"
+                           title="Permalink to 对字符串加长和数组合并的效率比较">对字符串加长和数组合并的效率比较</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-02-13T12:59:00">
+                五 13 二月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/research.html">Research</a>. </p>
+<p>tags: <a href="../tag/javascript.html">Javascript</a><a href="../tag/php.html">PHP</a><a href="../tag/benchmark.html">Benchmark</a></p>
+</footer><!-- /.post-info -->                <p>对于字符串累加的处理，在 PHP 或 JavaScript 中似乎都可以通过类似 += (.= for PHP) 的方式实现，但有不少人抱怨道，这种方式效率很低。事实上，在我还在用 VB 的时候我就注意到这样的效率很低，当时的效率低是因为累加需要反复申请内存，而解决方法也很简单，就是用 Space$ 命令事先申请内存，然后用 Mid$ 来修改，这样效率大大提高！</p>
+<p>然而在这里就不一样了，PHP 和 JavaScript 的内存机制我不是非常了解，同时我们似乎也不再使用预申请的方法来加速了（似乎也比较困难……），而是直接用上了 += 这样的符号。</p>
+<p>下面就是问题了：这样的效率低吗？</p>
+<p>很多人（包括我自己最初）根据自己的想象，认为使用添加数组内容，最后合并数组为字符串，这样效率比简单的 += 要快，但我经过反复实验认为并不是这样的。首先是 JavaScript，我使用的测试代码如下：</p>
+<div class="codehilite"><pre><span class="kd">function</span> <span class="nx">getTime</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">new ...</span></pre></div>
+                <a class="readmore" href="../benchmark-of-string-combining-methods.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../little-vc6-fix.md.html" rel="bookmark"
+                           title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-03-21T10:40:00">
+                日 21 三月 2010
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/c.html">C</a><a href="../tag/microsoft.html">Microsoft</a></p>
+</footer><!-- /.post-info -->                <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
+<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="./simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
+<p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
+<p>在网上一找，还真找到一个简单的方法：</p>
+<div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
+</pre></div>
+
+
+<p>其实我也不知道这个是什么机理 ...</p>
+                <a class="readmore" href="../little-vc6-fix.md.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../new-blog-in-github.html" rel="bookmark"
+                           title="Permalink to 在 GitHub 上建一个新的博客">在 GitHub 上建一个新的博客</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2012-12-31T00:00:00">
                 一 31 十二月 2012
         </abbr>
@@ -41,15 +182,183 @@
         </address>
         <p>In <a href="../category/blog.html">Blog</a>. </p>
 <p>tags: <a href="../tag/blog.html">Blog</a><a href="../tag/github.html">GitHub</a></p>
-</footer><!-- /.post-info --><p>一直想着将技术向博客迁移到 GitHub Pages 上，觉得这样大概可以使我显得更 Geek 一点吧？不过呢，因为一直以来各种事情很多，所以一直没有去做。（其实跟事情多也没什么关系吧，看看你自己都多久没写博客了……）最近看到之前买的虚拟空间快要到期了，因为不怎么打算继续续下去了，所以估量着把里面的东西迁移出来。另一方面，末日的2012过去了，新世界2013年到来了，顺便也就盘算着重新开始写博客？不过果然还是觉得有点麻烦呢……</p>
+</footer><!-- /.post-info -->                <p>一直想着将技术向博客迁移到 GitHub Pages 上，觉得这样大概可以使我显得更 Geek 一点吧？不过呢，因为一直以来各种事情很多，所以一直没有去做。（其实跟事情多也没什么关系吧，看看你自己都多久没写博客了……）最近看到之前买的虚拟空间快要到期了，因为不怎么打算继续续下去了，所以估量着把里面的东西迁移出来。另一方面，末日的2012过去了，新世界2013年到来了，顺便也就盘算着重新开始写博客？不过果然还是觉得有点麻烦呢……</p>
 <p>既然是将这里定位于技术向的博客的话，自然除了关于这个博客本身的事情以外，其他都是技术讨论了。我其实也一直想把技术之外的一些内容单独放在一个博客里，只不过因为太懒了也是一直没去建的，估计在短时间内也不会去做吧，现在都没什么写东西的激情了呢。</p>
 <p>这个博客的标题“鬼の领地”是延续自之前的博客的，它取自我中二的年代，正如我的常用 ID upsuper 一样。同时与之前我的每一个博客一样，我会把过去的内容挑选一些放入新的博客里面。另外原来参与 <a href="https://twitter.com/fanzeyi">@fanzeyi</a> 同学的 <a href="https://github.com/PyCodersCN">PyCodersCN</a> 项目的时候翻译过的一些文章也准备放进来。因为实在懒于写自己的东西（大多只是一些小东西，就不想单独写文章了），所以也考虑不定期的译一些自己觉得不错的文章放在这个博客里，就当练练中英文水平好了（其实是为了充数吧）。</p>
-<p>关于这个博客本身，目前是准备使用 <a href="http://docs.getpelican.com/">Pelican</a> 来组织博客，使用 <a href="http://daringfireball.net/projects/markdown/">Markdown</a> 来编写。很多人都推荐 <a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a>，但我始终是觉得那个东西比 Markdown 蛋疼得多。之后一段时间还有许许多多的工作要做呢这个博客，比如主题啦，之前文章的迁移，还有评论系统什么之类的。总之就这样吧，先用起来好了（虽然我觉得我也未必会坚持很久呢）。</p>                </article>
-                                    <p class="paginator">
-        Page 1 / 1
+<p>关于这个博客本身，目前是准备使用 ...</p>
+                <a class="readmore" href="../new-blog-in-github.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../optimize-leap-year-checking.html" rel="bookmark"
+                           title="Permalink to 闰年判断的优化及其他">闰年判断的优化及其他</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-10-10T21:11:00">
+                六 10 十月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/research.html">Research</a>. </p>
+<p>tags: <a href="../tag/c.html">C</a><a href="../tag/optimize.html">Optimize</a></p>
+</footer><!-- /.post-info -->                <p>今天 Javran 发来短信给了一个短小的论年判断代码，并且问我是否认为有更简单的表达。下面是他最初给的代码：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="p">((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
+</pre></div>
+
+
+<p>一切的探究就从这个代码开始了。</p>
+<p>当然，这个代码是错的，因为疏忽了运算符的优先级，为达到本来的目的，这段代码大概应该这样改（测试代码3）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="p">(((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
+</pre></div>
+
+
+<p>接着，我将其中“!=0”和“==0”可以进一步缩短，现在代码现在变成这样（测试代码4）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">^</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">^</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">);</span>
+</pre></div>
+
+
+<p>OK，对于抑或得到的思路，精简到这里差不多了 ...</p>
+                <a class="readmore" href="../optimize-leap-year-checking.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../php-show-latex-formula.html" rel="bookmark"
+                           title="Permalink to PHP 空间也做 LaTeX 公式显示">PHP 空间也做 LaTeX 公式显示</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-04-03T10:43:00">
+                五 03 四月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/php.html">PHP</a><a href="../tag/latex.html">LaTeX</a></p>
+</footer><!-- /.post-info -->                <p>原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。</p>
+<p>今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！</p>
+<p>要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。</p>
+<p>如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：<a href="http://www.forkosh.com/mimetex.zip">mimetex.zip</a>。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入 ...</p>
+                <a class="readmore" href="../php-show-latex-formula.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../python-variable-type-and-reference.html" rel="bookmark"
+                           title="Permalink to 探索 Python 的变量、类型和引用">探索 Python 的变量、类型和引用</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-06-25T22:23:00">
+                四 25 六月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>我一开始为 Python 的强大和简洁所震撼，看了些 Python 的教程，学了不少东西。前面那些探索就以后再写吧……今天先讲讲今天知道的东西。</p>
+<p>在探索到 Python 函数的参数传递的时候，我不禁赞叹 Python 灵活的参数设计，但慢慢的，开始迷惑与传递参数的修改和返回。</p>
+<p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
+<p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
+                <a class="readmore" href="../python-variable-type-and-reference.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../replacing-css-via-jquery.html" rel="bookmark"
+                           title="Permalink to 基于 jQuery 的 CSS 更换术">基于 jQuery 的 CSS 更换术</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-10-18T20:57:00">
+                日 18 十月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+
+</footer><!-- /.post-info -->                <p>最近开始写一中的新选歌系统，这次要大改，顺便练手。</p>
+<p>想加入换肤功能（不然女生肯定觉得老是蓝色不好……），而且我想到的换肤，最简单的方式就是换 CSS，把界面颜色、图形相关的内容放入皮肤的 CSS 中就很容易了~不过问题是换肤呢？</p>
+<p>正好新系统中因为客户端代码可能非常强大，准备引入 jQuery 框架来简化开发，便学了一些。于是我就想，能不能通过 jQuery 来解决呢？</p>
+<p>首先，我给出了下面这个简单的页面：</p>
+<div class="codehilite"><pre><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot;</span>
+<span class="cp">  &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999 ...</span></pre></div>
+                <a class="readmore" href="../replacing-css-via-jquery.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../simple-script-for-using-vc6-compiler.html" rel="bookmark"
+                           title="Permalink to 方便使用 VC6 编译器的小脚本">方便使用 VC6 编译器的小脚本</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-12-30T18:46:00">
+                三 30 十二月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/c.html">C</a><a href="../tag/sh.html">sh</a><a href="../tag/wine.html">wine</a></p>
+</footer><!-- /.post-info -->                <p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
+<p>于是就有了下面这个小脚本：</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+<span class="c"># - * - coding: UTF-8 - * -</span>
+
+<span class="nv">VC6_DIR</span><span class="o">=</span><span class="s2">&quot;这里写上VC6的安装地址&quot;</span>
+
+<span class="nv">BIN</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Bin&quot;</span>
+<span class="nb">export </span><span class="nv">INCLUDE</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Include&quot;</span>
+<span class="nb">export </span><span class="nv">LIB</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Lib&quot;</span>
+
+<span class="nv">ARGS</span><span class="o">=</span>
+
+<span class="k">while </span><span class="nb">getopts</span> <span class="s2">&quot;o:c&quot;</span> optname
+<span class="k">do</span>
+<span class="k">  case</span> <span class="s2">&quot;$optname&quot;</span> in
+  <span class="s2">&quot;o&quot;</span><span class="o">)</span>
+    <span class="nv">ARGS ...</span></pre></div>
+                <a class="readmore" href="../simple-script-for-using-vc6-compiler.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            </ol><!-- /#posts-list -->
+                            <p class="paginator">
+        Page 1 / 2
+            <a href="../author/xidorn-quan2.html">&raquo;</a>
     </p>
-                            </aside><!-- /#featured -->
-                                                </ol><!-- /#posts-list -->
                         </section><!-- /#content -->
                     <section id="extras" class="body">
                         </section><!-- /#extras -->

@@ -23,6 +23,10 @@
                 <h1><a href="./">鬼の领地 </a></h1>
                 <nav><ul>
                                                                                                     <li ><a href="./category/blog.html">Blog</a></li>
+                                    <li ><a href="./category/research.html">Research</a></li>
+                                    <li ><a href="./category/script.html">Script</a></li>
+                                    <li ><a href="./category/study.html">Study</a></li>
+                                    <li ><a href="./category/technique.html">Technique</a></li>
                                 </ul></nav>
         </header><!-- /#banner -->
                 
@@ -45,11 +49,295 @@
 <p>既然是将这里定位于技术向的博客的话，自然除了关于这个博客本身的事情以外，其他都是技术讨论了。我其实也一直想把技术之外的一些内容单独放在一个博客里，只不过因为太懒了也是一直没去建的，估计在短时间内也不会去做吧，现在都没什么写东西的激情了呢。</p>
 <p>这个博客的标题“鬼の领地”是延续自之前的博客的，它取自我中二的年代，正如我的常用 ID upsuper 一样。同时与之前我的每一个博客一样，我会把过去的内容挑选一些放入新的博客里面。另外原来参与 <a href="https://twitter.com/fanzeyi">@fanzeyi</a> 同学的 <a href="https://github.com/PyCodersCN">PyCodersCN</a> 项目的时候翻译过的一些文章也准备放进来。因为实在懒于写自己的东西（大多只是一些小东西，就不想单独写文章了），所以也考虑不定期的译一些自己觉得不错的文章放在这个博客里，就当练练中英文水平好了（其实是为了充数吧）。</p>
 <p>关于这个博客本身，目前是准备使用 <a href="http://docs.getpelican.com/">Pelican</a> 来组织博客，使用 <a href="http://daringfireball.net/projects/markdown/">Markdown</a> 来编写。很多人都推荐 <a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a>，但我始终是觉得那个东西比 Markdown 蛋疼得多。之后一段时间还有许许多多的工作要做呢这个博客，比如主题啦，之前文章的迁移，还有评论系统什么之类的。总之就这样吧，先用起来好了（虽然我觉得我也未必会坚持很久呢）。</p>                </article>
-                                    <p class="paginator">
-        Page 1 / 1
-    </p>
                             </aside><!-- /#featured -->
-                                                </ol><!-- /#posts-list -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./automatically-run-top-in-tty.html" rel="bookmark"
+                           title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-03-31T10:31:00">
+                三 31 三月 2010
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
+<p>既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 <code>top</code> 无疑最方便了~</p>
+<p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
+<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
+                <a class="readmore" href="./automatically-run-top-in-tty.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./little-vc6-fix.md.html" rel="bookmark"
+                           title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-03-21T10:40:00">
+                日 21 三月 2010
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/c.html">C</a><a href="./tag/microsoft.html">Microsoft</a></p>
+</footer><!-- /.post-info -->                <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
+<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="./simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
+<p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
+<p>在网上一找，还真找到一个简单的方法：</p>
+<div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
+</pre></div>
+
+
+<p>其实我也不知道这个是什么机理 ...</p>
+                <a class="readmore" href="./little-vc6-fix.md.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./simple-script-for-using-vc6-compiler.html" rel="bookmark"
+                           title="Permalink to 方便使用 VC6 编译器的小脚本">方便使用 VC6 编译器的小脚本</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-12-30T18:46:00">
+                三 30 十二月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/script.html">Script</a>. </p>
+<p>tags: <a href="./tag/c.html">C</a><a href="./tag/sh.html">sh</a><a href="./tag/wine.html">wine</a></p>
+</footer><!-- /.post-info -->                <p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
+<p>于是就有了下面这个小脚本：</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+<span class="c"># - * - coding: UTF-8 - * -</span>
+
+<span class="nv">VC6_DIR</span><span class="o">=</span><span class="s2">&quot;这里写上VC6的安装地址&quot;</span>
+
+<span class="nv">BIN</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Bin&quot;</span>
+<span class="nb">export </span><span class="nv">INCLUDE</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Include&quot;</span>
+<span class="nb">export </span><span class="nv">LIB</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Lib&quot;</span>
+
+<span class="nv">ARGS</span><span class="o">=</span>
+
+<span class="k">while </span><span class="nb">getopts</span> <span class="s2">&quot;o:c&quot;</span> optname
+<span class="k">do</span>
+<span class="k">  case</span> <span class="s2">&quot;$optname&quot;</span> in
+  <span class="s2">&quot;o&quot;</span><span class="o">)</span>
+    <span class="nv">ARGS ...</span></pre></div>
+                <a class="readmore" href="./simple-script-for-using-vc6-compiler.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./use-mouse-as-music-player-controller.html" rel="bookmark"
+                           title="Permalink to 鼠标控制音乐播放的小程序">鼠标控制音乐播放的小程序</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-11-03T20:06:00">
+                二 03 十一月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/script.html">Script</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a><a href="./tag/gtk.html">GTK</a></p>
+</footer><!-- /.post-info -->                <p>看这个标题一定很奇怪：难道我以前控制音乐播放不用鼠标么？这个文章的标题看起来像鼠标刚刚发明的推广期的文章……不过，当然不是这样的！</p>
+<p>其实只是想：如何把我的小本合上放书架上，当作一个音乐播放器+功放，并用我的无线6键鼠当遥控器遥控控制之。</p>
+<p>想想其实还是蛮有意义的功能，这样我做作业的时候可以不用戴耳机，不用用MP3，直接把本当播放器；同时，我不会看到屏幕上的东西，可以安心做作业~再看看我的6键无限鼠，那额外的功能键平时根本不用，也想不出能有什么用……这么好的东西就这样被我浪费了……（话说，拿本当音乐播放器是不是更浪费？）</p>
+<p>说干就干！</p>
+<p>首先提出构想：左键用于暂停和播放，滚轮调节音量，侧边的两个功能键用来切换上一首和下一首。至于右键和中键……再说吧，说不定以后可以扩展更多功能？说不定以后高兴了弄个鼠标手势什么的~嘿嘿</p>
+<p>接下来查找资料。印象中我的 Audacious 是可以用 D-Bus 控制的。简单地查阅了一下相关资料，发现了一个叫做 MPRIS 的播放器控制接口。为此，我还专门学习了一下 python-dbus 的使用。</p>
+<p>插一句话：python-dbus 怎么没有中文教程啊 ...</p>
+                <a class="readmore" href="./use-mouse-as-music-player-controller.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./replacing-css-via-jquery.html" rel="bookmark"
+                           title="Permalink to 基于 jQuery 的 CSS 更换术">基于 jQuery 的 CSS 更换术</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-10-18T20:57:00">
+                日 18 十月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+
+</footer><!-- /.post-info -->                <p>最近开始写一中的新选歌系统，这次要大改，顺便练手。</p>
+<p>想加入换肤功能（不然女生肯定觉得老是蓝色不好……），而且我想到的换肤，最简单的方式就是换 CSS，把界面颜色、图形相关的内容放入皮肤的 CSS 中就很容易了~不过问题是换肤呢？</p>
+<p>正好新系统中因为客户端代码可能非常强大，准备引入 jQuery 框架来简化开发，便学了一些。于是我就想，能不能通过 jQuery 来解决呢？</p>
+<p>首先，我给出了下面这个简单的页面：</p>
+<div class="codehilite"><pre><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot;</span>
+<span class="cp">  &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999 ...</span></pre></div>
+                <a class="readmore" href="./replacing-css-via-jquery.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./optimize-leap-year-checking.html" rel="bookmark"
+                           title="Permalink to 闰年判断的优化及其他">闰年判断的优化及其他</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-10-10T21:11:00">
+                六 10 十月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/research.html">Research</a>. </p>
+<p>tags: <a href="./tag/c.html">C</a><a href="./tag/optimize.html">Optimize</a></p>
+</footer><!-- /.post-info -->                <p>今天 Javran 发来短信给了一个短小的论年判断代码，并且问我是否认为有更简单的表达。下面是他最初给的代码：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="p">((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
+</pre></div>
+
+
+<p>一切的探究就从这个代码开始了。</p>
+<p>当然，这个代码是错的，因为疏忽了运算符的优先级，为达到本来的目的，这段代码大概应该这样改（测试代码3）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="p">(((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
+</pre></div>
+
+
+<p>接着，我将其中“!=0”和“==0”可以进一步缩短，现在代码现在变成这样（测试代码4）：</p>
+<div class="codehilite"><pre><span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">^</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">^</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">);</span>
+</pre></div>
+
+
+<p>OK，对于抑或得到的思路，精简到这里差不多了 ...</p>
+                <a class="readmore" href="./optimize-leap-year-checking.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./what-to-do-if-linux-crash.html" rel="bookmark"
+                           title="Permalink to Linux 死机了该怎么办？">Linux 死机了该怎么办？</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-07-28T23:20:00">
+                二 28 七月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/study.html">Study</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>Linux 会死机么？我可以很肯定地说，会！如何？很简单，<a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9">fork 炸弹</a>就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。</p>
+<p>Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？</p>
+<p>不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的 ...</p>
+                <a class="readmore" href="./what-to-do-if-linux-crash.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./access-control-of-linux.html" rel="bookmark"
+                           title="Permalink to 探秘 Linux 权限控制">探秘 Linux 权限控制</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-07-06T16:08:00">
+                一 06 七月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/study.html">Study</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a><a href="./tag/security.html">Security</a></p>
+</footer><!-- /.post-info -->                <p>众所周知，Linux 的权限控制虽然很简单，但却十分严格和有效的。（和 Windows 复杂却没用的权限控制形成鲜明对比……）由于最近编写测评机，希望利用 Linux 的高安全性做运行级恶意代码防护，因此就顺带地研究了一下 Linux 的权限控制。经过这次探秘，我对 Linux 的权限有了更新的认识，确实是一个很强大的东西啊！</p>
+<p>由于本人的能力有限，文章中的不足和谬误也请大家多多指教！</p>
+<p>我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux ...</p>
+                <a class="readmore" href="./access-control-of-linux.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./python-variable-type-and-reference.html" rel="bookmark"
+                           title="Permalink to 探索 Python 的变量、类型和引用">探索 Python 的变量、类型和引用</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-06-25T22:23:00">
+                四 25 六月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/study.html">Study</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>我一开始为 Python 的强大和简洁所震撼，看了些 Python 的教程，学了不少东西。前面那些探索就以后再写吧……今天先讲讲今天知道的东西。</p>
+<p>在探索到 Python 函数的参数传递的时候，我不禁赞叹 Python 灵活的参数设计，但慢慢的，开始迷惑与传递参数的修改和返回。</p>
+<p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
+<p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
+                <a class="readmore" href="./python-variable-type-and-reference.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            </ol><!-- /#posts-list -->
+                            <p class="paginator">
+        Page 1 / 2
+            <a href="./index2.html">&raquo;</a>
+    </p>
                         </section><!-- /#content -->
                     <section id="extras" class="body">
                         </section><!-- /#extras -->
