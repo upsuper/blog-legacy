@@ -1,7 +1,7 @@
 Title: 探索 Python 的变量、类型和引用
 Date: 2009-06-25 22:23
 Tags: Python
-Category: Research
+Category: Study
 Slug: python-variable-type-and-reference
 Author: Xidorn Quan
 
