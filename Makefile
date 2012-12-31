@@ -36,11 +36,9 @@ help:
 	@echo '                                                                       '
 
 
-html: clean $(OUTPUTDIR)/index.html
-	@echo 'Done'
-
-$(OUTPUTDIR)/%.html:
+html: clean
 	$(PELICAN) $(INPUTDIR) -o $(OUTPUTDIR) -s $(CONFFILE) $(PELICANOPTS)
+	@echo 'Done'
 
 clean:
 	find $(OUTPUTDIR) -mindepth 1 -delete
