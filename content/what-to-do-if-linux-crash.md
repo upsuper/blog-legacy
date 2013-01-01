@@ -1,7 +1,7 @@
 Title: Linux 死机了该怎么办？
 Date: 2009-07-28 23:20
 Tags: Linux
-Category: Study
+Category: Technique
 Slug: what-to-do-if-linux-crash
 Author: Xidorn Quan
 
