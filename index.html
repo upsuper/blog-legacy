@@ -59,6 +59,235 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="./implementing-a-generator-yield-in-a-python-c-extension.html" rel="bookmark"
+                           title="Permalink to [翻译] 使用 Python C 扩展实现生成器/yield">[翻译] 使用 Python C 扩展实现生成器/yield</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-04-13T21:53:00">
+                五 13 四月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a><a href="./tag/c.html">C</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://eli.thegreenplace.net/2012/04/05/implementing-a-generatoryield-in-a-python-c-extension/">Implementing a generator/yield in a Python C extension</a></p>
+<p>在 Python 中，生成器 (generator) 是一个返回迭代器 (iterator) 对象的函数。虽然有很多方法来实现，不过最优雅和常用的形式是使用 <code>yield</code> 语句。</p>
+<p>举例来说，这是一个简单的例子：</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">pyrevgen</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">seq</span><span class="p">)):</span>
+        <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span>
+</pre></div>
+
+
+<p>这里的 <code>pyrevgen</code> 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：</p>
+<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b ...</span></pre></div>
+                <a class="readmore" href="./implementing-a-generator-yield-in-a-python-c-extension.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./exploring-python-code-objects.html" rel="bookmark"
+                           title="Permalink to [翻译] 探索 Python 代码对象">[翻译] 探索 Python 代码对象</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-31T05:50:00">
+                六 31 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/study.html">Study</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://late.am/post/2012/03/26/exploring-python-code-objects">Exploring Python Code Objects</a></p>
+<p>由于受到 <a href="http://www.dabeaz.com/">David Beazley</a> 在 <a href="https://us.pycon.org/2012/">PyCon</a> 上的 <a href="http://pyvideo.org/video/659/keynote-david-beazley">Keynote</a> 的启发，近来我四处学习与 Python 代码对象 (code object) 相关的内容。我并没有什么特别的利器，也没有专门的任务去解决 (至今为止？)，所以请将这篇文章看做一些也许有趣的记录和随笔 (如果没意思的话，抱歉)。</p>
+<p><em>免责声明：</em>这篇文章是关于 CPython 2.7 的，虽然其中的大部分对于其他的 CPython 版本应该也是正确的 (包括 3.x)。但我不保证它在 PyPy、Jython、IronPython 等实现上是正确和适用的。</p>
+<h2>第0步：是什么？</h2>
+<p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人 ...</p>
+                <a class="readmore" href="./exploring-python-code-objects.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./python-internals-how-callables-work.html" rel="bookmark"
+                           title="Permalink to [翻译] Python 内部：可调用对象是如何工作的">[翻译] Python 内部：可调用对象是如何工作的</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-25T09:10:00">
+                日 25 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/study.html">Study</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a><a href="./tag/c.html">C</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://eli.thegreenplace.net/2012/03/23/python-internals-how-callables-work/">Python internals: how callables work</a></p>
+<p><em>【这篇文章所描述的 Python 版本是 3.x，更确切地说，是 CPython 3.3 alpha。】</em></p>
+<p>在 Python 中，可调用对象 (callable) 的概念是十分基本的。当我们说什么东西是“可调用的”，马上可以联想到的显而易见的答案便是函数。无论是用户定义的函数 (你所编写的) 还是内置的函数 (经常是在 CPython 解析器内由 C 实现的)，他们总是用来被调用的，不是么？</p>
+<p>当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 <code>__call__</code> 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的 ...</p>
+                <a class="readmore" href="./python-internals-how-callables-work.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./dynamic-modify-cpu-number.html" rel="bookmark"
+                           title="Permalink to 动态切换 Linux 使用的 CPU 数量">动态切换 Linux 使用的 CPU 数量</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-10-19T14:04:00">
+                三 19 十月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/script.html">Script</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>由于要测试一些代码，其运行结果会受到多核并行的影响，所以希望能够调整使用的 CPU 数量。网络上之前看到的方法是在内核的启动参数上添加一个 <code>maxcpus</code>，但是如果这样的话每切换一次都要重启一次，是在太麻烦了。想想 Linux 应该是很强大的，所以可以动态修改 CPU 数量才对。</p>
+<p>无意中看到 Linux 代码的 <code>Documentation</code> 文件夹下有个文件叫做 <code>cpu-hotplug.txt</code>，于是就看了一下，发现可以在 <code>/sys/devices/system/cpu</code> 看到代表各 CPU 的文件夹按照 <code>cpuX</code> 的命名方式，如 <code>cpu0</code>、<code>cpu1</code>、<code>cpu2</code> 等。这些文件夹里面有一个 <code>online</code> 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 <code>root</code> 权限哦。</p>
+<p>因为我只要在单核和多核之间切换 ...</p>
+                <a class="readmore" href="./dynamic-modify-cpu-number.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./setup-lxr.html" rel="bookmark"
+                           title="Permalink to 安装配置 LXR">安装配置 LXR</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-10-03T15:07:00">
+                一 03 十月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>专业课学习操作系统，满心欢喜地以为可以是 Linux 代码导读，结果选用了一本八十年代的教材，介绍 UNIX v6 的。于是自己从图书馆借来了内核开发的入门读物《Linux 内核设计与实现》。既然是介绍内核的书，自然少不了代码，但是书中又不可能将每个提到的代码的相关信息全部写出来，这时就得自己去查看代码。查看代码的话，虽然 Linux 的代码可以很容易地得到，但那来看终归有些麻烦，各种调用需要查找半天。于是想起了很有名的一个网站 <a href="http://lxr.linux.no">LXR</a>，Linux 交叉引用。这个网站好是好，就是网络原因速度太慢，于是就想自己装一个。</p>
+<p>先说一句，下面的安装环境都是64位 Gentoo。</p>
+<p>最开始找到了 <a href="http://sourceforge.net/projects/lxr/">LXR Cross Referencer</a> 这个项目，一看最后更新时间还挺新，看起来是一直都还在维护的。然后在 Gentoo 的网站上查到 LXR 是可以直接用 portage 安装的，于是安装，安装相关的包，最后放弃了。出于什么原因我也不记得了 ...</p>
+                <a class="readmore" href="./setup-lxr.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./gmail-super-sub-mailbox.html" rel="bookmark"
+                           title="Permalink to Gmail 的超级子邮箱功能">Gmail 的超级子邮箱功能</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-03-06T22:11:00">
+                日 06 三月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/gmail.html">Gmail</a></p>
+</footer><!-- /.post-info -->                <p>如果你也用 Gmail，他可以让你轻易拥有无限多的子邮箱，发给这些邮箱也就等于发给你的邮箱。这有什么意义呢？很简单，你可以在每个地方注册的时候都使用不同的邮箱，这样当你收到垃圾邮件广告邮件，你就可以知道是从哪里来的了~再结合 Gmail 强大的过滤器，你也可以针对性的进行屏蔽~</p>
+<p>Gmail 事实上支持两种方式来扩张你的邮箱，第一种是在你的用户名后面加上“+”和任意字符串，比如我的邮箱 <code>quanxunzhen@gmail.com</code>（我这邮箱无所谓了已经嗯），如果我想要识别不同的网站，比如豆瓣，我可以直接在豆瓣的注册邮箱里填写 <code>quanxunzhen+douban@gmail.com</code>，所有验证邮件都可以发给我，我如果不想申请一个新邮箱却想注册个豆瓣小号，也可以再写 <code>quanxunzhen+douban2@gmail.com</code>。</p>
+<p>当然，支持上面的方式固然是最好的，但遗憾的是很多网站并不支持带加号的邮箱，那就要稍稍麻烦点了。</p>
+<p>根据 <a href="http://fanfou.com/fanzeyi">@fanzeyi</a> 的说法，Gmail 的邮箱是自动忽略点，也就是“.”的，也就是说对于我上面的邮箱，如果写为 <code>quan ...</code></p>
+                <a class="readmore" href="./gmail-super-sub-mailbox.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./advanced-prompt-of-bash.html" rel="bookmark"
+                           title="Permalink to 增强版的 Bash 提示符">增强版的 Bash 提示符</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-02-28T14:40:00">
+                一 28 二月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/bash.html">bash</a></p>
+</footer><!-- /.post-info -->                <p>上周六参加了好久没有参加的的 SHLUG 月聚，恰逢 <a href="http://imtx.me/">TualatriX</a> 也带团来上海。自由讨论的时候，我看到 TualatriX 的终端十分色彩斑斓，便询问，他给我们展示了他的 bash 的两个特色功能：1、当上一条命令返回结果不为0时显示返回值并高亮显示提示符；2、自动检测git分支。他说这个在他的博客上都可以找到，今天想起来去找了一下，发现了这篇：<a href="http://imtx.me/archives/1298.html">史上最强的PS1 | I’m TualatriX</a>，感觉满强大的。</p>
+<p>不过，说实话，我觉的这个还不够完美，原因有二：一是我发觉高亮显示的时候那个配色相当不怎么样，二是我本来就讨厌提示符太长，这样一下就更长了……于是我就想起 ghosTM 的 zsh 里面有一些信息是放在右边的，我想把返回值也扔右边去，并且是右边上移一行。此外，由于很少使用 <code>git</code>，所以检测 <code>git</code> 分支的功能也就不需要了~</p>
+<p>先放一个最终效果图：
+<img alt="Bash 提示符的最终效果图" src="./static/images/advanced-prompt-of-bash-01.png" /></p>
+<p>然后直接写出了我的新的 <code>PS1</code>：</p>
+<div class="codehilite"><pre><span class="nv">PS1 ...</span></pre></div>
+                <a class="readmore" href="./advanced-prompt-of-bash.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./usb-key-for-linux.html" rel="bookmark"
+                           title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-01-14T20:25:00">
+                五 14 一月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a><a href="./tag/security.html">Security</a></p>
+</footer><!-- /.post-info -->                <p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
+<p>这个<a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f">问题提出</a>后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~</p>
+<p>其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令</p>
+<div class="codehilite"><pre>sudo apt-get install pamusb-tools
+</pre></div>
+
+
+<p>直接安装。当然如果你连终端也懒得打开，可以直接点击这里：<a href="apt:pamusb-tools">安装 pamusb-tools</a>。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。</p>
+<p>另外，Fedora 源里有 pam_usb 包，Arch ...</p>
+                <a class="readmore" href="./usb-key-for-linux.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="./automatically-run-top-in-tty.html" rel="bookmark"
                            title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
                 </header>
@@ -79,258 +308,6 @@
 <p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
 <div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
                 <a class="readmore" href="./automatically-run-top-in-tty.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./little-vc6-fix.md.html" rel="bookmark"
-                           title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2010-03-21T10:40:00">
-                日 21 三月 2010
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/technique.html">Technique</a>. </p>
-<p>tags: <a href="./tag/c.html">C</a><a href="./tag/microsoft.html">Microsoft</a></p>
-</footer><!-- /.post-info -->                <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
-<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="./simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
-<p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
-<p>在网上一找，还真找到一个简单的方法：</p>
-<div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
-</pre></div>
-
-
-<p>其实我也不知道这个是什么机理 ...</p>
-                <a class="readmore" href="./little-vc6-fix.md.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./simple-script-for-using-vc6-compiler.html" rel="bookmark"
-                           title="Permalink to 方便使用 VC6 编译器的小脚本">方便使用 VC6 编译器的小脚本</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-12-30T18:46:00">
-                三 30 十二月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/script.html">Script</a>. </p>
-<p>tags: <a href="./tag/c.html">C</a><a href="./tag/sh.html">sh</a><a href="./tag/wine.html">wine</a></p>
-</footer><!-- /.post-info -->                <p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
-<p>于是就有了下面这个小脚本：</p>
-<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
-<span class="c"># - * - coding: UTF-8 - * -</span>
-
-<span class="nv">VC6_DIR</span><span class="o">=</span><span class="s2">&quot;这里写上VC6的安装地址&quot;</span>
-
-<span class="nv">BIN</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Bin&quot;</span>
-<span class="nb">export </span><span class="nv">INCLUDE</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Include&quot;</span>
-<span class="nb">export </span><span class="nv">LIB</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Lib&quot;</span>
-
-<span class="nv">ARGS</span><span class="o">=</span>
-
-<span class="k">while </span><span class="nb">getopts</span> <span class="s2">&quot;o:c&quot;</span> optname
-<span class="k">do</span>
-<span class="k">  case</span> <span class="s2">&quot;$optname&quot;</span> in
-  <span class="s2">&quot;o&quot;</span><span class="o">)</span>
-    <span class="nv">ARGS ...</span></pre></div>
-                <a class="readmore" href="./simple-script-for-using-vc6-compiler.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./use-mouse-as-music-player-controller.html" rel="bookmark"
-                           title="Permalink to 鼠标控制音乐播放的小程序">鼠标控制音乐播放的小程序</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-11-03T20:06:00">
-                二 03 十一月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/script.html">Script</a>. </p>
-<p>tags: <a href="./tag/python.html">Python</a><a href="./tag/gtk.html">GTK</a></p>
-</footer><!-- /.post-info -->                <p>看这个标题一定很奇怪：难道我以前控制音乐播放不用鼠标么？这个文章的标题看起来像鼠标刚刚发明的推广期的文章……不过，当然不是这样的！</p>
-<p>其实只是想：如何把我的小本合上放书架上，当作一个音乐播放器+功放，并用我的无线6键鼠当遥控器遥控控制之。</p>
-<p>想想其实还是蛮有意义的功能，这样我做作业的时候可以不用戴耳机，不用用MP3，直接把本当播放器；同时，我不会看到屏幕上的东西，可以安心做作业~再看看我的6键无限鼠，那额外的功能键平时根本不用，也想不出能有什么用……这么好的东西就这样被我浪费了……（话说，拿本当音乐播放器是不是更浪费？）</p>
-<p>说干就干！</p>
-<p>首先提出构想：左键用于暂停和播放，滚轮调节音量，侧边的两个功能键用来切换上一首和下一首。至于右键和中键……再说吧，说不定以后可以扩展更多功能？说不定以后高兴了弄个鼠标手势什么的~嘿嘿</p>
-<p>接下来查找资料。印象中我的 Audacious 是可以用 D-Bus 控制的。简单地查阅了一下相关资料，发现了一个叫做 MPRIS 的播放器控制接口。为此，我还专门学习了一下 python-dbus 的使用。</p>
-<p>插一句话：python-dbus 怎么没有中文教程啊 ...</p>
-                <a class="readmore" href="./use-mouse-as-music-player-controller.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./replacing-css-via-jquery.html" rel="bookmark"
-                           title="Permalink to 基于 jQuery 的 CSS 更换术">基于 jQuery 的 CSS 更换术</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-10-18T20:57:00">
-                日 18 十月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/technique.html">Technique</a>. </p>
-
-</footer><!-- /.post-info -->                <p>最近开始写一中的新选歌系统，这次要大改，顺便练手。</p>
-<p>想加入换肤功能（不然女生肯定觉得老是蓝色不好……），而且我想到的换肤，最简单的方式就是换 CSS，把界面颜色、图形相关的内容放入皮肤的 CSS 中就很容易了~不过问题是换肤呢？</p>
-<p>正好新系统中因为客户端代码可能非常强大，准备引入 jQuery 框架来简化开发，便学了一些。于是我就想，能不能通过 jQuery 来解决呢？</p>
-<p>首先，我给出了下面这个简单的页面：</p>
-<div class="codehilite"><pre><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot;</span>
-<span class="cp">  &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
-<span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999 ...</span></pre></div>
-                <a class="readmore" href="./replacing-css-via-jquery.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./optimize-leap-year-checking.html" rel="bookmark"
-                           title="Permalink to 闰年判断的优化及其他">闰年判断的优化及其他</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-10-10T21:11:00">
-                六 10 十月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/research.html">Research</a>. </p>
-<p>tags: <a href="./tag/c.html">C</a><a href="./tag/optimize.html">Optimize</a></p>
-</footer><!-- /.post-info -->                <p>今天 Javran 发来短信给了一个短小的论年判断代码，并且问我是否认为有更简单的表达。下面是他最初给的代码：</p>
-<div class="codehilite"><pre><span class="k">return</span> <span class="p">((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
-</pre></div>
-
-
-<p>一切的探究就从这个代码开始了。</p>
-<p>当然，这个代码是错的，因为疏忽了运算符的优先级，为达到本来的目的，这段代码大概应该这样改（测试代码3）：</p>
-<div class="codehilite"><pre><span class="k">return</span> <span class="p">(((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
-</pre></div>
-
-
-<p>接着，我将其中“!=0”和“==0”可以进一步缩短，现在代码现在变成这样（测试代码4）：</p>
-<div class="codehilite"><pre><span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">^</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">^</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">);</span>
-</pre></div>
-
-
-<p>OK，对于抑或得到的思路，精简到这里差不多了 ...</p>
-                <a class="readmore" href="./optimize-leap-year-checking.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./what-to-do-if-linux-crash.html" rel="bookmark"
-                           title="Permalink to Linux 死机了该怎么办？">Linux 死机了该怎么办？</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-07-28T23:20:00">
-                二 28 七月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/study.html">Study</a>. </p>
-<p>tags: <a href="./tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info -->                <p>Linux 会死机么？我可以很肯定地说，会！如何？很简单，<a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9">fork 炸弹</a>就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。</p>
-<p>Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？</p>
-<p>不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的 ...</p>
-                <a class="readmore" href="./what-to-do-if-linux-crash.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./access-control-of-linux.html" rel="bookmark"
-                           title="Permalink to 探秘 Linux 权限控制">探秘 Linux 权限控制</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-07-06T16:08:00">
-                一 06 七月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/study.html">Study</a>. </p>
-<p>tags: <a href="./tag/linux.html">Linux</a><a href="./tag/security.html">Security</a></p>
-</footer><!-- /.post-info -->                <p>众所周知，Linux 的权限控制虽然很简单，但却十分严格和有效的。（和 Windows 复杂却没用的权限控制形成鲜明对比……）由于最近编写测评机，希望利用 Linux 的高安全性做运行级恶意代码防护，因此就顺带地研究了一下 Linux 的权限控制。经过这次探秘，我对 Linux 的权限有了更新的认识，确实是一个很强大的东西啊！</p>
-<p>由于本人的能力有限，文章中的不足和谬误也请大家多多指教！</p>
-<p>我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux ...</p>
-                <a class="readmore" href="./access-control-of-linux.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./python-variable-type-and-reference.html" rel="bookmark"
-                           title="Permalink to 探索 Python 的变量、类型和引用">探索 Python 的变量、类型和引用</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-06-25T22:23:00">
-                四 25 六月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/study.html">Study</a>. </p>
-<p>tags: <a href="./tag/python.html">Python</a></p>
-</footer><!-- /.post-info -->                <p>我一开始为 Python 的强大和简洁所震撼，看了些 Python 的教程，学了不少东西。前面那些探索就以后再写吧……今天先讲讲今天知道的东西。</p>
-<p>在探索到 Python 函数的参数传递的时候，我不禁赞叹 Python 灵活的参数设计，但慢慢的，开始迷惑与传递参数的修改和返回。</p>
-<p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
-<p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
-                <a class="readmore" href="./python-variable-type-and-reference.html">read more</a>
                                 </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->

@@ -34,8 +34,70 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../simple-script-for-using-vc6-compiler.html">方便使用 VC6 编译器的小脚本</a></h1> 
+                    <h1 class="entry-title"><a href="../dynamic-modify-cpu-number.html">动态切换 Linux 使用的 CPU 数量</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2011-10-19T14:04:00">
+                三 19 十月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info --><p>由于要测试一些代码，其运行结果会受到多核并行的影响，所以希望能够调整使用的 CPU 数量。网络上之前看到的方法是在内核的启动参数上添加一个 <code>maxcpus</code>，但是如果这样的话每切换一次都要重启一次，是在太麻烦了。想想 Linux 应该是很强大的，所以可以动态修改 CPU 数量才对。</p>
+<p>无意中看到 Linux 代码的 <code>Documentation</code> 文件夹下有个文件叫做 <code>cpu-hotplug.txt</code>，于是就看了一下，发现可以在 <code>/sys/devices/system/cpu</code> 看到代表各 CPU 的文件夹按照 <code>cpuX</code> 的命名方式，如 <code>cpu0</code>、<code>cpu1</code>、<code>cpu2</code> 等。这些文件夹里面有一个 <code>online</code> 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 <code>root</code> 权限哦。</p>
+<p>因为我只要在单核和多核之间切换，所以我写了两个脚本放在 <code>/usr/local/sbin</code> 里面：</p>
+<p>singlecore</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+
+<span class="nv">cpus_dir</span><span class="o">=</span><span class="s2">&quot;/sys/devices/system/cpu&quot;</span>
+
+<span class="k">for </span>cpu in <span class="k">$(</span>ls <span class="s2">&quot;$cpus_dir&quot;</span> | grep <span class="s1">&#39;cpu[0-9]\+&#39;</span><span class="k">)</span>
+<span class="k">do</span>
+<span class="k">    </span><span class="nv">cpu_online</span><span class="o">=</span><span class="s2">&quot;$cpus_dir/$cpu/online&quot;</span>
+    <span class="k">if</span> <span class="o">[[</span> -e <span class="s2">&quot;$cpu_online&quot;</span> <span class="o">&amp;&amp;</span> <span class="k">$(</span>cat <span class="nv">$cpu_online</span><span class="k">)</span> <span class="o">=</span> 1 <span class="o">]]</span>
+    <span class="k">then</span>
+<span class="k">        </span><span class="nb">echo </span>0 &gt; <span class="s2">&quot;$cpu_online&quot;</span>
+    <span class="k">fi</span>
+<span class="k">done</span>
+</pre></div>
+
+
+<p>multicore</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+
+<span class="nv">cpus_dir</span><span class="o">=</span><span class="s2">&quot;/sys/devices/system/cpu&quot;</span>
+
+<span class="k">for </span>cpu in <span class="k">$(</span>ls <span class="s2">&quot;$cpus_dir&quot;</span> | grep <span class="s1">&#39;cpu[0-9]\+&#39;</span><span class="k">)</span>
+<span class="k">do</span>
+<span class="k">    </span><span class="nv">cpu_online</span><span class="o">=</span><span class="s2">&quot;$cpus_dir/$cpu/online&quot;</span>
+    <span class="k">if</span> <span class="o">[[</span> -e <span class="s2">&quot;$cpu_online&quot;</span> <span class="o">&amp;&amp;</span> <span class="k">$(</span>cat <span class="nv">$cpu_online</span><span class="k">)</span> <span class="o">=</span> 0 <span class="o">]]</span>
+    <span class="k">then</span>
+<span class="k">        </span><span class="nb">echo </span>1 &gt; <span class="s2">&quot;$cpu_online&quot;</span>
+    <span class="k">fi</span>
+<span class="k">done</span>
+</pre></div>
+
+
+<p>之后需要切换的时候，只要运行 <code>sudo singlecore</code> 或者 <code>sudo multicore</code> 就可以了~</p>
+<p>顺便说一句，我当时在想，如果我禁用了所有的 CPU 会怎么样呢？结果发现 <code>cpu0</code> 是没有 <code>online</code> 文件的，也就是 Linux 至少保证一个 CPU 处于可用状态。</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../simple-script-for-using-vc6-compiler.html" rel="bookmark"
+                           title="Permalink to 方便使用 VC6 编译器的小脚本">方便使用 VC6 编译器的小脚本</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2009-12-30T18:46:00">
                 三 30 十二月 2009
         </abbr>
@@ -45,7 +107,7 @@
         </address>
         <p>In <a href="../category/script.html">Script</a>. </p>
 <p>tags: <a href="../tag/c.html">C</a><a href="../tag/sh.html">sh</a><a href="../tag/wine.html">wine</a></p>
-</footer><!-- /.post-info --><p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
+</footer><!-- /.post-info -->                <p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
 <p>于是就有了下面这个小脚本：</p>
 <div class="codehilite"><pre><span class="c">#!/bin/bash</span>
 <span class="c"># - * - coding: UTF-8 - * -</span>
@@ -62,36 +124,11 @@
 <span class="k">do</span>
 <span class="k">  case</span> <span class="s2">&quot;$optname&quot;</span> in
   <span class="s2">&quot;o&quot;</span><span class="o">)</span>
-    <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;$ARGS /o$OPTARG&quot;</span>
-    ;;
-  <span class="s2">&quot;c&quot;</span><span class="o">)</span>
-    <span class="nv">ARGS</span><span class="o">=</span><span class="s2">&quot;$ARGS /c&quot;</span>
-    ;;
-  <span class="k">esac</span>
-<span class="k">done</span>
-
-wine <span class="s2">&quot;$BIN/CL.EXE&quot;</span> <span class="nv">$ARGS</span> <span class="k">${</span><span class="p">@:</span><span class="nv">$OPTIND</span><span class="k">}</span>
-</pre></div>
-
-
-<p>然后把他放在 PATH 里面的某个目录下 (我放在了用户级的 /home/upsuper/bin 里，这个似乎要自己添加就是了)，然后给这个文件加上可执行属性，最后只要在需要的地方执行：</p>
-<div class="codehilite"><pre>vc6 xxx.cpp
-</pre></div>
-
-
-<p>就解决了~</p>
-<p>不过从这个脚本中也可以看出，它的功能还不太完善，不对，是很不完善。目前支持设置输出文件名和阻止执行连接。我很想加入很多其他的参数，不过不知道该怎么弄……</p>
-<p>参考资料：</p>
-<ul>
-<li><a href="http://www.ibm.com/developerworks/cn/linux/l-bash-parameters.html">Linux 技巧: Bash 参数和参数扩展</a></li>
-<li><a href="http://topic.csdn.net/t/20060903/21/4995578.html">vc6.0的INCLUDE 和LIB路径如何修改? – CSDN社区</a></li>
-</ul>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+    <span class="nv">ARGS ...</span></pre></div>
+                <a class="readmore" href="../simple-script-for-using-vc6-compiler.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    

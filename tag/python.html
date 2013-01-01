@@ -34,8 +34,289 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../use-mouse-as-music-player-controller.html">鼠标控制音乐播放的小程序</a></h1> 
+                    <h1 class="entry-title"><a href="../implementing-a-generator-yield-in-a-python-c-extension.html">[翻译] 使用 Python C 扩展实现生成器/yield</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2012-04-13T21:53:00">
+                五 13 四月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/c.html">C</a></p>
+</footer><!-- /.post-info --><p>原文：<a href="http://eli.thegreenplace.net/2012/04/05/implementing-a-generatoryield-in-a-python-c-extension/">Implementing a generator/yield in a Python C extension</a></p>
+<p>在 Python 中，生成器 (generator) 是一个返回迭代器 (iterator) 对象的函数。虽然有很多方法来实现，不过最优雅和常用的形式是使用 <code>yield</code> 语句。</p>
+<p>举例来说，这是一个简单的例子：</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">pyrevgen</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">seq</span><span class="p">)):</span>
+        <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span>
+</pre></div>
+
+
+<p>这里的 <code>pyrevgen</code> 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：</p>
+<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]):</span>
+<span class="o">...</span> <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="mi">0</span> <span class="n">c</span>
+<span class="mi">1</span> <span class="n">b</span>
+<span class="mi">2</span> <span class="n">a</span>
+</pre></div>
+
+
+<p>这篇文章的目的是说明使用 Python 的 C API ，换言之，在一个 C 的扩展模块中，如何实现相同的功能。我们主要关注的是 Python 3，对于 Python 2 来说原理是一样的，不过细节上可能会有一些差异。</p>
+<p><code>yield</code> 是 Python 中一个非常强大的东西，在 C 中没有与之对应的能力 (除非你使用一些协程宏函数，不过这不在我们这里的讨论范围之内)。因此我们不得不显式地返回一个迭代器对象，并且处理迭代的细节。</p>
+<p>在 Python 中写一个<a href="http://docs.python.org/dev/library/stdtypes.html#iterator-types">迭代器</a>我们需要创建一个实现了 <code>__iter__</code> 和 <code>__next__</code> 特殊函数的类，C API 中与之对应的方法分别是 <code>tp_iter</code> 和 <code>tp_iternext</code>。</p>
+<p>我们来创建一个叫做 <code>spam</code> 的新的扩展模块，他将导出一个对象——<code>revgen</code> 类型，这个类型可以像上面的 Python 代码一样被调用。换句话说，Python 可以这样使用它：</p>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">spam</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">spam</span><span class="o">.</span><span class="n">revgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+</pre></div>
+
+
+<p>我们开始吧 (在这篇文章的末尾会给出完整代码的链接)：</p>
+<div class="codehilite"><pre><span class="n">PyTypeObject</span> <span class="n">PyRevgen_Type</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">PyVarObject_HEAD_INIT</span><span class="p">(</span><span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="s">&quot;revgen&quot;</span><span class="p">,</span>                       <span class="cm">/* tp_name */</span>
+    <span class="k">sizeof</span><span class="p">(</span><span class="n">RevgenState</span><span class="p">),</span>            <span class="cm">/* tp_basicsize */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_itemsize */</span>
+    <span class="p">(</span><span class="n">destructor</span><span class="p">)</span><span class="n">revgen_dealloc</span><span class="p">,</span>     <span class="cm">/* tp_dealloc */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_print */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getattr */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_setattr */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_reserved */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_repr */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_number */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_sequence */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_mapping */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_hash */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_call */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_str */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getattro */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_setattro */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_buffer */</span>
+    <span class="n">Py_TPFLAGS_DEFAULT</span><span class="p">,</span>             <span class="cm">/* tp_flags */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_doc */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_traverse */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_clear */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_richcompare */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_weaklistoffset */</span>
+    <span class="n">PyObject_SelfIter</span><span class="p">,</span>              <span class="cm">/* tp_iter */</span>
+    <span class="p">(</span><span class="n">iternextfunc</span><span class="p">)</span><span class="n">revgen_next</span><span class="p">,</span>      <span class="cm">/* tp_iternext */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_methods */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_members */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getset */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_base */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_dict */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_descr_get */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_descr_set */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_dictoffset */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_init */</span>
+    <span class="n">PyType_GenericAlloc</span><span class="p">,</span>            <span class="cm">/* tp_alloc */</span>
+    <span class="n">revgen_new</span><span class="p">,</span>                     <span class="cm">/* tp_new */</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="n">PyModuleDef</span> <span class="n">spammodule</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
+    <span class="s">&quot;spam&quot;</span><span class="p">,</span>                  <span class="cm">/* m_name */</span>
+    <span class="s">&quot;&quot;</span><span class="p">,</span>                      <span class="cm">/* m_doc */</span>
+    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>                      <span class="cm">/* m_size */</span>
+<span class="p">};</span>
+
+    <span class="n">PyMODINIT_FUNC</span>
+<span class="nf">PyInit_spam</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">PyObject</span> <span class="o">*</span><span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">spammodule</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">PyType_Ready</span><span class="p">(</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">Py_INCREF</span><span class="p">((</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">);</span>
+    <span class="n">PyModule_AddObject</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&quot;revgen&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这是创建一个新模块和一个新类型的标准代码。模块初始化函数 (<code>PyInit_spam</code>) 添加了一个叫做 <code>revgen</code> 的对象到模块，这个对象是类型 <code>PyRevgen_Type</code>。通过调用这个对象，用户可以创建这个类型的一个新实例。</p>
+<p>下面的结构 (<code>PyObject</code> 的子类) 是将用来表示 <code>revgen</code> 的实例的：</p>
+<div class="codehilite"><pre><span class="cm">/* RevgenState - reverse generator instance.</span>
+<span class="cm"> *</span>
+<span class="cm"> * sequence: ref to the sequence that&#39;s being iterated</span>
+<span class="cm"> * seq_index: index of the next element in the sequence to yield</span>
+<span class="cm"> * enum_index: next enumeration index to yield</span>
+<span class="cm"> *</span>
+<span class="cm"> * In pseudo-notation, the yielded tuple at each step is:</span>
+<span class="cm"> *  enum_index, sequence[seq_index]</span>
+<span class="cm"> *</span>
+<span class="cm">*/</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">PyObject_HEAD</span>
+    <span class="n">Py_ssize_t</span> <span class="n">seq_index</span><span class="p">,</span> <span class="n">enum_index</span><span class="p">;</span>
+    <span class="n">PyObject</span> <span class="o">*</span><span class="n">sequence</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">RevgenState</span><span class="p">;</span>
+</pre></div>
+
+
+<p>这里需要特别点出的一个非常有趣的东西是对我们在迭代的序列的引用。每当 <code>next</code> 被调用时，迭代器需要它来访问那个序列。</p>
+<p>这里是用来创建新的实例的那个函数，它被赋给了 <code>tp_new</code>。注意我们没有给 <code>tp_init</code> 赋值，所以默认的“什么都不做”的初始化器将会被使用：</p>
+<div class="codehilite"><pre><span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+<span class="nf">revgen_new</span><span class="p">(</span><span class="n">PyTypeObject</span> <span class="o">*</span><span class="n">type</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">PyObject</span> <span class="o">*</span><span class="n">sequence</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PyArg_UnpackTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;revgen&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sequence</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="cm">/* We expect an argument that supports the sequence protocol */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PySequence_Check</span><span class="p">(</span><span class="n">sequence</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_TypeError</span><span class="p">,</span> <span class="s">&quot;revgen() expects a sequence&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">Py_ssize_t</span> <span class="n">len</span> <span class="o">=</span> <span class="n">PySequence_Length</span><span class="p">(</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="cm">/* Create a new RevgenState and initialize its state - pointing to the last</span>
+<span class="cm">     * index in the sequence.</span>
+<span class="cm">    */</span>
+    <span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span> <span class="o">=</span> <span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="p">)</span><span class="n">type</span><span class="o">-&gt;</span><span class="n">tp_alloc</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rgstate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="n">Py_INCREF</span><span class="p">(</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">sequence</span><span class="p">;</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">=</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="n">rgstate</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这是个非常直观的 <code>tp_new</code> 实现，它保证了要迭代的对象是一个序列，同时初始化了状态，准备好第一次 <code>next</code> 调用时将要返回的最后一个元素。与之对应的销毁函数也并没有什么特别的：</p>
+<div class="codehilite"><pre><span class="k">static</span> <span class="kt">void</span>
+<span class="nf">revgen_dealloc</span><span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* We need XDECREF here because when the generator is exhausted,</span>
+<span class="cm">     * rgstate-&gt;sequence is cleared with Py_CLEAR which sets it to NULL.</span>
+<span class="cm">    */</span>
+    <span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="n">Py_TYPE</span><span class="p">(</span><span class="n">rgstate</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">tp_free</span><span class="p">(</span><span class="n">rgstate</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>现在剩下的就是看看 <code>tp_iter</code> 和 <code>tp_iternext</code> 的实现。因为我们的类型是一个迭代器，我们可以简单的将 <code>PyObject_SelfIter</code> 函数赋给 <code>tp_iter</code>。<code>tp_iternext</code> 才是发生有趣的事情的地方。它正是执行内置函数 <code>next</code> 时真正调用的东西，也是 <code>for</code> 循环使用迭代器时调用的：</p>
+<div class="codehilite"><pre><span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+<span class="nf">revgen_next</span><span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* seq_index &lt; 0 means that the generator is exhausted.</span>
+<span class="cm">     * Returning NULL in this case is enough. The next() builtin will raise the</span>
+<span class="cm">     * StopIteration error for us.</span>
+<span class="cm">    */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">PyObject</span> <span class="o">*</span><span class="n">elem</span> <span class="o">=</span> <span class="n">PySequence_GetItem</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">,</span>
+                                            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span><span class="p">);</span>
+        <span class="cm">/* Exceptions from PySequence_GetItem are propagated to the caller</span>
+<span class="cm">         * (elem will be NULL so we also return NULL).</span>
+<span class="cm">        */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">PyObject</span> <span class="o">*</span><span class="n">result</span> <span class="o">=</span> <span class="n">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;lO&quot;</span><span class="p">,</span> <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span><span class="p">,</span> <span class="n">elem</span><span class="p">);</span>
+            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span><span class="o">--</span><span class="p">;</span>
+            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span><span class="o">++</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* The reference to the sequence is cleared in the first generator call</span>
+<span class="cm">     * after its exhaustion (after the call that returned the last element).</span>
+<span class="cm">     * Py_CLEAR will be harmless for subsequent calls since it&#39;s idempotent</span>
+<span class="cm">     * on NULL.</span>
+<span class="cm">    */</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>在这里，应该被牢记的最重要的一点是迭代的状态应该被完全地保存在迭代器对象中。相比与 Python 实现，这需要多做许多工作。Python 的 <code>yield</code> 语句让我们可以用 Python 解析器自己来为我们保存这些状态。这也是为什么<a href="http://eli.thegreenplace.net/2009/08/29/co-routines-as-an-alternative-to-state-machines/">在 Python 中协程如此强大</a>——几乎没有显式的状态需要手工保存。正如我在文章一开始就提到的，在 C 扩展中我们没有这样的奢侈品，所以我们不得不自己动手。由于现在这个例子还非常简单，而且是线性的，这还相对简单一些。在更复杂的例子中，为了正确地设计状态对象和 <code>tp_iternext</code> 函数，需要更用心。</p>
+<p>这篇文章的完整代码以及简单的 Python 测试脚本，还有用于使用 distutils 构建这个扩展的 <code>setup.py</code> 都可以<a href="http://eli.thegreenplace.net/wp-content/uploads/2012/04/generator_c_ext.tgz">在这里下载</a>。</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../exploring-python-code-objects.html" rel="bookmark"
+                           title="Permalink to [翻译] 探索 Python 代码对象">[翻译] 探索 Python 代码对象</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-31T05:50:00">
+                六 31 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://late.am/post/2012/03/26/exploring-python-code-objects">Exploring Python Code Objects</a></p>
+<p>由于受到 <a href="http://www.dabeaz.com/">David Beazley</a> 在 <a href="https://us.pycon.org/2012/">PyCon</a> 上的 <a href="http://pyvideo.org/video/659/keynote-david-beazley">Keynote</a> 的启发，近来我四处学习与 Python 代码对象 (code object) 相关的内容。我并没有什么特别的利器，也没有专门的任务去解决 (至今为止？)，所以请将这篇文章看做一些也许有趣的记录和随笔 (如果没意思的话，抱歉)。</p>
+<p><em>免责声明：</em>这篇文章是关于 CPython 2.7 的，虽然其中的大部分对于其他的 CPython 版本应该也是正确的 (包括 3.x)。但我不保证它在 PyPy、Jython、IronPython 等实现上是正确和适用的。</p>
+<h2>第0步：是什么？</h2>
+<p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人 ...</p>
+                <a class="readmore" href="../exploring-python-code-objects.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../python-internals-how-callables-work.html" rel="bookmark"
+                           title="Permalink to [翻译] Python 内部：可调用对象是如何工作的">[翻译] Python 内部：可调用对象是如何工作的</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-25T09:10:00">
+                日 25 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/c.html">C</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://eli.thegreenplace.net/2012/03/23/python-internals-how-callables-work/">Python internals: how callables work</a></p>
+<p><em>【这篇文章所描述的 Python 版本是 3.x，更确切地说，是 CPython 3.3 alpha。】</em></p>
+<p>在 Python 中，可调用对象 (callable) 的概念是十分基本的。当我们说什么东西是“可调用的”，马上可以联想到的显而易见的答案便是函数。无论是用户定义的函数 (你所编写的) 还是内置的函数 (经常是在 CPython 解析器内由 C 实现的)，他们总是用来被调用的，不是么？</p>
+<p>当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 <code>__call__</code> 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的 ...</p>
+                <a class="readmore" href="../python-internals-how-callables-work.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../use-mouse-as-music-player-controller.html" rel="bookmark"
+                           title="Permalink to 鼠标控制音乐播放的小程序">鼠标控制音乐播放的小程序</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2009-11-03T20:06:00">
                 二 03 十一月 2009
         </abbr>
@@ -45,225 +326,17 @@
         </address>
         <p>In <a href="../category/script.html">Script</a>. </p>
 <p>tags: <a href="../tag/python.html">Python</a><a href="../tag/gtk.html">GTK</a></p>
-</footer><!-- /.post-info --><p>看这个标题一定很奇怪：难道我以前控制音乐播放不用鼠标么？这个文章的标题看起来像鼠标刚刚发明的推广期的文章……不过，当然不是这样的！</p>
+</footer><!-- /.post-info -->                <p>看这个标题一定很奇怪：难道我以前控制音乐播放不用鼠标么？这个文章的标题看起来像鼠标刚刚发明的推广期的文章……不过，当然不是这样的！</p>
 <p>其实只是想：如何把我的小本合上放书架上，当作一个音乐播放器+功放，并用我的无线6键鼠当遥控器遥控控制之。</p>
 <p>想想其实还是蛮有意义的功能，这样我做作业的时候可以不用戴耳机，不用用MP3，直接把本当播放器；同时，我不会看到屏幕上的东西，可以安心做作业~再看看我的6键无限鼠，那额外的功能键平时根本不用，也想不出能有什么用……这么好的东西就这样被我浪费了……（话说，拿本当音乐播放器是不是更浪费？）</p>
 <p>说干就干！</p>
 <p>首先提出构想：左键用于暂停和播放，滚轮调节音量，侧边的两个功能键用来切换上一首和下一首。至于右键和中键……再说吧，说不定以后可以扩展更多功能？说不定以后高兴了弄个鼠标手势什么的~嘿嘿</p>
 <p>接下来查找资料。印象中我的 Audacious 是可以用 D-Bus 控制的。简单地查阅了一下相关资料，发现了一个叫做 MPRIS 的播放器控制接口。为此，我还专门学习了一下 python-dbus 的使用。</p>
-<p>插一句话：python-dbus 怎么没有中文教程啊！英文教程看得还是蛮吃力的……</p>
-<p>连接播放器的代码很简单：</p>
-<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">dbus</span>
-<span class="n">bus</span> <span class="o">=</span> <span class="n">dbus</span><span class="o">.</span><span class="n">SessionBus</span><span class="p">()</span>
-<span class="n">player</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&#39;org.mpris.audacious&#39;</span><span class="p">,</span> <span class="s">&#39;/Player&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<p>其中 <code>org.mpris.audacious</code> 指的是 audacious，支持 MPRIS 的其他播放器还可以有如下：</p>
-<ul>
-<li><code>org.mpris.bmp</code></li>
-<li><code>org.mpris.vlc</code></li>
-<li><code>org.mpris.xmms2</code></li>
-</ul>
-<p>至于那个 <code>/Player</code> 指的是我们要获取的是一个叫 <code>Player</code> 的对象，用于控制播放器。在 MPRIS 中除了 <code>Player</code> 以外，还有根对象 (<code>/</code>) 和 <code>TrackList</code> 对象 (<code>/TrackList</code>) 两个，具体的用法其文档里详细说明。这里我只用到了 <code>Player</code> 对象……</p>
-<p>看看 <code>Player</code> 对象的方法还挺多，这里我用了这几个：</p>
-<ul>
-<li><code>Next()</code> - 切换到下一首歌曲</li>
-<li><code>Prev()</code> - 切换到上一首歌曲</li>
-<li><code>Pause()</code> - 暂停/继续</li>
-<li><code>Play()</code> - 播放歌曲</li>
-<li><code>VolumeGet()</code> - 获取当前音量</li>
-<li><code>VolumeSet()</code> - 设置音量</li>
-</ul>
-<p>根据前面写的需求，这些已经足够了~</p>
-<p>怎么用这些？很简单嘛！就像平时在 Python 里面调用类的方法一样~类型转换？不，那完全不需要你关心！</p>
-<p>Python 程序拥有控制播放器的能力了，可是鼠标呢？如何捕获鼠标的动作呢？</p>
-<p>想想……屏幕都关了……你还能指望他为你显示什么呢？干脆建立一个窗口把整个屏幕盖住算了！然后让他截获鼠标事件。</p>
-<p>快速学习了一下 pygtk 的用法（其实就是照着 Hello World 打了一遍），差不多就知道怎么用了。窗口的建立代码大约如下：</p>
-<div class="codehilite"><pre><span class="n">window</span> <span class="o">=</span> <span class="n">gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="n">gtk</span><span class="o">.</span><span class="n">WINDOW_TOPLEVEL</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">fullscreen</span><span class="p">()</span>
-<span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">gtk</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
-</pre></div>
-
-
-<p>这段代码很好理解了，第一行就是创建窗口对象，第二行令其全屏，第三行设置其显示，第四行开始 GTK 的主循环。</p>
-<p>下面就是鼠标事件的问题了~添加事件用的是类似下面的代码：</p>
-<div class="codehilite"><pre><span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;key-press-event&#39;</span><span class="p">,</span> <span class="n">key_press</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;destroy&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">widget</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">:</span> <span class="n">gtk</span><span class="o">.</span><span class="n">main_quit</span><span class="p">())</span>
-</pre></div>
-
-
-<p>第一个是注册了键盘按键的事件捕获，将 <code>key-press-event</code> 事件绑定上 <code>key_press</code> 这个函数，而把窗口的销毁事件 <code>destroy</code> 连接到退出 GTK 主循环。说一句废话，连接事件的语句要放在 <code>gtk.main()</code> 之前……<code>key_press</code> 主要用来实现当点击 escape 时退出：</p>
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">key_press</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">gdk</span><span class="o">.</span><span class="n">keyval_name</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">keyval</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;Escape&#39;</span><span class="p">:</span>
-    <span class="n">window</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
-</pre></div>
-
-
-<p>好了，下面是鼠标点击事件 <code>button-press-event</code>：</p>
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">button_press</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">print</span> <span class="n">event</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;button-press-event&#39;</span><span class="p">,</span> <span class="n">button_press</span><span class="p">)</span>
-</pre></div>
-
-
-<p>试试？不行的！差了一番后，发现 Window 这个东西默认是不打开鼠标点击的事件捕获的，逼近大家很少会点窗口本身，都是点里面的按钮什么的……下面的代码要求窗口打开鼠标点击事件的捕获：</p>
-<div class="codehilite"><pre><span class="n">window</span><span class="o">.</span><span class="n">add_events</span><span class="p">(</span><span class="n">gtk</span><span class="o">.</span><span class="n">gdk</span><span class="o">.</span><span class="n">BUTTON_PRESS_MASK</span><span class="p">)</span>
-</pre></div>
-
-
-<p>接下来就可以了~<code>event.button</code> 表示的是点击的键是哪个。检查了一下，左键是1，右键是3，中键是2，功能键1是8，功能键2是9。滚轮呢？</p>
-<p>原来滚轮有自己的事件 <code>scroll</code>。</p>
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">scroll</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">print</span> <span class="n">event</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;scroll-event&#39;</span><span class="p">,</span> <span class="n">scroll</span><span class="p">)</span>
-</pre></div>
-
-
-<p>直接可以用了。识别滚轮方向的是 <code>event.direction</code>，应该是 <code>gtk.gdk.SCROLL_UP</code>、<code>SCROLL_DOWN</code>、<code>SCROLL_LEFT</code>、<code>SCROLL_RIGHT</code> 其中的一个。</p>
-<p>下面根据最初的设想，把他们都拼起来就形成了最初的版本：</p>
-<div class="codehilite"><pre><span class="c">#!/usr/bin/env python</span>
-
-<span class="kn">import</span> <span class="nn">pygtk</span>
-<span class="n">pygtk</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;2.0&#39;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">gtk</span>
-<span class="kn">from</span> <span class="nn">gtk</span> <span class="kn">import</span> <span class="n">gdk</span>
-
-<span class="kn">import</span> <span class="nn">dbus</span>
-
-<span class="k">def</span> <span class="nf">button_press</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="n">button</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">button</span>
-  <span class="k">if</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">player</span><span class="o">.</span><span class="n">GetStatus</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-      <span class="n">player</span><span class="o">.</span><span class="n">Play</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">player</span><span class="o">.</span><span class="n">Pause</span><span class="p">()</span>
-  <span class="k">elif</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">Prev</span><span class="p">()</span>
-  <span class="k">elif</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">Next</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">scroll</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">SCROLL_UP</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">VolumeSet</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">VolumeGet</span><span class="p">()</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
-  <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">SCROLL_DOWN</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">VolumeSet</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">VolumeGet</span><span class="p">()</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">key_press</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">gdk</span><span class="o">.</span><span class="n">keyval_name</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">keyval</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;Escape&#39;</span><span class="p">:</span>
-    <span class="n">window</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
-
-<span class="n">bus</span> <span class="o">=</span> <span class="n">dbus</span><span class="o">.</span><span class="n">SessionBus</span><span class="p">()</span>
-<span class="n">player</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&#39;org.mpris.audacious&#39;</span><span class="p">,</span> <span class="s">&#39;/Player&#39;</span><span class="p">)</span>
-
-<span class="n">window</span> <span class="o">=</span> <span class="n">gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="n">gtk</span><span class="o">.</span><span class="n">WINDOW_TOPLEVEL</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;destroy&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">widget</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">:</span> <span class="n">gtk</span><span class="o">.</span><span class="n">main_quit</span><span class="p">())</span>
-<span class="n">window</span><span class="o">.</span><span class="n">add_events</span><span class="p">(</span><span class="n">gdk</span><span class="o">.</span><span class="n">BUTTON_PRESS_MASK</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;button-press-event&#39;</span><span class="p">,</span> <span class="n">button_press</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;key-press-event&#39;</span><span class="p">,</span> <span class="n">key_press</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;scroll-event&#39;</span><span class="p">,</span> <span class="n">scroll</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">fullscreen</span><span class="p">()</span>
-<span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">gtk</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
-</pre></div>
-
-
-<p>OK 看起来不错了，也能控制了。可是，作为一个程序员，怎么能不考虑各种意外呢？试想，如果我们控制着控制着，突然，一个不明真相的窗口弹了出来怎么办呢？！这是一个问题……</p>
-<p>最容易想到的方法：把这个窗口永久置顶！</p>
-<p>事实上也确实找到了这么个方法，就是把窗体注册成 dock。我们知道 dock 是需要永久置顶的~</p>
-<p>用如下方法可以让窗体变成 Dock：</p>
-<div class="codehilite"><pre><span class="n">window</span><span class="o">.</span><span class="n">set_type_hint</span><span class="p">(</span><span class="n">gtk</span><span class="o">.</span><span class="n">gdk</span><span class="o">.</span><span class="n">WINDOW_TYPE_HINT_DOCK</span><span class="p">)</span>
-</pre></div>
-
-
-<p>但是问题又来了：dock 似乎没法接受键盘输入。因为 dock 只是形式上覆盖，并且可以拦截一切在他上面发生的鼠标事件，可键盘焦点就未必在他那里了~</p>
-<p>那么我们就不要键盘事件了吧~于是我就把键盘退出给删了，改成了双击退出~查了下资料，双击事件也通过 <code>button-press-event</code> 发送的，必须根据 <code>event.type</code> 来判断是单击、双击还是三击。此外，双击和三击中的每一次点击都会引发一次单击事件。</p>
-<p>OK，于是我们把 button_press 函数改成下面这样：</p>
-<div class="codehilite"><pre><span class="k">def</span> <span class="nf">button_press</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">_2BUTTON_PRESS</span><span class="p">:</span>
-    <span class="n">window</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
-    <span class="k">return</span>
-  <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">_3BUTTON_PRESS</span><span class="p">:</span>
-    <span class="k">return</span>
-  <span class="n">button</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">button</span>
-  <span class="k">if</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">player</span><span class="o">.</span><span class="n">GetStatus</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-      <span class="n">player</span><span class="o">.</span><span class="n">Play</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">player</span><span class="o">.</span><span class="n">Pause</span><span class="p">()</span>
-  <span class="k">elif</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">Prev</span><span class="p">()</span>
-  <span class="k">elif</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">Next</span><span class="p">()</span>
-</pre></div>
-
-
-<p>然后删掉键盘处理，最后就成了这样：</p>
-<div class="codehilite"><pre><span class="c">#!/usr/bin/env python</span>
-
-<span class="kn">import</span> <span class="nn">pygtk</span>
-<span class="n">pygtk</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&#39;2.0&#39;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">gtk</span>
-<span class="kn">from</span> <span class="nn">gtk</span> <span class="kn">import</span> <span class="n">gdk</span>
-
-<span class="kn">import</span> <span class="nn">dbus</span>
-
-<span class="k">def</span> <span class="nf">button_press</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">_2BUTTON_PRESS</span><span class="p">:</span>
-    <span class="n">window</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
-    <span class="k">return</span>
-  <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">_3BUTTON_PRESS</span><span class="p">:</span>
-    <span class="k">return</span>
-  <span class="n">button</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">button</span>
-  <span class="k">if</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">player</span><span class="o">.</span><span class="n">GetStatus</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-      <span class="n">player</span><span class="o">.</span><span class="n">Play</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">player</span><span class="o">.</span><span class="n">Pause</span><span class="p">()</span>
-  <span class="k">elif</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">Prev</span><span class="p">()</span>
-  <span class="k">elif</span> <span class="n">button</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">Next</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">scroll</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">SCROLL_UP</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">VolumeSet</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">VolumeGet</span><span class="p">()</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
-  <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="n">gdk</span><span class="o">.</span><span class="n">SCROLL_DOWN</span><span class="p">:</span>
-    <span class="n">player</span><span class="o">.</span><span class="n">VolumeSet</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">VolumeGet</span><span class="p">()</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span>
-
-<span class="n">bus</span> <span class="o">=</span> <span class="n">dbus</span><span class="o">.</span><span class="n">SessionBus</span><span class="p">()</span>
-<span class="n">player</span> <span class="o">=</span> <span class="n">bus</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="s">&#39;org.mpris.audacious&#39;</span><span class="p">,</span> <span class="s">&#39;/Player&#39;</span><span class="p">)</span>
-
-<span class="n">window</span> <span class="o">=</span> <span class="n">gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">(</span><span class="n">gtk</span><span class="o">.</span><span class="n">WINDOW_TOPLEVEL</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;destroy&#39;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">widget</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span><span class="p">:</span> <span class="n">gtk</span><span class="o">.</span><span class="n">main_quit</span><span class="p">())</span>
-<span class="n">window</span><span class="o">.</span><span class="n">add_events</span><span class="p">(</span><span class="n">gdk</span><span class="o">.</span><span class="n">BUTTON_PRESS_MASK</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;button-press-event&#39;</span><span class="p">,</span> <span class="n">button_press</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&#39;scroll-event&#39;</span><span class="p">,</span> <span class="n">scroll</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">set_type_hint</span><span class="p">(</span><span class="n">gdk</span><span class="o">.</span><span class="n">WINDOW_TYPE_HINT_DOCK</span><span class="p">)</span>
-<span class="n">window</span><span class="o">.</span><span class="n">fullscreen</span><span class="p">()</span>
-<span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="n">gtk</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
-</pre></div>
-
-
-<p>完成了！</p>
-<p>以后就可以拿我的小本来当音乐播放器+功放啦~</p>
-<p>参考资料：</p>
-<ul>
-<li><a href="http://wiki.xmms2.xmms.se/wiki/MPRIS">MPRIS – XMMS2</a></li>
-<li><a href="http://dbus.freedesktop.org/doc/dbus-python/doc/tutorial.html">dbus-python tutorial</a></li>
-<li><a href="http://www.pygtk.org/pygtk2tutorial/index.html">PyGTK 2.0 Tutorial</a></li>
-<li><a href="http://library.gnome.org/devel/pygtk/stable/">PyGTK 2.0 Reference Manual</a></li>
-<li><a href="http://www.daa.com.au/pipermail/pygtk/2004-January/006832.html">[pygtk] how to generate scroll wheel mouse event.</a></li>
-<li><a href="http://topic.csdn.net/t/20030910/11/2243673.html">如何让窗口置顶？ Linux/Unix社区 / 程序开发区 – CSDN社区 community.csdn.net</a></li>
-</ul>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<p>插一句话：python-dbus 怎么没有中文教程啊 ...</p>
+                <a class="readmore" href="../use-mouse-as-music-player-controller.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    

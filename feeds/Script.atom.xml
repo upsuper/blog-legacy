@@ -1,5 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/Script.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2009-12-30T18:46:00+08:00</updated><entry><title>方便使用 VC6 编译器的小脚本</title><link href="http://upsuper.github.com/blog/simple-script-for-using-vc6-compiler.html" rel="alternate"></link><updated>2009-12-30T18:46:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-12-30:simple-script-for-using-vc6-compiler.html</id><summary type="html">&lt;p&gt;因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/Script.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2011-10-19T14:04:00+08:00</updated><entry><title>动态切换 Linux 使用的 CPU 数量</title><link href="http://upsuper.github.com/blog/dynamic-modify-cpu-number.html" rel="alternate"></link><updated>2011-10-19T14:04:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2011-10-19:dynamic-modify-cpu-number.html</id><summary type="html">&lt;p&gt;由于要测试一些代码，其运行结果会受到多核并行的影响，所以希望能够调整使用的 CPU 数量。网络上之前看到的方法是在内核的启动参数上添加一个 &lt;code&gt;maxcpus&lt;/code&gt;，但是如果这样的话每切换一次都要重启一次，是在太麻烦了。想想 Linux 应该是很强大的，所以可以动态修改 CPU 数量才对。&lt;/p&gt;
+&lt;p&gt;无意中看到 Linux 代码的 &lt;code&gt;Documentation&lt;/code&gt; 文件夹下有个文件叫做 &lt;code&gt;cpu-hotplug.txt&lt;/code&gt;，于是就看了一下，发现可以在 &lt;code&gt;/sys/devices/system/cpu&lt;/code&gt; 看到代表各 CPU 的文件夹按照 &lt;code&gt;cpuX&lt;/code&gt; 的命名方式，如 &lt;code&gt;cpu0&lt;/code&gt;、&lt;code&gt;cpu1&lt;/code&gt;、&lt;code&gt;cpu2&lt;/code&gt; 等。这些文件夹里面有一个 &lt;code&gt;online&lt;/code&gt; 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 &lt;code&gt;root&lt;/code&gt; 权限哦。&lt;/p&gt;
+&lt;p&gt;因为我只要在单核和多核之间切换，所以我写了两个脚本放在 &lt;code&gt;/usr/local/sbin&lt;/code&gt; 里面：&lt;/p&gt;
+&lt;p&gt;singlecore&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class="nv"&gt;cpus_dir&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/sys/devices/system/cpu&amp;quot;&lt;/span&gt;
+
+&lt;span class="k"&gt;for &lt;/span&gt;cpu in &lt;span class="k"&gt;$(&lt;/span&gt;ls &lt;span class="s2"&gt;&amp;quot;$cpus_dir&amp;quot;&lt;/span&gt; | grep &lt;span class="s1"&gt;&amp;#39;cpu[0-9]\+&amp;#39;&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;span class="k"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;cpu_online&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$cpus_dir/$cpu/online&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[[&lt;/span&gt; -e &lt;span class="s2"&gt;&amp;quot;$cpu_online&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="k"&gt;$(&lt;/span&gt;cat &lt;span class="nv"&gt;$cpu_online&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; 1 &lt;span class="o"&gt;]]&lt;/span&gt;
+    &lt;span class="k"&gt;then&lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;echo &lt;/span&gt;0 &amp;gt; &lt;span class="s2"&gt;&amp;quot;$cpu_online&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+&lt;span class="k"&gt;done&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;multicore&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class="nv"&gt;cpus_dir&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;/sys/devices/system/cpu&amp;quot;&lt;/span&gt;
+
+&lt;span class="k"&gt;for &lt;/span&gt;cpu in &lt;span class="k"&gt;$(&lt;/span&gt;ls &lt;span class="s2"&gt;&amp;quot;$cpus_dir&amp;quot;&lt;/span&gt; | grep &lt;span class="s1"&gt;&amp;#39;cpu[0-9]\+&amp;#39;&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;span class="k"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;cpu_online&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;$cpus_dir/$cpu/online&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[[&lt;/span&gt; -e &lt;span class="s2"&gt;&amp;quot;$cpu_online&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="k"&gt;$(&lt;/span&gt;cat &lt;span class="nv"&gt;$cpu_online&lt;/span&gt;&lt;span class="k"&gt;)&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; 0 &lt;span class="o"&gt;]]&lt;/span&gt;
+    &lt;span class="k"&gt;then&lt;/span&gt;
+&lt;span class="k"&gt;        &lt;/span&gt;&lt;span class="nb"&gt;echo &lt;/span&gt;1 &amp;gt; &lt;span class="s2"&gt;&amp;quot;$cpu_online&amp;quot;&lt;/span&gt;
+    &lt;span class="k"&gt;fi&lt;/span&gt;
+&lt;span class="k"&gt;done&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;之后需要切换的时候，只要运行 &lt;code&gt;sudo singlecore&lt;/code&gt; 或者 &lt;code&gt;sudo multicore&lt;/code&gt; 就可以了~&lt;/p&gt;
+&lt;p&gt;顺便说一句，我当时在想，如果我禁用了所有的 CPU 会怎么样呢？结果发现 &lt;code&gt;cpu0&lt;/code&gt; 是没有 &lt;code&gt;online&lt;/code&gt; 文件的，也就是 Linux 至少保证一个 CPU 处于可用状态。&lt;/p&gt;</summary><category term="Linux"></category></entry><entry><title>方便使用 VC6 编译器的小脚本</title><link href="http://upsuper.github.com/blog/simple-script-for-using-vc6-compiler.html" rel="alternate"></link><updated>2009-12-30T18:46:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-12-30:simple-script-for-using-vc6-compiler.html</id><summary type="html">&lt;p&gt;因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~&lt;/p&gt;
 &lt;p&gt;于是就有了下面这个小脚本：&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/bin/bash&lt;/span&gt;
 &lt;span class="c"&gt;# - * - coding: UTF-8 - * -&lt;/span&gt;

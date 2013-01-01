@@ -1,5 +1,583 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/Technique.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2010-03-31T10:31:00+08:00</updated><entry><title>在 tty 里添加一个开机自启动的任务管理器</title><link href="http://upsuper.github.com/blog/automatically-run-top-in-tty.html" rel="alternate"></link><updated>2010-03-31T10:31:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2010-03-31:automatically-run-top-in-tty.html</id><summary type="html">&lt;p&gt;每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 &lt;code&gt;top&lt;/code&gt; 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/Technique.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2012-04-13T21:53:00+08:00</updated><entry><title>[翻译] 使用 Python C 扩展实现生成器/yield</title><link href="http://upsuper.github.com/blog/implementing-a-generator-yield-in-a-python-c-extension.html" rel="alternate"></link><updated>2012-04-13T21:53:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2012-04-13:implementing-a-generator-yield-in-a-python-c-extension.html</id><summary type="html">&lt;p&gt;原文：&lt;a href="http://eli.thegreenplace.net/2012/04/05/implementing-a-generatoryield-in-a-python-c-extension/"&gt;Implementing a generator/yield in a Python C extension&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;在 Python 中，生成器 (generator) 是一个返回迭代器 (iterator) 对象的函数。虽然有很多方法来实现，不过最优雅和常用的形式是使用 &lt;code&gt;yield&lt;/code&gt; 语句。&lt;/p&gt;
+&lt;p&gt;举例来说，这是一个简单的例子：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;pyrevgen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;elem&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;enumerate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;reversed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="p"&gt;)):&lt;/span&gt;
+        &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;elem&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的 &lt;code&gt;pyrevgen&lt;/code&gt; 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;pyrevgen&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;a&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;b&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;c&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]):&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt; &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt;
+&lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;
+&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这篇文章的目的是说明使用 Python 的 C API ，换言之，在一个 C 的扩展模块中，如何实现相同的功能。我们主要关注的是 Python 3，对于 Python 2 来说原理是一样的，不过细节上可能会有一些差异。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;yield&lt;/code&gt; 是 Python 中一个非常强大的东西，在 C 中没有与之对应的能力 (除非你使用一些协程宏函数，不过这不在我们这里的讨论范围之内)。因此我们不得不显式地返回一个迭代器对象，并且处理迭代的细节。&lt;/p&gt;
+&lt;p&gt;在 Python 中写一个&lt;a href="http://docs.python.org/dev/library/stdtypes.html#iterator-types"&gt;迭代器&lt;/a&gt;我们需要创建一个实现了 &lt;code&gt;__iter__&lt;/code&gt; 和 &lt;code&gt;__next__&lt;/code&gt; 特殊函数的类，C API 中与之对应的方法分别是 &lt;code&gt;tp_iter&lt;/code&gt; 和 &lt;code&gt;tp_iternext&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;我们来创建一个叫做 &lt;code&gt;spam&lt;/code&gt; 的新的扩展模块，他将导出一个对象——&lt;code&gt;revgen&lt;/code&gt; 类型，这个类型可以像上面的 Python 代码一样被调用。换句话说，Python 可以这样使用它：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;spam&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;spam&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;revgen&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;a&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;b&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;c&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]):&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们开始吧 (在这篇文章的末尾会给出完整代码的链接)：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;PyTypeObject&lt;/span&gt; &lt;span class="n"&gt;PyRevgen_Type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;PyVarObject_HEAD_INIT&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;PyType_Type&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;quot;revgen&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                       &lt;span class="cm"&gt;/* tp_name */&lt;/span&gt;
+    &lt;span class="k"&gt;sizeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RevgenState&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;            &lt;span class="cm"&gt;/* tp_basicsize */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_itemsize */&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;destructor&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;revgen_dealloc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;     &lt;span class="cm"&gt;/* tp_dealloc */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_print */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_getattr */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_setattr */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_reserved */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_repr */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_as_number */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_as_sequence */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_as_mapping */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_hash */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_call */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_str */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_getattro */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_setattro */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_as_buffer */&lt;/span&gt;
+    &lt;span class="n"&gt;Py_TPFLAGS_DEFAULT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;             &lt;span class="cm"&gt;/* tp_flags */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_doc */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_traverse */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_clear */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_richcompare */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_weaklistoffset */&lt;/span&gt;
+    &lt;span class="n"&gt;PyObject_SelfIter&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;              &lt;span class="cm"&gt;/* tp_iter */&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iternextfunc&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;revgen_next&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;      &lt;span class="cm"&gt;/* tp_iternext */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_methods */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_members */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_getset */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_base */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_dict */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_descr_get */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_descr_set */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_dictoffset */&lt;/span&gt;
+    &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                              &lt;span class="cm"&gt;/* tp_init */&lt;/span&gt;
+    &lt;span class="n"&gt;PyType_GenericAlloc&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;            &lt;span class="cm"&gt;/* tp_alloc */&lt;/span&gt;
+    &lt;span class="n"&gt;revgen_new&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                     &lt;span class="cm"&gt;/* tp_new */&lt;/span&gt;
+&lt;span class="p"&gt;};&lt;/span&gt;
+
+&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;PyModuleDef&lt;/span&gt; &lt;span class="n"&gt;spammodule&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;PyModuleDef_HEAD_INIT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;quot;spam&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                  &lt;span class="cm"&gt;/* m_name */&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                      &lt;span class="cm"&gt;/* m_doc */&lt;/span&gt;
+    &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;                      &lt;span class="cm"&gt;/* m_size */&lt;/span&gt;
+&lt;span class="p"&gt;};&lt;/span&gt;
+
+    &lt;span class="n"&gt;PyMODINIT_FUNC&lt;/span&gt;
+&lt;span class="nf"&gt;PyInit_spam&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;module&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;PyModule_Create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;spammodule&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyType_Ready&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;PyRevgen_Type&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;Py_INCREF&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;PyRevgen_Type&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;PyModule_AddObject&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;revgen&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;PyRevgen_Type&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这是创建一个新模块和一个新类型的标准代码。模块初始化函数 (&lt;code&gt;PyInit_spam&lt;/code&gt;) 添加了一个叫做 &lt;code&gt;revgen&lt;/code&gt; 的对象到模块，这个对象是类型 &lt;code&gt;PyRevgen_Type&lt;/code&gt;。通过调用这个对象，用户可以创建这个类型的一个新实例。&lt;/p&gt;
+&lt;p&gt;下面的结构 (&lt;code&gt;PyObject&lt;/code&gt; 的子类) 是将用来表示 &lt;code&gt;revgen&lt;/code&gt; 的实例的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cm"&gt;/* RevgenState - reverse generator instance.&lt;/span&gt;
+&lt;span class="cm"&gt; *&lt;/span&gt;
+&lt;span class="cm"&gt; * sequence: ref to the sequence that&amp;#39;s being iterated&lt;/span&gt;
+&lt;span class="cm"&gt; * seq_index: index of the next element in the sequence to yield&lt;/span&gt;
+&lt;span class="cm"&gt; * enum_index: next enumeration index to yield&lt;/span&gt;
+&lt;span class="cm"&gt; *&lt;/span&gt;
+&lt;span class="cm"&gt; * In pseudo-notation, the yielded tuple at each step is:&lt;/span&gt;
+&lt;span class="cm"&gt; *  enum_index, sequence[seq_index]&lt;/span&gt;
+&lt;span class="cm"&gt; *&lt;/span&gt;
+&lt;span class="cm"&gt;*/&lt;/span&gt;
+&lt;span class="k"&gt;typedef&lt;/span&gt; &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;PyObject_HEAD&lt;/span&gt;
+    &lt;span class="n"&gt;Py_ssize_t&lt;/span&gt; &lt;span class="n"&gt;seq_index&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;enum_index&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="n"&gt;RevgenState&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里需要特别点出的一个非常有趣的东西是对我们在迭代的序列的引用。每当 &lt;code&gt;next&lt;/code&gt; 被调用时，迭代器需要它来访问那个序列。&lt;/p&gt;
+&lt;p&gt;这里是用来创建新的实例的那个函数，它被赋给了 &lt;code&gt;tp_new&lt;/code&gt;。注意我们没有给 &lt;code&gt;tp_init&lt;/code&gt; 赋值，所以默认的“什么都不做”的初始化器将会被使用：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="nf"&gt;revgen_new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyTypeObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;PyArg_UnpackTuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;revgen&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/* We expect an argument that supports the sequence protocol */&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;PySequence_Check&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;PyErr_SetString&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyExc_TypeError&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;revgen() expects a sequence&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="n"&gt;Py_ssize_t&lt;/span&gt; &lt;span class="n"&gt;len&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;PySequence_Length&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;len&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/* Create a new RevgenState and initialize its state - pointing to the last&lt;/span&gt;
+&lt;span class="cm"&gt;     * index in the sequence.&lt;/span&gt;
+&lt;span class="cm"&gt;    */&lt;/span&gt;
+    &lt;span class="n"&gt;RevgenState&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RevgenState&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tp_alloc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;Py_INCREF&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;seq_index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;len&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;enum_index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这是个非常直观的 &lt;code&gt;tp_new&lt;/code&gt; 实现，它保证了要迭代的对象是一个序列，同时初始化了状态，准备好第一次 &lt;code&gt;next&lt;/code&gt; 调用时将要返回的最后一个元素。与之对应的销毁函数也并没有什么特别的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt;
+&lt;span class="nf"&gt;revgen_dealloc&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RevgenState&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="cm"&gt;/* We need XDECREF here because when the generator is exhausted,&lt;/span&gt;
+&lt;span class="cm"&gt;     * rgstate-&amp;gt;sequence is cleared with Py_CLEAR which sets it to NULL.&lt;/span&gt;
+&lt;span class="cm"&gt;    */&lt;/span&gt;
+    &lt;span class="n"&gt;Py_XDECREF&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Py_TYPE&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tp_free&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;现在剩下的就是看看 &lt;code&gt;tp_iter&lt;/code&gt; 和 &lt;code&gt;tp_iternext&lt;/code&gt; 的实现。因为我们的类型是一个迭代器，我们可以简单的将 &lt;code&gt;PyObject_SelfIter&lt;/code&gt; 函数赋给 &lt;code&gt;tp_iter&lt;/code&gt;。&lt;code&gt;tp_iternext&lt;/code&gt; 才是发生有趣的事情的地方。它正是执行内置函数 &lt;code&gt;next&lt;/code&gt; 时真正调用的东西，也是 &lt;code&gt;for&lt;/code&gt; 循环使用迭代器时调用的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="nf"&gt;revgen_next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RevgenState&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="cm"&gt;/* seq_index &amp;lt; 0 means that the generator is exhausted.&lt;/span&gt;
+&lt;span class="cm"&gt;     * Returning NULL in this case is enough. The next() builtin will raise the&lt;/span&gt;
+&lt;span class="cm"&gt;     * StopIteration error for us.&lt;/span&gt;
+&lt;span class="cm"&gt;    */&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;seq_index&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;elem&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;PySequence_GetItem&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                            &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;seq_index&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="cm"&gt;/* Exceptions from PySequence_GetItem are propagated to the caller&lt;/span&gt;
+&lt;span class="cm"&gt;         * (elem will be NULL so we also return NULL).&lt;/span&gt;
+&lt;span class="cm"&gt;        */&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;elem&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Py_BuildValue&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;lO&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;enum_index&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;elem&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;seq_index&lt;/span&gt;&lt;span class="o"&gt;--&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;enum_index&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="cm"&gt;/* The reference to the sequence is cleared in the first generator call&lt;/span&gt;
+&lt;span class="cm"&gt;     * after its exhaustion (after the call that returned the last element).&lt;/span&gt;
+&lt;span class="cm"&gt;     * Py_CLEAR will be harmless for subsequent calls since it&amp;#39;s idempotent&lt;/span&gt;
+&lt;span class="cm"&gt;     * on NULL.&lt;/span&gt;
+&lt;span class="cm"&gt;    */&lt;/span&gt;
+    &lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;seq_index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;Py_CLEAR&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rgstate&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;sequence&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在这里，应该被牢记的最重要的一点是迭代的状态应该被完全地保存在迭代器对象中。相比与 Python 实现，这需要多做许多工作。Python 的 &lt;code&gt;yield&lt;/code&gt; 语句让我们可以用 Python 解析器自己来为我们保存这些状态。这也是为什么&lt;a href="http://eli.thegreenplace.net/2009/08/29/co-routines-as-an-alternative-to-state-machines/"&gt;在 Python 中协程如此强大&lt;/a&gt;——几乎没有显式的状态需要手工保存。正如我在文章一开始就提到的，在 C 扩展中我们没有这样的奢侈品，所以我们不得不自己动手。由于现在这个例子还非常简单，而且是线性的，这还相对简单一些。在更复杂的例子中，为了正确地设计状态对象和 &lt;code&gt;tp_iternext&lt;/code&gt; 函数，需要更用心。&lt;/p&gt;
+&lt;p&gt;这篇文章的完整代码以及简单的 Python 测试脚本，还有用于使用 distutils 构建这个扩展的 &lt;code&gt;setup.py&lt;/code&gt; 都可以&lt;a href="http://eli.thegreenplace.net/wp-content/uploads/2012/04/generator_c_ext.tgz"&gt;在这里下载&lt;/a&gt;。&lt;/p&gt;</summary><category term="Python"></category><category term="C"></category></entry><entry><title>安装配置 LXR</title><link href="http://upsuper.github.com/blog/setup-lxr.html" rel="alternate"></link><updated>2011-10-03T15:07:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2011-10-03:setup-lxr.html</id><summary type="html">&lt;p&gt;专业课学习操作系统，满心欢喜地以为可以是 Linux 代码导读，结果选用了一本八十年代的教材，介绍 UNIX v6 的。于是自己从图书馆借来了内核开发的入门读物《Linux 内核设计与实现》。既然是介绍内核的书，自然少不了代码，但是书中又不可能将每个提到的代码的相关信息全部写出来，这时就得自己去查看代码。查看代码的话，虽然 Linux 的代码可以很容易地得到，但那来看终归有些麻烦，各种调用需要查找半天。于是想起了很有名的一个网站 &lt;a href="http://lxr.linux.no"&gt;LXR&lt;/a&gt;，Linux 交叉引用。这个网站好是好，就是网络原因速度太慢，于是就想自己装一个。&lt;/p&gt;
+&lt;p&gt;先说一句，下面的安装环境都是64位 Gentoo。&lt;/p&gt;
+&lt;p&gt;最开始找到了 &lt;a href="http://sourceforge.net/projects/lxr/"&gt;LXR Cross Referencer&lt;/a&gt; 这个项目，一看最后更新时间还挺新，看起来是一直都还在维护的。然后在 Gentoo 的网站上查到 LXR 是可以直接用 portage 安装的，于是安装，安装相关的包，最后放弃了。出于什么原因我也不记得了，最后一个原因肯定是不好看，肯定达不到上面那个网站的效果，所以就放弃了，到那个网站上去下载 LXR 分出来的版本 LXRng。（话说这个 ng 不会是表示 next generation 吧？）&lt;/p&gt;
+&lt;h2&gt;安装支持库&lt;/h2&gt;
+&lt;p&gt;首先从 LXR 的网站上用 &lt;code&gt;git&lt;/code&gt; 把代码下载下来，&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;git clone git://lxr.linux.no/git/lxrng.git
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后我打开了里面的 &lt;code&gt;INSTALL&lt;/code&gt; 文件，里面写着好多好多库。先说结论吧，在 Gentoo 的官方源里面，有两个库是没有的，分别是 &lt;code&gt;Search-Xapian&lt;/code&gt; 和 &lt;code&gt;CGI-Ajax&lt;/code&gt;，这两个最后安装。&lt;/p&gt;
+&lt;p&gt;最首要的是先安装 PostgreSQL，由于 LXR 是用 Perl 写成的，所以在 &lt;code&gt;USE&lt;/code&gt; 里面加入了 Perl，然后安装。安装完成以后，安装 PostgreSQL 的 Perl 库 &lt;code&gt;DBD-Pg&lt;/code&gt;。接下去安装 &lt;code&gt;Cgi-Simple&lt;/code&gt;、&lt;code&gt;HTML-Parser&lt;/code&gt;、&lt;code&gt;HTML-Entities&lt;/code&gt;、&lt;code&gt;Term-ProgressBar&lt;/code&gt;、&lt;code&gt;Devel-Size&lt;/code&gt;、&lt;code&gt;Template-Toolkit&lt;/code&gt;，这些都很容易，直接安装就可以了。（虽然我确定这些包的名称还费了些时间）&lt;/p&gt;
+&lt;p&gt;然后是 Apache 和它的 &lt;code&gt;mod_perl&lt;/code&gt;，因为之前安装了，并没有太大困难，这里也不详述了。&lt;/p&gt;
+&lt;p&gt;最麻烦的问题来了，对于源里没有的 &lt;code&gt;Search-Xapian&lt;/code&gt; 和 &lt;code&gt;CGI-Ajax&lt;/code&gt; 怎么办呢？先把 Xapian 的主要部分给安装了吧。&lt;/p&gt;
+&lt;p&gt;安装 &lt;code&gt;xapian&lt;/code&gt; 和 &lt;code&gt;xapian-bindings&lt;/code&gt; 这两个包。因为这两个包的最新版本对 amd64 平台都是 unstable 的，所以要在 &lt;code&gt;/etc/portage/package.keywords&lt;/code&gt; 里面加入&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="p"&gt;=&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;libs&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;xapian&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;1&lt;span class="p"&gt;.&lt;/span&gt;2&lt;span class="p"&gt;.&lt;/span&gt;7&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;r1&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="n"&gt;amd64&lt;/span&gt;
+&lt;span class="p"&gt;=&lt;/span&gt;&lt;span class="n"&gt;dev&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;libs&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;xapian&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;bindings&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;1&lt;span class="p"&gt;.&lt;/span&gt;2&lt;span class="p"&gt;.&lt;/span&gt;7&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;r2&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="n"&gt;amd64&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;（是的，在 Gentoo 的查询系统上显示，&lt;code&gt;xapian&lt;/code&gt; 的 1.2.5 是稳定版本，我也曾经试图安装那个版本，然后仅安装非稳定版的 &lt;code&gt;-bindings&lt;/code&gt;，但是之后安装的 &lt;code&gt;Search-Xapian&lt;/code&gt; 还是会要求新的 1.2.7，所以就这样吧。另外一般状况下，最前面是写 &lt;code&gt;&amp;gt;=&lt;/code&gt; 的，但是我出于个人喜好和完美主义，写了 &lt;code&gt;=&lt;/code&gt;。）接下去直接安装这两个包即可。记得检查已经在 &lt;code&gt;USE&lt;/code&gt; 里面加入了 &lt;code&gt;perl&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;接下去安装那两个包。&lt;/p&gt;
+&lt;p&gt;Gentoo 有个很神奇的工具，也是我这次才发现的，叫做 &lt;code&gt;g-cpan&lt;/code&gt;，可以把 CPAN 上面的包自动打包安装为 &lt;code&gt;portage&lt;/code&gt; 的包。不过如果是第一次使用必须要先配置一下，在 &lt;code&gt;/etc/make.conf&lt;/code&gt; 最后加上&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;ACCEPT_KEYWORDS&lt;/span&gt;&lt;span class="p"&gt;=&lt;/span&gt;&amp;quot;&lt;span class="n"&gt;amd64&lt;/span&gt;&amp;quot;
+&lt;span class="n"&gt;PORTDIR_OVERLAY&lt;/span&gt;&lt;span class="p"&gt;=&lt;/span&gt;&amp;quot;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;usr&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;local&lt;/span&gt;&lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;portage&lt;/span&gt;&amp;quot;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;（虽然这个配置看过去很简单，不过因为一开始忽略了这件事情，所以纠结了很长时间……）&lt;/p&gt;
+&lt;p&gt;接下去用 &lt;code&gt;g-cpan&lt;/code&gt; 安装就可以了&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;sudo g-cpan -g CGI::Ajax Search::Xapian
+sudo emerge CGI-Ajax Search-Xapian
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;至此需要安装的东西就已经全部装完了，下面进入第二阶段~&lt;/p&gt;
+&lt;h2&gt;配置数据库&lt;/h2&gt;
+&lt;p&gt;这个很简单了，不过在配置之前要先把自己将会用到的用户加入到 &lt;code&gt;postgres&lt;/code&gt; 组里以保证可以访问。最重要的是要把之后的 &lt;code&gt;apache&lt;/code&gt; 用户加入到 &lt;code&gt;postgres&lt;/code&gt; 组里，否则后面会出现一些状况。&lt;/p&gt;
+&lt;p&gt;然后 &lt;code&gt;su&lt;/code&gt; 到 &lt;code&gt;postgres&lt;/code&gt; 用户里，添加用户 &lt;code&gt;root&lt;/code&gt;，并把 &lt;code&gt;root&lt;/code&gt; 设置为管理员（因为之后生成的时候需要用到）&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;createuser root
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后创建 LXR 的数据库&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;createdb lxrng
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;大体上这样就没问题了。&lt;/p&gt;
+&lt;h2&gt;调整配置文件并建立工作目录&lt;/h2&gt;
+&lt;p&gt;我出于完美主义的原因，将 LXR 的工作目录放在了 &lt;code&gt;/var/lib/lxrng&lt;/code&gt; 里面，如果你没有那些奇怪的癖好，完全可以直接在自己的文件夹下面放置这些东西。&lt;/p&gt;
+&lt;p&gt;首先要设置配置文件，将 LXR 根目录下的 &lt;code&gt;lxrng.conf-dist&lt;/code&gt; 复制为 &lt;code&gt;lxrng.conf&lt;/code&gt;，然后打开修改。里面大体上还是比较清晰的，如果只是要做一个 Linux 代码的交叉引用的话，大体上按照里面的配置，修改第10行&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;my&lt;/span&gt; &lt;span class="nv"&gt;$gitrepo&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Repo::&lt;/span&gt;&lt;span class="n"&gt;Git&lt;/span&gt;
+    &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/repos/linux-2.6/.git&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="n"&gt;release_re&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="sx"&gt;qr/^v[^-]*$/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="n"&gt;author_timestamp&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;里面的那个路径，使其指向你放置代码的 git 源（一般是代码文件夹下的 &lt;code&gt;.git&lt;/code&gt;）。&lt;/p&gt;
+&lt;p&gt;如果你没有使用 git 来抓取代码，而是直接下载某个版本的代码，如 v3.1，可以放置到比如 &lt;code&gt;/var/lib/lxrng/repos/linux/v3.1&lt;/code&gt;，那么这个部分就修改为&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;use&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Repo::&lt;/span&gt;&lt;span class="n"&gt;Plain&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="nv"&gt;$plainrepo&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Repo::&lt;/span&gt;&lt;span class="n"&gt;Plain&lt;/span&gt;
+    &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/repos/linux&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;即可。（注意上面的 &lt;code&gt;$gitrepo&lt;/code&gt; 在下面还有使用过一次，如果修改的话需要一并修改）&lt;/p&gt;
+&lt;p&gt;接下去是第19行&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;my&lt;/span&gt; &lt;span class="nv"&gt;$search&lt;/span&gt;  &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Search::&lt;/span&gt;&lt;span class="n"&gt;Xapian&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/text-db/linux-2.6&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;需要在某个位置建立一个 &lt;code&gt;text-db&lt;/code&gt; 文件夹，然后将上面的路径修改为你建立的那个文件夹的路径即可。同样的操作也发生在第29行&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;    &lt;span class="c1"&gt;# Must be writable by httpd user:&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;cache&amp;#39;&lt;/span&gt;       &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/cache&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;注意这个文件夹需要对 &lt;code&gt;apache:apache&lt;/code&gt; 可写。我的做法是把这个文件夹的组设置为 &lt;code&gt;apache&lt;/code&gt;，然后设置权限为&lt;code&gt;0775&lt;/code&gt;，当然也可以直接把所有者设置为 &lt;code&gt;apache&lt;/code&gt; 然后保留原来权限。&lt;/p&gt;
+&lt;p&gt;注释掉下面这行&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;    &lt;span class="s"&gt;&amp;#39;ctags_flags&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;-I\@$LXRng::ROOT/lxr-ctags-quirks&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;不要问我为什么，这个我真不知道，总之如果部注释掉一会儿会出错。&lt;/p&gt;
+&lt;p&gt;最后是要生成引用的版本和默认显示的版本：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="s"&gt;&amp;#39;ver_list&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nv"&gt;$gitrepo&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;allversions&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+
+&lt;span class="s"&gt;&amp;#39;ver_default&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;v2.6.20.3&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我强烈建议你将 &lt;code&gt;$gitrepo-&amp;gt;allversions&lt;/code&gt; 修改为你想看的几个版本，甚至于只有一个版本也是没有问题的即使你有完整的历史记录，因为每个版本都需要生成很长时间，而且似乎过程很不稳定，如果没有特别的原因，最好不要生成太多版本。如果是不用 git 源的话，只要把你放在那个文件夹里的对应版本号填进去就可以了，最后修改默认显示的版本。&lt;/p&gt;
+&lt;p&gt;如果还想添加其他的代码，只要把代码最后 &lt;code&gt;return&lt;/code&gt; 的大括号里面的部分复制一遍，根据需要修改就可以了。&lt;/p&gt;
+&lt;h2&gt;初始化数据库及生成交叉引用&lt;/h2&gt;
+&lt;p&gt;首先要添加一个符号链接&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;sudo ln -s /usr/bin/exuberants-ctags /usr/bin/ctags-exuberants
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;接下去没什么太大的差别，就是进入程序所在目录，然后&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;./lxr-db-admin linux --init
+./lxr-genref linux
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;值得一说的是，这个过程非常非常非常漫长，在我的 i7 本上的虚拟机里，一跑至少三四个小时，而且看起来还很不稳定，不时会自动强制退出，而且退出以后可能会出现一些问题导致无法继续。这个问题比较严重，遇到这个问题如何解决放到之后的部分再来说吧。&lt;/p&gt;
+&lt;h2&gt;配置 Apache&lt;/h2&gt;
+&lt;p&gt;最后来配置 Apache。直接把文件夹下的 &lt;code&gt;apache2-site.conf-dist-mod_perl&lt;/code&gt; 复制到 &lt;code&gt;/etc/apache/vhosts.d/10_lxrng.conf&lt;/code&gt;，然后打开这个文件，将里面的所有 &lt;code&gt;@@LXRROOT@@&lt;/code&gt; 和 &lt;code&gt;@@LXRURL@@&lt;/code&gt; 根据自己的情况替换为相应的路径就可以了。然后重新启动 Apache&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;sudo /etc/rc.d/apache restart
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;问题解决&lt;/h2&gt;
+&lt;p&gt;由于原来的版本在我这里基本上没什么希望能生成结束，所以我对这个程序做了一些修改，这个修改后的版本可以直接在我的 GitHub 上面找到：&lt;a href="https://github.com/upsuper/lxrng"&gt;upsuper/lxrng&lt;/a&gt;。如果需要的话，可以不使用原来官方的代码而直接使用我修改过的代码。主要的差别有几点：一是消除了生成交叉引用时过大量的输出信息；二是增加了交叉引用生成时刷写 Xapian 索引的频率，以减少退出重做时可能出现的错误；三是修正了一些最后浏览时可能遇到的问题。&lt;/p&gt;
+&lt;p&gt;当然生成的时候还是可能会出错，这我也没办法。如果生成时被意外中断，重新执行又出现错误，可以将我修改的那个程序里面的 &lt;code&gt;lxr-genref&lt;/code&gt; 第336行&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;    &lt;span class="c1"&gt;#warn(&amp;quot;here $docid\n&amp;quot;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;的注释符去掉，重新运行 &lt;code&gt;lxr-genref&lt;/code&gt;，然后查看当程序报错时停止的那个编号，比如 12345。然后执行 &lt;code&gt;psql lxrng&lt;/code&gt; 进入 lxrng 数据库，执行&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;DELETE&lt;/span&gt; &lt;span class="k"&gt;FROM&lt;/span&gt; &lt;span class="n"&gt;hashed_documents&lt;/span&gt; &lt;span class="k"&gt;WHERE&lt;/span&gt; &lt;span class="n"&gt;doc_id&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;=&lt;/span&gt;&lt;span class="mi"&gt;12345&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后再次执行 &lt;code&gt;lxr-genref&lt;/code&gt;。这个过程可能反复一两次，直到不会报错位置。&lt;/p&gt;
+&lt;p&gt;如果用原始版本的话，最后在浏览的时候使用搜索，有可能会出现500错误以及无法显示出来的情况，如果出现，可以参考我做的修改。&lt;/p&gt;
+&lt;h2&gt;后记&lt;/h2&gt;
+&lt;p&gt;配置这个 LXR 真是折腾死我了，费了好大功夫，最后也总算是成功了。&lt;/p&gt;
+&lt;p&gt;另外真是很久很久没有在这里写东西了。也正因为这个过程实在太麻烦了，所以来写一写，权当一个记录。不过现在有 GitHub 这种东西，倒是好得多了。&lt;/p&gt;
+&lt;h2&gt;参考文档&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://mohammadthalif.wordpress.com/2010/07/24/how-to-setup-lxr-%E2%80%93-step-by-step-guide-3/"&gt;How to setup LXR – Step by Step guide « Mohamed Thalib's Blog&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.kernelchina.org/node/241"&gt;在自己的计算机上建立lxr源代码检索服务器 | kernelchina&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://wenku.baidu.com/view/8150646727d3240c8447ef2d.html"&gt;lxrng.install-gentoo_百度文库&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.gentoo.org/proj/en/perl/g-cpan.xml"&gt;Gentoo Linux Documentation — g-cpan Guide&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;（貌似还有些别的参考资料，不记得是什么了……）&lt;/p&gt;
+&lt;h2&gt;参考配置文件&lt;/h2&gt;
+&lt;p&gt;最后最后贴一下自己的配置文件吧。配置文件里面声明了两个代码，一个是 Liunx 的，一个是 UNIX v6 的，Linux 是用 git，UNIX 是代码。程序全部放在 &lt;code&gt;/var/lib/lxrng&lt;/code&gt; 里面，代码放在 &lt;code&gt;/var/lig/lxrng/repos&lt;/code&gt; 里。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c1"&gt;# -*- mode: perl -*-&lt;/span&gt;
+&lt;span class="c1"&gt;# Configuration file&lt;/span&gt;
+&lt;span class="c1"&gt;#&lt;/span&gt;
+&lt;span class="c1"&gt;#&lt;/span&gt;
+
+&lt;span class="k"&gt;use&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Index::&lt;/span&gt;&lt;span class="n"&gt;PgBatch&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;use&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Repo::&lt;/span&gt;&lt;span class="n"&gt;Git&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;use&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Repo::&lt;/span&gt;&lt;span class="n"&gt;Plain&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;use&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Search::&lt;/span&gt;&lt;span class="n"&gt;Xapian&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="k"&gt;my&lt;/span&gt; &lt;span class="nv"&gt;$linuxrepo&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Repo::&lt;/span&gt;&lt;span class="n"&gt;Git&lt;/span&gt;
+    &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/repos/linux.git&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="n"&gt;release_re&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="sx"&gt;qr/^v[^-]*$/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+      &lt;span class="n"&gt;author_timestamp&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="k"&gt;my&lt;/span&gt; &lt;span class="nv"&gt;$unixrepo&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Repo::&lt;/span&gt;&lt;span class="n"&gt;Plain&lt;/span&gt;
+    &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/repos/unix&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+&lt;span class="k"&gt;my&lt;/span&gt; &lt;span class="nv"&gt;$index&lt;/span&gt;   &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Index::&lt;/span&gt;&lt;span class="n"&gt;PgBatch&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;db_spec&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;dbname=lxrng;port=5432&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; 
+                     &lt;span class="n"&gt;db_user&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;db_pass&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                     &lt;span class="c1"&gt;# table_prefix =&amp;gt; &amp;#39;lxr&amp;#39;&lt;/span&gt;
+                     &lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="k"&gt;my&lt;/span&gt; &lt;span class="nv"&gt;$search&lt;/span&gt;  &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nn"&gt;LXRng::Search::&lt;/span&gt;&lt;span class="n"&gt;Xapian&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/text-db&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;linux&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;repository&amp;#39;&lt;/span&gt;  &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;$linuxrepo&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;index&amp;#39;&lt;/span&gt;       &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;$index&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;search&amp;#39;&lt;/span&gt;      &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;$search&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;base_url&amp;#39;&lt;/span&gt;    &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;http://upsuper-gentoo/lxr&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="c1"&gt;# Must be writable by httpd user:&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;cache&amp;#39;&lt;/span&gt;       &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/cache/linux&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;fs_charset&amp;#39;&lt;/span&gt;  &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;iso-8859-1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="c1"&gt;# Tried successively&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;content_charset&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;iso-8859-1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;languages&amp;#39;&lt;/span&gt;   &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;C&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;GnuAsm&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Kconfig&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="c1"&gt;#&amp;#39;ctags_flags&amp;#39; =&amp;gt; [&amp;quot;-I\@$LXRng::ROOT/lxr-ctags-quirks&amp;quot;],&lt;/span&gt;
+    &lt;span class="c1"&gt;#&amp;#39;ver_list&amp;#39;    =&amp;gt; [$gitrepo-&amp;gt;allversions],&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;ver_list&amp;#39;&lt;/span&gt;    &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;v2.6.34&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;v3.0&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;ver_default&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;v2.6.34&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;include_maps&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; 
+        &lt;span class="p"&gt;[&lt;/span&gt;
+         &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="sx"&gt;qr|^arch/(.*?)/|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="sx"&gt;qr|^asm/(.*)|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+          &lt;span class="k"&gt;sub &lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;include/asm-$_[0]/$_[1]&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}],&lt;/span&gt;
+         &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="sx"&gt;qr|^include/asm-(.*?)/|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="sx"&gt;qr|^asm/(.*)|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+          &lt;span class="k"&gt;sub &lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;include/asm-$_[0]/$_[1]&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}],&lt;/span&gt;
+         &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="sx"&gt;qr|^|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="sx"&gt;qr|^asm/(.*)|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+          &lt;span class="k"&gt;sub &lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="nb"&gt;map&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;include/asm-$_/$_[0]&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+            &lt;span class="sx"&gt;qw(i386 x86_64)&lt;/span&gt; &lt;span class="p"&gt;}],&lt;/span&gt;
+         &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="sx"&gt;qr|^|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="sx"&gt;qr|(.*)|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+          &lt;span class="k"&gt;sub &lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;include/$_[0]&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}],&lt;/span&gt;
+         &lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;unix&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;repository&amp;#39;&lt;/span&gt;  &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;$unixrepo&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;index&amp;#39;&lt;/span&gt;       &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;$index&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;search&amp;#39;&lt;/span&gt;      &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="nv"&gt;$search&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;base_url&amp;#39;&lt;/span&gt;    &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;http://upsuper-gentoo/lxr&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="c1"&gt;# Must be writable by httpd user:&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;cache&amp;#39;&lt;/span&gt;       &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/var/lib/lxrng/cache/unix&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;fs_charset&amp;#39;&lt;/span&gt;  &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;iso-8859-1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="c1"&gt;# Tried successively&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;content_charset&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;utf-8&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;iso-8859-1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;languages&amp;#39;&lt;/span&gt;   &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;C&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;GnuAsm&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="c1"&gt;#&amp;#39;ctags_flags&amp;#39; =&amp;gt; [&amp;quot;-I\@$LXRng::ROOT/lxr-ctags-quirks&amp;quot;],&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;ver_list&amp;#39;&lt;/span&gt;    &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;v6&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;ver_default&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;v6&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+
+    &lt;span class="s"&gt;&amp;#39;include_maps&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;=&amp;gt;&lt;/span&gt; 
+        &lt;span class="p"&gt;[&lt;/span&gt;
+         &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="sx"&gt;qr|^|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="sx"&gt;qr|(.*)|&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+          &lt;span class="k"&gt;sub &lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;sys/$_[0]&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;}],&lt;/span&gt;
+         &lt;span class="p"&gt;],&lt;/span&gt;
+    &lt;span class="p"&gt;},&lt;/span&gt;
+&lt;span class="p"&gt;};&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary><category term="Linux"></category></entry><entry><title>Gmail 的超级子邮箱功能</title><link href="http://upsuper.github.com/blog/gmail-super-sub-mailbox.html" rel="alternate"></link><updated>2011-03-06T22:11:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2011-03-06:gmail-super-sub-mailbox.html</id><summary type="html">&lt;p&gt;如果你也用 Gmail，他可以让你轻易拥有无限多的子邮箱，发给这些邮箱也就等于发给你的邮箱。这有什么意义呢？很简单，你可以在每个地方注册的时候都使用不同的邮箱，这样当你收到垃圾邮件广告邮件，你就可以知道是从哪里来的了~再结合 Gmail 强大的过滤器，你也可以针对性的进行屏蔽~&lt;/p&gt;
+&lt;p&gt;Gmail 事实上支持两种方式来扩张你的邮箱，第一种是在你的用户名后面加上“+”和任意字符串，比如我的邮箱 &lt;code&gt;quanxunzhen@gmail.com&lt;/code&gt;（我这邮箱无所谓了已经嗯），如果我想要识别不同的网站，比如豆瓣，我可以直接在豆瓣的注册邮箱里填写 &lt;code&gt;quanxunzhen+douban@gmail.com&lt;/code&gt;，所有验证邮件都可以发给我，我如果不想申请一个新邮箱却想注册个豆瓣小号，也可以再写 &lt;code&gt;quanxunzhen+douban2@gmail.com&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;当然，支持上面的方式固然是最好的，但遗憾的是很多网站并不支持带加号的邮箱，那就要稍稍麻烦点了。&lt;/p&gt;
+&lt;p&gt;根据 &lt;a href="http://fanfou.com/fanzeyi"&gt;@fanzeyi&lt;/a&gt; 的说法，Gmail 的邮箱是自动忽略点，也就是“.”的，也就是说对于我上面的邮箱，如果写为 &lt;code&gt;quan.xun.zhen@gmail.com&lt;/code&gt;，或者 &lt;code&gt;..quanxunzhen..@gmail.com&lt;/code&gt;，我照样可以收到。而且这样写法的邮箱通常不会被屏蔽，因为点毕竟是邮箱必备的部分。&lt;/p&gt;
+&lt;p&gt;但是这样加点有一个问题，就是我们无法像第一种方式那样很容易的区分来源，因此我们不得不进行某种编码。&lt;/p&gt;
+&lt;h2&gt;顺序编码&lt;/h2&gt;
+&lt;p&gt;第一种编码的思想大体上是按照传统的数据库中记录的自增 ID，转为二进制表示，具体的说就是，比如我这个邮箱有11位，那么我们可以以中间有打点或者没有打点作为二进制位中的0和1，比如就可以如下表示：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;0 &lt;span class="n"&gt;quanxunzhen&lt;/span&gt;
+1 &lt;span class="n"&gt;quanxunzhen&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+2 &lt;span class="n"&gt;quanxunzhe&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+3 &lt;span class="n"&gt;quanxunzhe&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+29 &lt;span class="n"&gt;quanxun&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;h&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;en&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样……&lt;/p&gt;
+&lt;p&gt;但是这样总编码数也就 2&lt;sup&gt;len(email)+1&lt;/sup&gt; 种，对于我邮箱这么长，也仅仅4096种，总归有点少。（其实也不少了吧喂……）&lt;/p&gt;
+&lt;p&gt;于是我们考虑一下扩张的方法。&lt;/p&gt;
+&lt;p&gt;其实扩张很简单，因为任意两个字母之间可以插入的点是任意多的，我们可以利用这一点按照一定的协议来编码，比如我们规定第一个字符之前如果有 n 个点，则之后每个字母之间最多可以有 n+1 个点，这样当第一个字符前有 n 个点时，最大可以编码 (n+2)&lt;sup&gt;len(email)&lt;/sup&gt; 种，如果规定这里每次数字都是从上一次结束的数字开始，编码就不会重复了，而且可编码的范围大大增加，却又没有太多的增加点的数量。对于我的邮箱来说，前面一个点也没有时可以有 2048 种，有一个点时可以有 177147+2048 种，有两个点时可以有 4194304+177147+2048 种，我相信是用不完的了……&lt;/p&gt;
+&lt;p&gt;事实上基于此还可以延伸出各种各样的编码方式~&lt;/p&gt;
+&lt;h2&gt;字符编码&lt;/h2&gt;
+&lt;p&gt;不过上面的方法总归不那么直观，而且如果想追踪来源，还要建表，表的同步还是个问题，所以这个问题还是挺大的……于是我有了第二种想法，可以把注册地的名字嵌入到里面~&lt;/p&gt;
+&lt;p&gt;最基本的想法是根据字母序，比如在 Arch 论坛注册我们可以把 Arch 变成数字串 0 17 2 7，插入进去变成：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;qu&lt;/span&gt;&lt;span class="p"&gt;.................&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;.......&lt;/span&gt;&lt;span class="n"&gt;xunzhen&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;不过我们可以明显的感觉到很蛋疼……Arch 还算好的，如果是新浪（Sina -&amp;gt; 18 8 13 0）或者淫淫网（Renren -&amp;gt; 17 4 13 17 4 13）就更蛋疼了……&lt;/p&gt;
+&lt;p&gt;但是我们感觉到不是这样的，我们完全不需要那么多字母其实也可以认出他们来不是么？比如淫淫网我们可以用 rr，或者原名校内的 xn，新浪就 sn 什么的，这样需要的字母就少了，我们就可以利用变换进制的优势了~26对于二进制位需要5位，对于3进制恰好只要3位，当然算起来如果你的邮箱够长肯定还是用二进制可以增加的更短一些，对于我来说就是如此，比如上面的就可以这样变化了：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;rr&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 17 17 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 10001 10001 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;uanx&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;nzhe&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="n"&gt;xn&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 23 13 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 10111 01101 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ua&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;un&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;he&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="n"&gt;sn&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 18 13 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 10010 01101 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;uan&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xun&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;z&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;he&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果三进制的话，我的 upsuper 也可以容下了：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;rr&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 17 17 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 122 122 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;
+&lt;span class="n"&gt;xn&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 23 13 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 212 111 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;s&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;
+&lt;span class="n"&gt;sn&lt;/span&gt; &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 18 13 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; 200 111 &lt;span class="o"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="p"&gt;..&lt;/span&gt;&lt;span class="n"&gt;psu&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;p&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;看过去好多了~&lt;/p&gt;
+&lt;p&gt;我们还可以发挥其它的想象力，比如找寻标识中的字母频率然后构建一个霍夫曼编码树什么的~&lt;/p&gt;
+&lt;p&gt;我能想到的暂时只有这么多了，各位还有什么更有意思的想法么？&lt;/p&gt;</summary><category term="Gmail"></category></entry><entry><title>增强版的 Bash 提示符</title><link href="http://upsuper.github.com/blog/advanced-prompt-of-bash.html" rel="alternate"></link><updated>2011-02-28T14:40:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2011-02-28:advanced-prompt-of-bash.html</id><summary type="html">&lt;p&gt;上周六参加了好久没有参加的的 SHLUG 月聚，恰逢 &lt;a href="http://imtx.me/"&gt;TualatriX&lt;/a&gt; 也带团来上海。自由讨论的时候，我看到 TualatriX 的终端十分色彩斑斓，便询问，他给我们展示了他的 bash 的两个特色功能：1、当上一条命令返回结果不为0时显示返回值并高亮显示提示符；2、自动检测git分支。他说这个在他的博客上都可以找到，今天想起来去找了一下，发现了这篇：&lt;a href="http://imtx.me/archives/1298.html"&gt;史上最强的PS1 | I’m TualatriX&lt;/a&gt;，感觉满强大的。&lt;/p&gt;
+&lt;p&gt;不过，说实话，我觉的这个还不够完美，原因有二：一是我发觉高亮显示的时候那个配色相当不怎么样，二是我本来就讨厌提示符太长，这样一下就更长了……于是我就想起 ghosTM 的 zsh 里面有一些信息是放在右边的，我想把返回值也扔右边去，并且是右边上移一行。此外，由于很少使用 &lt;code&gt;git&lt;/code&gt;，所以检测 &lt;code&gt;git&lt;/code&gt; 分支的功能也就不需要了~&lt;/p&gt;
+&lt;p&gt;先放一个最终效果图：
+&lt;img alt="Bash 提示符的最终效果图" src="http://upsuper.github.com/blog/static/images/advanced-prompt-of-bash-01.png" /&gt;&lt;/p&gt;
+&lt;p&gt;然后直接写出了我的新的 &lt;code&gt;PS1&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;PS1&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;`a=$?;if [ $a -ne 0 ]; then a=&amp;quot;  &amp;quot;$a; echo -ne &amp;quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&amp;quot;; fi`\[\e[1;32m\]\u@\h:\[\e[0m\e[1;34m\]\W\[\e[1;34m\]\$ \[\e[0m\]&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;非常复杂唉……让我自己再看一次都头晕……&lt;/p&gt;
+&lt;h2&gt;分解这个提示符&lt;/h2&gt;
+&lt;p&gt;上面看到这个 &lt;code&gt;PS1&lt;/code&gt; 写的非常之复杂，不过其实拆解开来也没什么了不起的，只不过看起来蛋疼罢了~&lt;/p&gt;
+&lt;p&gt;这个 &lt;code&gt;PS1&lt;/code&gt; 可以分为两个部分，第一个部分是：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="sb"&gt;`&lt;/span&gt;&lt;span class="nv"&gt;a&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$?&lt;/span&gt;;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; &lt;span class="nv"&gt;$a&lt;/span&gt; -ne 0 &lt;span class="o"&gt;]&lt;/span&gt;; &lt;span class="k"&gt;then &lt;/span&gt;&lt;span class="nv"&gt;a&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;  &amp;quot;&lt;/span&gt;&lt;span class="nv"&gt;$a&lt;/span&gt;; &lt;span class="nb"&gt;echo&lt;/span&gt; -ne &lt;span class="s2"&gt;&amp;quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&amp;quot;&lt;/span&gt;; &lt;span class="k"&gt;fi&lt;/span&gt;&lt;span class="sb"&gt;`&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第二个部分是：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="se"&gt;\[\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;1;32m&lt;span class="se"&gt;\]\u&lt;/span&gt;@&lt;span class="se"&gt;\h&lt;/span&gt;:&lt;span class="se"&gt;\[\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;0m&lt;span class="se"&gt;\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;1;34m&lt;span class="se"&gt;\]\W\[\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;1;34m&lt;span class="se"&gt;\]\$&lt;/span&gt; &lt;span class="se"&gt;\[\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;0m&lt;span class="se"&gt;\]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们先来研究第二部份，这个部分看起来比较简短。其中我们可以看到一个 &lt;code&gt;PS1&lt;/code&gt; 里面非常基本的结构：&lt;code&gt;\u@\h:\W\$&lt;/code&gt; ，这个结构在我的电脑里就显示为 &lt;code&gt;upsuper@upsuper-laptop:~$&lt;/code&gt; 大家大概可以猜到里面是什么意思了吧。&lt;/p&gt;
+&lt;p&gt;这个基本骨架理出来，剩下的是看过去最蛋疼的那堆莫名其妙的符号了~我们看到很多 \e[ 这样的东西，事实上这个叫做 ANSI 控制码，在 Linux 和 Windows 的命令行里面都是通用的，&lt;code&gt;\e&lt;/code&gt; 是 Escape 键的键码，&lt;code&gt;\e[&lt;/code&gt; 是一切 ANSI 控制码的开头。首先来到 &lt;code&gt;\e[1;32m&lt;/code&gt; 这个控制码，这表示设置这个符号之后的字符为亮绿色，而 &lt;code&gt;\e[0m&lt;/code&gt; 则是清除所有格式，这样看有没有一点清晰了呢？更多用法可以参考维基百科条目ANSI escape code。&lt;/p&gt;
+&lt;p&gt;之后还有两个东西不清楚，就是 &lt;code&gt;\[&lt;/code&gt; 和 &lt;code&gt;\]&lt;/code&gt;，这两个并不是 ANSI 控制码，而是 Bash 提供的转义符。他们的解释说实话我没看太懂，不过我的理解大概就是，夹在 &lt;code&gt;\[&lt;/code&gt; 和 &lt;code&gt;\]&lt;/code&gt; 之间的部分 Bash 假定他们的宽度为0，不正确地标注这两个符号会导致 Bash 的换行错误。总之在所有控制符两侧都加上这两个就对了~&lt;/p&gt;
+&lt;p&gt;第二个部分解决了，下面来看蛋疼的第一部份&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="sb"&gt;`&lt;/span&gt;&lt;span class="nv"&gt;a&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$?&lt;/span&gt;;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; &lt;span class="nv"&gt;$a&lt;/span&gt; -ne 0 &lt;span class="o"&gt;]&lt;/span&gt;; &lt;span class="k"&gt;then &lt;/span&gt;&lt;span class="nv"&gt;a&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;  &amp;quot;&lt;/span&gt;&lt;span class="nv"&gt;$a&lt;/span&gt;; &lt;span class="nb"&gt;echo&lt;/span&gt; -ne &lt;span class="s2"&gt;&amp;quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&amp;quot;&lt;/span&gt;; &lt;span class="k"&gt;fi&lt;/span&gt;&lt;span class="sb"&gt;`&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;很明显，整个结构被一个正引号引起来，表示执行并返回其中的结果。这样我们就可以把这个部分分解开来了：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;a&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$?&lt;/span&gt;
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt; &lt;span class="nv"&gt;$a&lt;/span&gt; -ne 0 &lt;span class="o"&gt;]&lt;/span&gt;; &lt;span class="k"&gt;then&lt;/span&gt;
+&lt;span class="k"&gt;    &lt;/span&gt;&lt;span class="nv"&gt;a&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;  &amp;quot;&lt;/span&gt;&lt;span class="nv"&gt;$a&lt;/span&gt;
+    &lt;span class="nb"&gt;echo&lt;/span&gt; -ne &lt;span class="s2"&gt;&amp;quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&amp;quot;&lt;/span&gt;
+&lt;span class="k"&gt;fi&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;稍微懂点编程就会觉得这也没什么技术含量嘛，其中 &lt;code&gt;$?&lt;/code&gt; 就是上一个程序运行的返回值，我们获取并判断他，如果不为零就进行下面的操作。&lt;code&gt;a=" "$a&lt;/code&gt; 这句我们待会而再看，先看下面那个 &lt;code&gt;echo -ne&lt;/code&gt; 的语句。&lt;code&gt;echo&lt;/code&gt; 我们知道是显示字符串，而 &lt;code&gt;-ne&lt;/code&gt; 实际上是两个参数 &lt;code&gt;-n&lt;/code&gt; 和 &lt;code&gt;-e&lt;/code&gt;，&lt;code&gt;-n&lt;/code&gt; 表示输出字符串后不输出换行符，&lt;code&gt;-e&lt;/code&gt; 表示解析后面的转义符。&lt;/p&gt;
+&lt;p&gt;最后就剩分析那个打印的东西了。我们发现主要部分其实和上面是一样的，无非就是一些设置格式的事情，我们去掉格式设置，发现主要是这样的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="se"&gt;\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;s&lt;span class="se"&gt;\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;1A&lt;span class="se"&gt;\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="k"&gt;$((&lt;/span&gt;COLUMNS-2&lt;span class="k"&gt;))&lt;/span&gt;G&lt;span class="k"&gt;${&lt;/span&gt;&lt;span class="nv"&gt;a&lt;/span&gt;&lt;span class="p"&gt;:(-3)&lt;/span&gt;&lt;span class="k"&gt;}&lt;/span&gt;&lt;span class="se"&gt;\e&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;u
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个部分仍然包含许多 ANSI 控制符，第一个是 &lt;code&gt;\e[s&lt;/code&gt;，表示保存当前光标位置，与最后一个表示恢复光标位置的控制符 &lt;code&gt;\e[u&lt;/code&gt; 遥相呼应，由于我们需要大规模移动光标，所以我们要备份一下位置。然后我们看到 &lt;code&gt;\e[1A&lt;/code&gt;，这个控制符表示将光标上移一行。然后之后有一个很复杂的东西 &lt;code&gt;\e[$((COLUMNS-2))G&lt;/code&gt;，这个对应的控制符是 &lt;code&gt;\e[*G&lt;/code&gt;，表示设置光标到第几列，而 &lt;code&gt;$((COLUMNS-2))&lt;/code&gt; 表示这个列数为当前可显示的最大列数-2。后面有一个 &lt;code&gt;${a:(-3)}&lt;/code&gt;，也就是取前面的后三位显示（返回值的范围是0-255）。&lt;/p&gt;
+&lt;p&gt;现在我们回到前面的 &lt;code&gt;a=" "$a&lt;/code&gt;，发现这个的目的其实是和 &lt;code&gt;${a:(-3)}&lt;/code&gt; 对应，让这个部分无论如何保证有三个字符可以出现。事实上最初我并不是这么写的，而是写 &lt;code&gt;$((COLUMNS-${#a}+1))&lt;/code&gt;，表示 &lt;code&gt;$a&lt;/code&gt; 有多长就显示多长。但这样感觉不美观，就改成了固定3字符长。&lt;/p&gt;
+&lt;p&gt;到这里也就结束了，然后我们发现，其实看过去很复杂的东西，拆开来还是挺简单的嘛~&lt;/p&gt;
+&lt;h2&gt;参考资料&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://imtx.me/archives/1298.html"&gt;史上最强的PS1 | I’m TualatriX&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://hi.baidu.com/shappen/blog/item/4171f5ef57e6e434adafd5aa.html"&gt;Bash颜色控制_宠辱不惊，看庭前花开花落；去留无意，望天空云卷云舒_百度空间&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://en.wikipedia.org/wiki/ANSI_escape_code"&gt;ANSI escape code – Wikipedia, the free encyclopedia&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://www.issociate.de/board/post/434218/Mimic_zsh%27s_right_prompt_in_bash.html"&gt;Mimic zsh’s right prompt in bash&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="bash"></category></entry><entry><title>为 Linux 做一把 USB “钥匙”</title><link href="http://upsuper.github.com/blog/usb-key-for-linux.html" rel="alternate"></link><updated>2011-01-14T20:25:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2011-01-14:usb-key-for-linux.html</id><summary type="html">&lt;p&gt;我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……&lt;/p&gt;
+&lt;p&gt;这个&lt;a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f"&gt;问题提出&lt;/a&gt;后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~&lt;/p&gt;
+&lt;p&gt;其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;sudo apt-get install pamusb-tools
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;直接安装。当然如果你连终端也懒得打开，可以直接点击这里：&lt;a href="apt:pamusb-tools"&gt;安装 pamusb-tools&lt;/a&gt;。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。&lt;/p&gt;
+&lt;p&gt;另外，Fedora 源里有 pam_usb 包，Arch Linux 似乎在 AUR 里有，在 Gentoo 中似乎是被默认屏蔽的，可以通过下面指令安装：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;sys-auth/pam_usb&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/portage/package.keywords
+emerge -av &lt;span class="s2"&gt;&amp;quot;&amp;gt;=sys-auth/pam_usb-0.4.1&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其他的发行版也可以直接从他们的&lt;a href="http://pamusb.org/"&gt;项目主页&lt;/a&gt;下载源码包编译安装~&lt;/p&gt;
+&lt;p&gt;安装好了以后，首先插入你作为钥匙的U盘，然后在终端中运行&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;sudo pamusb-conf --add-device MyUSBDevice
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;其中的 &lt;code&gt;MyUSBDevice&lt;/code&gt; 可以任意修改，只是一个标识符而已。接下来根据提示操作即可。如果你的电脑此时连接着超过一个U盘、移动硬盘，或者某个U盘、移动硬盘包含超过一个分区（就像我给U盘分了2个区），就会提示选择安装到哪里。设置完确认保存到配置文件即可。&lt;/p&gt;
+&lt;p&gt;下面添加认证用户，下面的命令是添加我为认证用户的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;sudo pamusb-conf --add-user upsuper
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;原教程里面写的是添加 root 我认为是没有必要的，添加 &lt;code&gt;sudoer&lt;/code&gt; 应该是已经足够了的。这条命令几乎不问什么问题，直接就完成了……这样以后在使用这把钥匙的时候就可以不需要输入相应用户的密码了。&lt;/p&gt;
+&lt;p&gt;最后最重要的一步，是编辑认证系统的配置文件。打开 &lt;code&gt;/etc/pam.d/common-auth&lt;/code&gt;（对于 Gentoo 来说是 &lt;code&gt;/etc/pam.d/system-auth&lt;/code&gt;），将下面这行插入到所有条目的前面：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;auth&lt;/span&gt;    &lt;span class="n"&gt;sufficient&lt;/span&gt;      &lt;span class="n"&gt;pam_usb&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;so&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;现在你的 USB 钥匙已经可以用了！现在，另外再打开一个终端，随便 &lt;code&gt;sudo&lt;/code&gt; 点什么，然后你应该不会再看到输入密码的画面，取而代之的是下面的东西：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;pam_usb&lt;/span&gt; &lt;span class="n"&gt;v0&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;4&lt;span class="p"&gt;.&lt;/span&gt;2
+&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Authentication&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;user&lt;/span&gt; &amp;quot;&lt;span class="n"&gt;upsuper&lt;/span&gt;&amp;quot; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sudo&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Device&lt;/span&gt; &amp;quot;&lt;span class="n"&gt;MyUSBDevice&lt;/span&gt;&amp;quot; &lt;span class="n"&gt;is&lt;/span&gt; &lt;span class="n"&gt;connected&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;good&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;
+&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Performing&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt; &lt;span class="n"&gt;time&lt;/span&gt; &lt;span class="n"&gt;pad&lt;/span&gt; &lt;span class="n"&gt;verification&lt;/span&gt;&lt;span class="p"&gt;...&lt;/span&gt;
+&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;Access&lt;/span&gt; &lt;span class="n"&gt;granted&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后运行成功了！不仅 &lt;code&gt;sudo&lt;/code&gt; 可以验证，包括 &lt;code&gt;gksu&lt;/code&gt; 和登入框等等都已经可以使用这把钥匙直接略过不需要输入密码了。&lt;/p&gt;
+&lt;p&gt;现在你已经成功的制作了一个属于自己的 USB 钥匙！&lt;/p&gt;
+&lt;p&gt;现在我们看看还有什么地方可以继续改进的……&lt;/p&gt;
+&lt;p&gt;我们注意到，无论我们是否连接了我们的钥匙，以后 &lt;code&gt;sudo&lt;/code&gt; 的时候都会出现那些讨厌的提示，怎么办呢……？其实这完全也是可以解决的：打开 &lt;code&gt;/etc/pamusb.conf&lt;/code&gt; 文件，我们发现这其实根本就是一个 XML 文件……在里面的 &lt;code&gt;&amp;lt;defaults&amp;gt;&lt;/code&gt; 标签中间添加&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nt"&gt;&amp;lt;option&lt;/span&gt; &lt;span class="na"&gt;name=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;quiet&amp;quot;&lt;/span&gt;&lt;span class="nt"&gt;&amp;gt;&lt;/span&gt;true&lt;span class="nt"&gt;&amp;lt;/option&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;保存后就直接生效了~&lt;/p&gt;
+&lt;p&gt;除此之外，我们发现在这里，我们的钥匙和原来的密码之间是一个替代的关系，如果你希望利用这个钥匙附加上密码提高安全性的话，可以将上面在 &lt;code&gt;/etc/pam.d/common-auth&lt;/code&gt; 里面加入的那行中的 &lt;code&gt;sufficient&lt;/code&gt; 改成 &lt;code&gt;required&lt;/code&gt;，如果你干脆就不想再用密码了，那就把密码的那些删掉，留下一个 &lt;code&gt;required&lt;/code&gt; 的 &lt;code&gt;pam_usb&lt;/code&gt;~&lt;/p&gt;
+&lt;p&gt;话说这还真是强大呐~不过用了这个以后，你这个USB钥匙也得要好好保管鸟~不过其实对我来说最爽的无外乎以后在众目睽睽之下不需要再手动输入密码啦~&lt;/p&gt;
+&lt;h2&gt;参考资料&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://ubuntuforums.org/showthread.php?t=17571"&gt;HOWTO: pam_usb login with USB memory stick – Ubuntu Forums&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://pamusb.org/doc/quickstart"&gt;doc:quickstart [pam_usb]&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://pamusb.org/doc/configuration"&gt;doc:configuration [pam_usb]&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Linux"></category><category term="Security"></category></entry><entry><title>在 tty 里添加一个开机自启动的任务管理器</title><link href="http://upsuper.github.com/blog/automatically-run-top-in-tty.html" rel="alternate"></link><updated>2010-03-31T10:31:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2010-03-31:automatically-run-top-in-tty.html</id><summary type="html">&lt;p&gt;每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 &lt;code&gt;top&lt;/code&gt; 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。&lt;/p&gt;
 &lt;p&gt;既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 &lt;code&gt;top&lt;/code&gt; 无疑最方便了~&lt;/p&gt;
 &lt;p&gt;首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 &lt;code&gt;/etc/init/ttyX.conf&lt;/code&gt;，其中的 X 便是 tty 的编号，我这里选择了 &lt;code&gt;tty6.conf&lt;/code&gt;。打开这个文件，结构简单极了，看到里面&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nb"&gt;exec&lt;/span&gt; /sbin/getty -8 38400 tty6
@@ -51,7 +629,7 @@ su -c &lt;span class="s1"&gt;&amp;#39;/usr/bin/top&amp;#39;&lt;/span&gt; upsuper
 
 
 &lt;p&gt;下面只要进入那个 tty 点 &lt;code&gt;q&lt;/code&gt; 退出当前 &lt;code&gt;top&lt;/code&gt;，马上就会自动替换为 &lt;code&gt;htop&lt;/code&gt; 启动了~&lt;/p&gt;</summary><category term="Linux"></category></entry><entry><title>写了个小小的 vc-fix</title><link href="http://upsuper.github.com/blog/little-vc6-fix.md.html" rel="alternate"></link><updated>2010-03-21T10:40:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2010-03-21:little-vc6-fix.md.html</id><summary type="html">&lt;p&gt;我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……&lt;/p&gt;
-&lt;p&gt;我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用&lt;a href="./simple-script-for-using-vc6-compiler.html"&gt;上次安装的 VC6&lt;/a&gt; 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。&lt;/p&gt;
+&lt;p&gt;我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用&lt;a href="http://upsuper.github.com/blog/simple-script-for-using-vc6-compiler.html"&gt;上次安装的 VC6&lt;/a&gt; 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。&lt;/p&gt;
 &lt;p&gt;其中我觉得最讨厌的莫过于 &lt;code&gt;for&lt;/code&gt; 循环的循环变量不被视为 &lt;code&gt;for&lt;/code&gt; 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。&lt;/p&gt;
 &lt;p&gt;在网上一找，还真找到一个简单的方法：&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cp"&gt;#define for if(0) ; else for&lt;/span&gt;
@@ -205,7 +783,27 @@ Hello world!
   &lt;span class="k"&gt;background&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;#000&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
   &lt;span class="k"&gt;color&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="m"&gt;#fff&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</summary></entry><entry><title>PHP 空间也做 LaTeX 公式显示</title><link href="http://upsuper.github.com/blog/php-show-latex-formula.html" rel="alternate"></link><updated>2009-04-03T10:43:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-04-03:php-show-latex-formula.html</id><summary type="html">&lt;p&gt;原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。&lt;/p&gt;
+&lt;/pre&gt;&lt;/div&gt;</summary></entry><entry><title>Linux 死机了该怎么办？</title><link href="http://upsuper.github.com/blog/what-to-do-if-linux-crash.html" rel="alternate"></link><updated>2009-07-28T23:20:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-07-28:what-to-do-if-linux-crash.html</id><summary type="html">&lt;p&gt;Linux 会死机么？我可以很肯定地说，会！如何？很简单，&lt;a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9"&gt;fork 炸弹&lt;/a&gt;就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。&lt;/p&gt;
+&lt;p&gt;Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？&lt;/p&gt;
+&lt;p&gt;不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的。下面在提示符后面输入 top 回车，这时会看到一张动态的表，上面列出了耗用资源最多的进程。观察它刷新一两次，按q退出，然后输入 kill ，其中的 PID 你可以在 top 里面看到。这个时候应该会快了不少，如果你发现没有成功结束掉，就再输入 kill -KILL ，这次基本上就没问题了。&lt;/p&gt;
+&lt;p&gt;除了上面这种情况外，一些底层软件的 bug 也可能导致一些奇怪的死机问题。我某位同学近日就因为莫名其妙的死机强制重启把 ext4 的分区给伤了。（最后是 sysreccd 修复了，貌似是分区表部分损坏）据其说，死机是键鼠均无反应。一般来说，系统负载高导致的死机，在可怕键盘也会有反应，有人说如果死机到键盘无响应“负载都无限大了”，亦有人说这可能是 X Server 与驱动配合有问题导致的。不过我们考虑一下遇到这种情况怎么办？&lt;/p&gt;
+&lt;p&gt;OK，这是今天才学到的方法，叫做 reisub，这个方法可以在各种情况下安全地重启计算机。大家在键盘上找，可以找到一个叫做“Sys Rq”的键，在台机的键盘上通常与 Prt Sc 共键，在笔记本可能在其他位置，如 Delete。以台机为例，要使用这种方法需要按住 Alt-Print(Sys Rq)，然后依次按下 reisub 这几个键，按完 b 系统就会重启。&lt;/p&gt;
+&lt;p&gt;下面解释一下这个方法：其实 Sys Rq 是一种叫做系统请求的东西，按住 Alt-Print 的时候就相当于按住了 Sys Rq 键，这个时候输入的一切都会直接由 Linux 内核来处理，它可以进行许多低级操作。这个时候 reisub 中的每一个字母都是一个独立操作，他们分别表示：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;unRaw&lt;/span&gt;      将键盘控制从 &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;Server&lt;/span&gt; 那里抢回来
+ &lt;span class="n"&gt;tErminate&lt;/span&gt; 给所有进程发送 &lt;span class="n"&gt;SIGTERM&lt;/span&gt; 信号，让他们自己解决善后
+ &lt;span class="n"&gt;kIll&lt;/span&gt;      给所有进程发送 &lt;span class="n"&gt;SIGKILL&lt;/span&gt; 信号，强制他们马上关闭
+  &lt;span class="n"&gt;Sync&lt;/span&gt;     将所有数据同步至磁盘
+  &lt;span class="n"&gt;Unmount&lt;/span&gt;  将所有分区挂载为只读模式
+&lt;span class="n"&gt;reBoot&lt;/span&gt;     重启
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这6个字母的顺序是不可以记错的。那怎么记呢？这里提供一个个人认为比较好的方法：单词 busier（busy 的比较级，更忙）倒过来就是了。&lt;/p&gt;
+&lt;p&gt;基本上就这样了，Linux 的死机本来就不多见，现在见了也可以安全解决，多好~&lt;/p&gt;
+&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://en.wikipedia.org/wiki/Magic_SysRq_key"&gt;Magic SysRq key – Wikipedia, the free encyclopedia&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Linux"></category></entry><entry><title>PHP 空间也做 LaTeX 公式显示</title><link href="http://upsuper.github.com/blog/php-show-latex-formula.html" rel="alternate"></link><updated>2009-04-03T10:43:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-04-03:php-show-latex-formula.html</id><summary type="html">&lt;p&gt;原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。&lt;/p&gt;
 &lt;p&gt;今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！&lt;/p&gt;
 &lt;p&gt;要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。&lt;/p&gt;
 &lt;p&gt;如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：&lt;a href="http://www.forkosh.com/mimetex.zip"&gt;mimetex.zip&lt;/a&gt;。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入&lt;/p&gt;

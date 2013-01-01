@@ -1,51 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <title>鬼の领地 - Study</title>
+        <title>[翻译] 探索 Python 代码对象</title>
         <meta charset="utf-8" />
-        <link rel="stylesheet" href="../theme/css/main.css" type="text/css" />
+        <link rel="stylesheet" href="./theme/css/main.css" type="text/css" />
                 <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
                 
         <!--[if IE]>
                 <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 
         <!--[if lte IE 7]>
-                <link rel="stylesheet" type="text/css" media="all" href="../css/ie.css"/>
-                <script src="../js/IE8.js" type="text/javascript"></script><![endif]-->
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie.css"/>
+                <script src="./js/IE8.js" type="text/javascript"></script><![endif]-->
 
         <!--[if lt IE 7]>
-                <link rel="stylesheet" type="text/css" media="all" href="../css/ie6.css"/><![endif]-->
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie6.css"/><![endif]-->
 
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
-                <h1><a href="../">鬼の领地 </a></h1>
+                <h1><a href="./">鬼の领地 </a></h1>
                 <nav><ul>
-                                                                                                    <li ><a href="../category/blog.html">Blog</a></li>
-                                    <li ><a href="../category/research.html">Research</a></li>
-                                    <li ><a href="../category/script.html">Script</a></li>
-                                    <li class="active"><a href="../category/study.html">Study</a></li>
-                                    <li ><a href="../category/technique.html">Technique</a></li>
+                                                                                                    <li ><a href="./category/blog.html">Blog</a></li>
+                                    <li ><a href="./category/research.html">Research</a></li>
+                                    <li ><a href="./category/script.html">Script</a></li>
+                                    <li class="active"><a href="./category/study.html">Study</a></li>
+                                    <li ><a href="./category/technique.html">Technique</a></li>
                                 </ul></nav>
         </header><!-- /#banner -->
-                
-            
+        <section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="./exploring-python-code-objects.html" rel="bookmark"
+           title="Permalink to [翻译] 探索 Python 代码对象">[翻译] 探索 Python 代码对象</a></h1>
+          </header>
 
-                            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="../exploring-python-code-objects.html">[翻译] 探索 Python 代码对象</a></h1> 
-                    <footer class="post-info">
+    <div class="entry-content">
+      <footer class="post-info">
         <abbr class="published" title="2012-03-31T05:50:00">
                 六 31 三月 2012
         </abbr>
 
                 <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
         </address>
-        <p>In <a href="../category/study.html">Study</a>. </p>
-<p>tags: <a href="../tag/python.html">Python</a></p>
-</footer><!-- /.post-info --><p>原文：<a href="http://late.am/post/2012/03/26/exploring-python-code-objects">Exploring Python Code Objects</a></p>
+        <p>In <a href="./category/study.html">Study</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->      <p>原文：<a href="http://late.am/post/2012/03/26/exploring-python-code-objects">Exploring Python Code Objects</a></p>
 <p>由于受到 <a href="http://www.dabeaz.com/">David Beazley</a> 在 <a href="https://us.pycon.org/2012/">PyCon</a> 上的 <a href="http://pyvideo.org/video/659/keynote-david-beazley">Keynote</a> 的启发，近来我四处学习与 Python 代码对象 (code object) 相关的内容。我并没有什么特别的利器，也没有专门的任务去解决 (至今为止？)，所以请将这篇文章看做一些也许有趣的记录和随笔 (如果没意思的话，抱歉)。</p>
 <p><em>免责声明：</em>这篇文章是关于 CPython 2.7 的，虽然其中的大部分对于其他的 CPython 版本应该也是正确的 (包括 3.x)。但我不保证它在 PyPy、Jython、IronPython 等实现上是正确和适用的。</p>
 <h2>第0步：是什么？</h2>
@@ -251,98 +254,12 @@
 
 <p>由于字节码便宜和行数偏移终归都是偏移，大的空白仅仅意味着另一边是一个长度为0的便宜。于是我们在字节码上有6字节的偏移，随后跟着一个源代码上 255 行的偏移，然后在字节码上0字节的偏移，之后又是一个 255 行的源代码偏移，还有一个0字节的字节码偏移和一个 255 行的源码偏移，还有一个0字节的字节码偏移和最后一个 236 行的源代码偏移 (接下去就是对于最后一个 <code>print</code> 语句的正常的6个字节的字节码偏移和1行的源代码偏移)。如此优雅！</p>
 <h2>结语</h2>
-<p>我先对这篇文章的散乱表示抱歉，不过我希望它的内容能让你感到很有趣。敬请继续关注对 <code>exec</code> 特性的探索以及在不久的将来其在 <a href="http://late.am/post/2011/11/27/keystone-a-simple-python-web-framework">Keystone</a> 中的应用 (这是作者开发的一个有趣的 Python 网站框架，值得关注一下，译注)。</p>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../python-internals-how-callables-work.html" rel="bookmark"
-                           title="Permalink to [翻译] Python 内部：可调用对象是如何工作的">[翻译] Python 内部：可调用对象是如何工作的</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2012-03-25T09:10:00">
-                日 25 三月 2012
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/study.html">Study</a>. </p>
-<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/c.html">C</a></p>
-</footer><!-- /.post-info -->                <p>原文：<a href="http://eli.thegreenplace.net/2012/03/23/python-internals-how-callables-work/">Python internals: how callables work</a></p>
-<p><em>【这篇文章所描述的 Python 版本是 3.x，更确切地说，是 CPython 3.3 alpha。】</em></p>
-<p>在 Python 中，可调用对象 (callable) 的概念是十分基本的。当我们说什么东西是“可调用的”，马上可以联想到的显而易见的答案便是函数。无论是用户定义的函数 (你所编写的) 还是内置的函数 (经常是在 CPython 解析器内由 C 实现的)，他们总是用来被调用的，不是么？</p>
-<p>当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 <code>__call__</code> 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的 ...</p>
-                <a class="readmore" href="../python-internals-how-callables-work.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../access-control-of-linux.html" rel="bookmark"
-                           title="Permalink to 探秘 Linux 权限控制">探秘 Linux 权限控制</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-07-06T16:08:00">
-                一 06 七月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/study.html">Study</a>. </p>
-<p>tags: <a href="../tag/linux.html">Linux</a><a href="../tag/security.html">Security</a></p>
-</footer><!-- /.post-info -->                <p>众所周知，Linux 的权限控制虽然很简单，但却十分严格和有效的。（和 Windows 复杂却没用的权限控制形成鲜明对比……）由于最近编写测评机，希望利用 Linux 的高安全性做运行级恶意代码防护，因此就顺带地研究了一下 Linux 的权限控制。经过这次探秘，我对 Linux 的权限有了更新的认识，确实是一个很强大的东西啊！</p>
-<p>由于本人的能力有限，文章中的不足和谬误也请大家多多指教！</p>
-<p>我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux ...</p>
-                <a class="readmore" href="../access-control-of-linux.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../python-variable-type-and-reference.html" rel="bookmark"
-                           title="Permalink to 探索 Python 的变量、类型和引用">探索 Python 的变量、类型和引用</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-06-25T22:23:00">
-                四 25 六月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/study.html">Study</a>. </p>
-<p>tags: <a href="../tag/python.html">Python</a></p>
-</footer><!-- /.post-info -->                <p>我一开始为 Python 的强大和简洁所震撼，看了些 Python 的教程，学了不少东西。前面那些探索就以后再写吧……今天先讲讲今天知道的东西。</p>
-<p>在探索到 Python 函数的参数传递的时候，我不禁赞叹 Python 灵活的参数设计，但慢慢的，开始迷惑与传递参数的修改和返回。</p>
-<p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
-<p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
-                <a class="readmore" href="../python-variable-type-and-reference.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            </ol><!-- /#posts-list -->
-                            <p class="paginator">
-        Page 1 / 1
-    </p>
-                        </section><!-- /#content -->
-                    <section id="extras" class="body">
+<p>我先对这篇文章的散乱表示抱歉，不过我希望它的内容能让你感到很有趣。敬请继续关注对 <code>exec</code> 特性的探索以及在不久的将来其在 <a href="http://late.am/post/2011/11/27/keystone-a-simple-python-web-framework">Keystone</a> 中的应用 (这是作者开发的一个有趣的 Python 网站框架，值得关注一下，译注)。</p>
+    </div><!-- /.entry-content -->
+    
+  </article>
+</section>
+        <section id="extras" class="body">
                         </section><!-- /#extras -->
 
         <footer id="contentinfo" class="body">

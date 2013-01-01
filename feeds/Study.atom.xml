@@ -1,25 +1,358 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/Study.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2009-07-28T23:20:00+08:00</updated><entry><title>Linux 死机了该怎么办？</title><link href="http://upsuper.github.com/blog/what-to-do-if-linux-crash.html" rel="alternate"></link><updated>2009-07-28T23:20:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-07-28:what-to-do-if-linux-crash.html</id><summary type="html">&lt;p&gt;Linux 会死机么？我可以很肯定地说，会！如何？很简单，&lt;a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9"&gt;fork 炸弹&lt;/a&gt;就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。&lt;/p&gt;
-&lt;p&gt;Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？&lt;/p&gt;
-&lt;p&gt;不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的。下面在提示符后面输入 top 回车，这时会看到一张动态的表，上面列出了耗用资源最多的进程。观察它刷新一两次，按q退出，然后输入 kill ，其中的 PID 你可以在 top 里面看到。这个时候应该会快了不少，如果你发现没有成功结束掉，就再输入 kill -KILL ，这次基本上就没问题了。&lt;/p&gt;
-&lt;p&gt;除了上面这种情况外，一些底层软件的 bug 也可能导致一些奇怪的死机问题。我某位同学近日就因为莫名其妙的死机强制重启把 ext4 的分区给伤了。（最后是 sysreccd 修复了，貌似是分区表部分损坏）据其说，死机是键鼠均无反应。一般来说，系统负载高导致的死机，在可怕键盘也会有反应，有人说如果死机到键盘无响应“负载都无限大了”，亦有人说这可能是 X Server 与驱动配合有问题导致的。不过我们考虑一下遇到这种情况怎么办？&lt;/p&gt;
-&lt;p&gt;OK，这是今天才学到的方法，叫做 reisub，这个方法可以在各种情况下安全地重启计算机。大家在键盘上找，可以找到一个叫做“Sys Rq”的键，在台机的键盘上通常与 Prt Sc 共键，在笔记本可能在其他位置，如 Delete。以台机为例，要使用这种方法需要按住 Alt-Print(Sys Rq)，然后依次按下 reisub 这几个键，按完 b 系统就会重启。&lt;/p&gt;
-&lt;p&gt;下面解释一下这个方法：其实 Sys Rq 是一种叫做系统请求的东西，按住 Alt-Print 的时候就相当于按住了 Sys Rq 键，这个时候输入的一切都会直接由 Linux 内核来处理，它可以进行许多低级操作。这个时候 reisub 中的每一个字母都是一个独立操作，他们分别表示：&lt;/p&gt;
-&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;unRaw&lt;/span&gt;      将键盘控制从 &lt;span class="n"&gt;X&lt;/span&gt; &lt;span class="n"&gt;Server&lt;/span&gt; 那里抢回来
- &lt;span class="n"&gt;tErminate&lt;/span&gt; 给所有进程发送 &lt;span class="n"&gt;SIGTERM&lt;/span&gt; 信号，让他们自己解决善后
- &lt;span class="n"&gt;kIll&lt;/span&gt;      给所有进程发送 &lt;span class="n"&gt;SIGKILL&lt;/span&gt; 信号，强制他们马上关闭
-  &lt;span class="n"&gt;Sync&lt;/span&gt;     将所有数据同步至磁盘
-  &lt;span class="n"&gt;Unmount&lt;/span&gt;  将所有分区挂载为只读模式
-&lt;span class="n"&gt;reBoot&lt;/span&gt;     重启
+<feed xmlns="http://www.w3.org/2005/Atom"><title>鬼の领地</title><link href="http://upsuper.github.com/blog/" rel="alternate"></link><link href="http://upsuper.github.com/blog/feeds/Study.atom.xml" rel="self"></link><id>http://upsuper.github.com/blog/</id><updated>2012-03-31T05:50:00+08:00</updated><entry><title>[翻译] 探索 Python 代码对象</title><link href="http://upsuper.github.com/blog/exploring-python-code-objects.html" rel="alternate"></link><updated>2012-03-31T05:50:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2012-03-31:exploring-python-code-objects.html</id><summary type="html">&lt;p&gt;原文：&lt;a href="http://late.am/post/2012/03/26/exploring-python-code-objects"&gt;Exploring Python Code Objects&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;由于受到 &lt;a href="http://www.dabeaz.com/"&gt;David Beazley&lt;/a&gt; 在 &lt;a href="https://us.pycon.org/2012/"&gt;PyCon&lt;/a&gt; 上的 &lt;a href="http://pyvideo.org/video/659/keynote-david-beazley"&gt;Keynote&lt;/a&gt; 的启发，近来我四处学习与 Python 代码对象 (code object) 相关的内容。我并没有什么特别的利器，也没有专门的任务去解决 (至今为止？)，所以请将这篇文章看做一些也许有趣的记录和随笔 (如果没意思的话，抱歉)。&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;免责声明：&lt;/em&gt;这篇文章是关于 CPython 2.7 的，虽然其中的大部分对于其他的 CPython 版本应该也是正确的 (包括 3.x)。但我不保证它在 PyPy、Jython、IronPython 等实现上是正确和适用的。&lt;/p&gt;
+&lt;h2&gt;第0步：是什么？&lt;/h2&gt;
+&lt;p&gt;所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人) 声称 Python 是一个解释型语言，但是事实上你所有的 Python 代码在执行之前都被编译了，甚至于你在 Python 命令行程序中交互式输入的代码也是如此。CPython 实现了一个执行基于栈的字节码 (stack-based bytecode) 的虚拟机。在运行时，任何可执行的东西 (函数、方法、模块、类主体 (class body)、Lambda 式、语句、表达式等等) 都以字节码的形式由 Python 虚拟机执行。&lt;/p&gt;
+&lt;p&gt;然后，代码对象是用于表示字节码片段的 Python 对象，同时还附带了所有执行需要的东西：预期的参数名称和数量的声明、一个本地变量的列表 (不是字典！稍后会有更多说明)、字节码生成时与源代码相关的信息 (用于调试和输出栈跟踪) 等——哦，还有 (也许很显然地) 字节码本身，以 &lt;code&gt;str&lt;/code&gt; 来保存 (在 Python 3 中为 &lt;code&gt;bytes&lt;/code&gt;)。&lt;/p&gt;
+&lt;p&gt;虽然代码对象表示了一些可执行的代码，但它们本身并不能被直接调用。要运行一个代码对象，你必须使用 &lt;code&gt;exec&lt;/code&gt; 关键字或者 &lt;code&gt;eval()&lt;/code&gt; 函数。&lt;/p&gt;
+&lt;h2&gt;第1步：制造一些代码&lt;/h2&gt;
+&lt;p&gt;在大部分时候，你在平常的 Python 编程中并不需要面对代码对象。这些时候，你不需要特别地注意代码对象，Python 会为你创建和管理它们。但在某些情况下，你可能想要自己创建代码对象，比如在这篇文章中我们就要用他们来进行实验：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... print &amp;quot;Hello, world&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;exec&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x1054c74b0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;file&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;lt;string&amp;gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;这6个字母的顺序是不可以记错的。那怎么记呢？这里提供一个个人认为比较好的方法：单词 busier（busy 的比较级，更忙）倒过来就是了。&lt;/p&gt;
-&lt;p&gt;基本上就这样了，Linux 的死机本来就不多见，现在见了也可以安全解决，多好~&lt;/p&gt;
-&lt;p&gt;参考资料：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Woohoo，你的第一个代码对象！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;传递给 &lt;a href="http://docs.python.org/library/functions.html#compile"&gt;&lt;code&gt;compile()&lt;/code&gt;&lt;/a&gt; 的第一个参数，很明显是需要编译的 Python 代码字符串。第二个定义了代码的“文件名” (在这里，方便起见我们用了 &lt;code&gt;&amp;lt;string&amp;gt;&lt;/code&gt; 来表示代码从交互命令行中获得)。第三个参数是编译的类型，这个参数在大多数情况下都是 &lt;code&gt;exec&lt;/code&gt; 正如你在这里看到的。其他可能的模式还有适用于仅包含一条表达式的字符串的 &lt;code&gt;eval&lt;/code&gt;，和生成仅含有一条语句的代码对象的 &lt;code&gt;single&lt;/code&gt;。后者的返回值如果不是 &lt;code&gt;None&lt;/code&gt; 的话将会被打印出来 (正如交互式命令行一样)。&lt;/p&gt;
+&lt;p&gt;当使用 &lt;code&gt;eval&lt;/code&gt; 模式时，如果代码中含有语句 (如我们上面包含 &lt;code&gt;print&lt;/code&gt; 语句的例子那样) 编译将会因为一个符号错误失败：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... print &amp;quot;Hello, world&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;eval&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;Traceback&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;most&lt;/span&gt; &lt;span class="n"&gt;recent&lt;/span&gt; &lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="n"&gt;last&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+  &lt;span class="n"&gt;File&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;module&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class="n"&gt;File&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;lt;string&amp;gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Hello, world&amp;quot;&lt;/span&gt;
+        &lt;span class="o"&gt;^&lt;/span&gt;
+&lt;span class="ne"&gt;SyntaxError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;invalid&lt;/span&gt; &lt;span class="n"&gt;syntax&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;当使用 &lt;code&gt;single&lt;/code&gt; 的时候，只有一个语句将会被处理，更多的语句 (或者其他什么) 将会被忽略：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... print &amp;quot;Hello, world&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... print &amp;quot;Goodbye, world&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;single&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;exec&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;
+&lt;span class="n"&gt;Hello&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;world&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;blockquote&gt;
+&lt;p&gt;我的 “goodbye” 发生了什么？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在这篇文章的余下部分，我们将继续分析 &lt;code&gt;exec&lt;/code&gt;，它也是在你导入模块时 Python 为你做的编译类型。&lt;/p&gt;
+&lt;h2&gt;第2步：打开它&lt;/h2&gt;
+&lt;p&gt;让我们回到我们的第一个例子然后进入代码对象内部看看我们有些什么：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... print &amp;quot;Hello, world&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;exec&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nb"&gt;dir&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c"&gt;# 处于可读性考虑，这里排除了无关的属性&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;co_argcount&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_cellvars&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_code&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_consts&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_filename&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_firstlineno&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_flags&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_freevars&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_lnotab&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;co_names&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_nlocals&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_stacksize&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;co_varnames&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这些属性都在 &lt;a href="http://docs.python.org/library/inspect.html"&gt;&lt;code&gt;inspect&lt;/code&gt;&lt;/a&gt; 模块的文档中都有写明，不过这里我将特别说一说其中几个很酷的属性：&lt;/p&gt;
+&lt;p&gt;首先，我们可以看看我们传递给 &lt;code&gt;compile()&lt;/code&gt; 的第二个参数最后到了哪里：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_filename&lt;/span&gt;
+&lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;还有也许让人吃惊的，我们的代码表示了一个匿名模块 (以 &lt;code&gt;exec&lt;/code&gt; 模式编译的代码总是被当做模块级的代码，所以理所当然地它可以包含函数或类的定义，或者其他任何有效的 Python 代码)：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_name&lt;/span&gt;
+&lt;span class="s"&gt;&amp;#39;&amp;lt;module&amp;gt;&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;并且正如我们所期望的，一个表示 Python 模块的代码对象是没有参数的 (事实上这是因为我们的代码串仅仅是由一系列在没有任何缩进，在最顶层的语句组成)：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_argcount&lt;/span&gt;
+&lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_varnames&lt;/span&gt;
+&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果我们从函数中取出一段含有参数的代码，我们将看到它们：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;foo&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt;     &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;y&lt;/span&gt;
+&lt;span class="o"&gt;...&lt;/span&gt; 
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;foo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;func_code&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;foo&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x1054b9830&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;file&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;line&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;foo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;func_code&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_varnames&lt;/span&gt;
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;x&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;y&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;foo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;func_code&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_argcount&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果你很好奇，你也可以看看 Python 虚拟机将会处理的原始字节码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_code&lt;/span&gt;
+&lt;span class="s"&gt;&amp;#39;d&lt;/span&gt;&lt;span class="se"&gt;\x00\x00&lt;/span&gt;&lt;span class="s"&gt;GHd&lt;/span&gt;&lt;span class="se"&gt;\x01\x00&lt;/span&gt;&lt;span class="s"&gt;S&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我不推荐尝试直接去阅读这个代码，我们有一些更简单的方式 (注释：看看下一小节)。&lt;/p&gt;
+&lt;p&gt;最后，在代码中我们有一个常量对象，即我们的代码输出的字符串 “Hello, world”：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_consts&lt;/span&gt;
+&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Hello, world&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;等等，那个 &lt;code&gt;None&lt;/code&gt; 是哪儿来的？&lt;/p&gt;
+&lt;h3&gt;稍稍绕道到代码反编译&lt;/h3&gt;
+&lt;p&gt;&lt;a href="http://docs.python.org/library/dis.html"&gt;&lt;code&gt;dis&lt;/code&gt;&lt;/a&gt; 模块可以将代码对象反汇编为人类可读的一系列字节码指令，我们可以用它来精确的观察我们的代码对象中到底有些什么：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;dis&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dis&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  2           0 &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;               0 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;hello, world&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+              3 &lt;span class="n"&gt;PRINT_ITEM&lt;/span&gt;          
+              4 &lt;span class="n"&gt;PRINT_NEWLINE&lt;/span&gt;       
+              5 &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;               1 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+              8 &lt;span class="n"&gt;RETURN_VALUE&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;阅读反汇编的 Python 代码需要一点经验，所以让我来带你探索它。&lt;code&gt;LOAD_CONST&lt;/code&gt; 指令从 &lt;code&gt;co_consts&lt;/code&gt; 元组中读取一个值，并将其压入栈顶。&lt;code&gt;PRINT_ITEM&lt;/code&gt; 指令则弹出栈顶元素并输出其字符串表示。&lt;code&gt;PRINT_NEWLINE&lt;/code&gt; 指令的名字可以很好地说明自己的用途。&lt;/p&gt;
+&lt;p&gt;下面我们来看看神秘的 &lt;code&gt;None&lt;/code&gt;。这被证明是 CPython 虚拟机实现细节中的一个怪异之处。因为任何 Python 中的函数调用 (包括隐含的函数调用如 &lt;code&gt;import&lt;/code&gt; 语句) 在 Python 虚拟机中被实现为 C 函数调用。模块事实上有返回值，这提醒 Python 虚拟机模块的运行已经结束，并且将控制权返回给调用者 (即 &lt;code&gt;import&lt;/code&gt; 语句所在的模块)。我不想尝试在这个问题上做更深入的解释，如果你有兴趣的话，可以看看 &lt;a href="http://www.larryhastings.com/"&gt;Larry Hastings&lt;/a&gt; 在 PyCon 的演讲 &lt;a href="http://pyvideo.org/video/635/stepping-through-cpython"&gt;Steping through CPython&lt;/a&gt; 大约 44:22 的位置。这个视频说的是 Python 3.x，不过 Python 2.7 其实是一样的。如果你对整个实现细节都感兴趣，你肯定应该完整地看完这个视频以及 David Beazley 的 Keynote。&lt;/p&gt;
+&lt;h2&gt;第3步：有趣的内部实现&lt;/h2&gt;
+&lt;p&gt;我们已经看过的那些特性显然对于 Python 虚拟机的执行是非常有用的，但是关于人的部分呢？如果我们想要交互地调试代码 (用 &lt;code&gt;pdb&lt;/code&gt; 或者类似的工具)，获得有用的、可读的异常回溯信息，该怎么办？&lt;/p&gt;
+&lt;p&gt;可以证明，代码对象也同样支持这些。我们之前已经看到，代码对象可以给出它是依据哪个文件生成出来的，这显然可以帮助我们查看源代码。它同样可以指出它自己是从源代码的哪一行开始的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_firstlineno&lt;/span&gt;
+&lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;还有神秘的 &lt;code&gt;co_lnotab&lt;/code&gt; 属性。为了描述它的用途，我们需要更长一点的代码段：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... x = 1&lt;/span&gt;
+&lt;span class="s"&gt;... y = 1&lt;/span&gt;
+&lt;span class="s"&gt;... print x + y&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;exec&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_lnotab&lt;/span&gt;
+&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\x06\x01\x06\x01&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;嗯，然后我们能从中知道些什么呢？也许 &lt;code&gt;dis&lt;/code&gt; 模块在这儿能够帮点忙：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;dis&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dis&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="mi"&gt;2&lt;/span&gt;           &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;           &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+              &lt;span class="mi"&gt;3&lt;/span&gt; &lt;span class="n"&gt;STORE_NAME&lt;/span&gt;           &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+  &lt;span class="mi"&gt;3&lt;/span&gt;           &lt;span class="mi"&gt;6&lt;/span&gt; &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;           &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+              &lt;span class="mi"&gt;9&lt;/span&gt; &lt;span class="n"&gt;STORE_NAME&lt;/span&gt;           &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+  &lt;span class="mi"&gt;4&lt;/span&gt;          &lt;span class="mi"&gt;12&lt;/span&gt; &lt;span class="n"&gt;LOAD_NAME&lt;/span&gt;            &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+             &lt;span class="mi"&gt;15&lt;/span&gt; &lt;span class="n"&gt;LOAD_NAME&lt;/span&gt;            &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;y&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+             &lt;span class="mi"&gt;18&lt;/span&gt; &lt;span class="n"&gt;BINARY_ADD&lt;/span&gt;
+             &lt;span class="mi"&gt;19&lt;/span&gt; &lt;span class="n"&gt;PRINT_ITEM&lt;/span&gt;
+             &lt;span class="mi"&gt;20&lt;/span&gt; &lt;span class="n"&gt;PRINT_NEWLINE&lt;/span&gt;
+             &lt;span class="mi"&gt;21&lt;/span&gt; &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;           &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+             &lt;span class="mi"&gt;24&lt;/span&gt; &lt;span class="n"&gt;RETURN_VALUE&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在一些行的最左边是代码对象所对应的 Python 源代码的行号 (注意到这里的2正对应了 &lt;code&gt;code_obj.co_firstlineno&lt;/code&gt; 的值)。后面一列是这个字节码指令在代码中的偏移位置，0字节处是第一条指令，3字节处是第二条这样。第三列是指令名称本身。而如果指令有参数的话，第四列就是参数，参数后面的括号内是参数的值。&lt;/p&gt;
+&lt;p&gt;现在我们可以将这些东西与 &lt;code&gt;co_lnotab&lt;/code&gt; (其实就是“行号表 (line number table)”的意思) 放到一起来看看 Python 是如何将代码对象与原始的源代码联系起来的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_lnotab&lt;/span&gt;
+&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\x06\x01\x06\x01&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在经过一些尝试和错误之后，我明白了这是一串字节对：第一个字节是字节码的偏移量 (这里是6字节，加上这之后就到达了我们反汇编之后的第二个 &lt;code&gt;LOAD_CONST&lt;/code&gt;)，后面是源代码中跳过的行。&lt;/p&gt;
+&lt;p&gt;我们可以稍稍修改我们的源代码来验证这个理论：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_str2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... x = 1&lt;/span&gt;
+&lt;span class="s"&gt;... &lt;/span&gt;
+&lt;span class="s"&gt;... y = 2&lt;/span&gt;
+&lt;span class="s"&gt;... print x + y&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_str2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;exec&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_lnotab&lt;/span&gt;
+&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\x06\x02\x06\x01&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们将第二条赋值语句向下移了一行，于是我们就看到 &lt;code&gt;co_lnotab&lt;/code&gt; 的第二个字节由1变成了2，表示从当前行数向下移2行。&lt;/p&gt;
+&lt;p&gt;我们同样可以验证这两个稍稍有些不同的源代码生成的字节码是相同的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_code&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_code&lt;/span&gt;
+&lt;span class="bp"&gt;True&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;由于字节码偏移和行号偏移都是一个无符号字节，于是你或许会想，如果比如说在 Python 代码中的两个语句之间我有 257 (或更多) 的空行会怎么样？让我们来看看：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;thousand_blanks&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;1000&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_str&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... x = 1&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;thousand_blanks&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... y = 2&lt;/span&gt;
+&lt;span class="s"&gt;... print x + y&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_str&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;exec&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;co_lnotab&lt;/span&gt;
+&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\x06\xff\x00\xff\x00\xff\x00\xec\x06\x01&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;由于字节码便宜和行数偏移终归都是偏移，大的空白仅仅意味着另一边是一个长度为0的便宜。于是我们在字节码上有6字节的偏移，随后跟着一个源代码上 255 行的偏移，然后在字节码上0字节的偏移，之后又是一个 255 行的源代码偏移，还有一个0字节的字节码偏移和一个 255 行的源码偏移，还有一个0字节的字节码偏移和最后一个 236 行的源代码偏移 (接下去就是对于最后一个 &lt;code&gt;print&lt;/code&gt; 语句的正常的6个字节的字节码偏移和1行的源代码偏移)。如此优雅！&lt;/p&gt;
+&lt;h2&gt;结语&lt;/h2&gt;
+&lt;p&gt;我先对这篇文章的散乱表示抱歉，不过我希望它的内容能让你感到很有趣。敬请继续关注对 &lt;code&gt;exec&lt;/code&gt; 特性的探索以及在不久的将来其在 &lt;a href="http://late.am/post/2011/11/27/keystone-a-simple-python-web-framework"&gt;Keystone&lt;/a&gt; 中的应用 (这是作者开发的一个有趣的 Python 网站框架，值得关注一下，译注)。&lt;/p&gt;</summary><category term="Python"></category></entry><entry><title>[翻译] Python 内部：可调用对象是如何工作的</title><link href="http://upsuper.github.com/blog/python-internals-how-callables-work.html" rel="alternate"></link><updated>2012-03-25T09:10:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2012-03-25:python-internals-how-callables-work.html</id><summary type="html">&lt;p&gt;原文：&lt;a href="http://eli.thegreenplace.net/2012/03/23/python-internals-how-callables-work/"&gt;Python internals: how callables work&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;【这篇文章所描述的 Python 版本是 3.x，更确切地说，是 CPython 3.3 alpha。】&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;在 Python 中，可调用对象 (callable) 的概念是十分基本的。当我们说什么东西是“可调用的”，马上可以联想到的显而易见的答案便是函数。无论是用户定义的函数 (你所编写的) 还是内置的函数 (经常是在 CPython 解析器内由 C 实现的)，他们总是用来被调用的，不是么？&lt;/p&gt;
+&lt;p&gt;当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 &lt;code&gt;__call__&lt;/code&gt; 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的。终究，我们是这样创建新的对象的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;Joe&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="o"&gt;.&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;contents&lt;/span&gt; &lt;span class="n"&gt;of&lt;/span&gt; &lt;span class="n"&gt;class&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;joe&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Joe&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在这里，我们“调用”了 &lt;code&gt;Joe&lt;/code&gt; 来创建新的实例。所以说类也可以像函数那样使用！&lt;/p&gt;
+&lt;p&gt;可以证明，所有这些概念都很漂亮地在 CPython 被实现。在 Python 中，一切皆对象，包括我们在前面的段落中提到的每一个东西 (用户定义和内置函数、方法、对象、类)。所有这些调用都是由一个单一的机制来完成的。这一机制十分优雅，并且一点都不难理解，所以这很值得我们去了解。不过首先我们从头开始。&lt;/p&gt;
+&lt;h2&gt;编译调用&lt;/h2&gt;
+&lt;p&gt;CPython 经过两个主要的步骤来执行我们的程序：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Python 源代码被编译为字节码。&lt;/li&gt;
+&lt;li&gt;一个虚拟机使用一系列的内置对象和模块来执行这些字节码。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;在这一节中，我会粗略地概括一下第一步中如何处理一个调用。我不会深入这些细节，而且他们也不是我想在这篇文章中关注的真正有趣的部分。如果你想了解更多 Python 代码在编译器中经历的流程，可以阅读&lt;a href="http://eli.thegreenplace.net/2010/06/30/python-internals-adding-a-new-statement-to-python/"&gt;这篇文章&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;简单地来说，Python 编译器将表达式中的所有类似 &lt;code&gt;(参数 …)&lt;/code&gt; 的结构都识别为一个调用 &lt;a id="note_id1"&gt;&lt;/a&gt;&lt;a href="#ref_id1"&gt;[1]&lt;/a&gt;。这个操作的 AST 节点叫 &lt;code&gt;Call&lt;/code&gt;，编译器通过 &lt;code&gt;Python/compile.c&lt;/code&gt; 文件中的 &lt;code&gt;compiler_call&lt;/code&gt; 函数来生成 &lt;code&gt;Call&lt;/code&gt; 对应的代码。在大多数情况下会生成 &lt;code&gt;CALL_FUNCTION&lt;/code&gt; 字节码指令。它也有一些变种，例如含有“星号参数”——形如 &lt;code&gt;func(a, b, *args)&lt;/code&gt;，有一个专门的指令 &lt;code&gt;CALL_FUNCTION_VAR&lt;/code&gt;，但这些都不是我们文章所关注的，所以就忽略掉好了，它们仅仅是这个主题的一些小变种而已。&lt;/p&gt;
+&lt;h2&gt;CALL_FUNCTION&lt;/h2&gt;
+&lt;p&gt;于是 &lt;code&gt;CALL_FUNCTION&lt;/code&gt; 就是我们这儿所关注的指令。这是&lt;a href="http://docs.python.org/dev/library/dis.html"&gt;它做了什么&lt;/a&gt;：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;h3&gt;CALL_FUNCTION(argc)&lt;/h3&gt;
+&lt;p&gt;调用一个函数。&lt;code&gt;argc&lt;/code&gt; 的低字节描述了定位参数 (positional parameters) 的数量，高字节则是关键字参数 (keyword parameters) 的数量。在栈中，操作码首先找到关键字参数。对于每个关键字参数，值在键的上面。而定位参数则在关键词参数的下面，其中最右边的参数在最上面。在所有参数下面，是要被调用的函数对象。将所有的函数参数和函数本身出栈，并将返回值压入栈。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;CPython 的字节码由 &lt;code&gt;Python/ceval.c&lt;/code&gt; 文件的一个巨大的函数 &lt;code&gt;PyEval_EvalFrameEx&lt;/code&gt; 来执行。这个函数十分恐怖，不过也仅仅是一个特别的操作码分发器而已。他从指定帧的代码对象中读取指令并执行它们。例如说这里是 &lt;code&gt;CALL_FUNCTION&lt;/code&gt; 的处理器 (进行了一些清理，移除了跟踪和计时的宏)：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;TARGET&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;CALL_FUNCTION&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;sp&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;sp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;stack_pointer&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;call_function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;sp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;oparg&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;stack_pointer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;sp&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;PUSH&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="n"&gt;DISPATCH&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;并不是很难——事实上它十分容易看懂。&lt;code&gt;call_function&lt;/code&gt; 根本没有真正进行调用 (我们将在之后细究这件事)，&lt;code&gt;oparg&lt;/code&gt; 是指令的数字参数，&lt;code&gt;stack_pointer&lt;/code&gt; 则指向栈顶 &lt;a id="note_id2"&gt;&lt;/a&gt;&lt;a href="#ref_id2"&gt;[2]&lt;/a&gt;。&lt;code&gt;call_function&lt;/code&gt; 返回的值被压入栈中，&lt;code&gt;DISPATCH&lt;/code&gt; 仅仅是调用下一条指令的宏。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;call_function&lt;/code&gt; 也在 &lt;code&gt;Python/ceval.c&lt;/code&gt; 文件。它真正实现了这条指令的功能。它虽然不算很长，但80行也已经长到我不可能把它完全贴在这儿了。我将会从总体上解释这个流程，并贴一些相关的小代码片段取而代之。你完全可以在你最喜欢的编辑器中打开这些代码。&lt;/p&gt;
+&lt;h2&gt;所有的调用仅仅是对象调用&lt;/h2&gt;
+&lt;p&gt;要理解调用过程在 Python 中是如何进行的，最重要的第一步是忽略 &lt;code&gt;call_function&lt;/code&gt; 所做的大多数事情。是的，我就是这个意思。这个函数最最主要的代码都是为了对各种情况进行优化。完全移除这些对解析器的正确性毫无影响，影响的仅仅是它的性能。如果我们忽略所有的时间优化，&lt;code&gt;call_function&lt;/code&gt; 所做的仅仅是从单参数的 &lt;code&gt;CALL_FUNCTION&lt;/code&gt; 指令中解码参数和关键词参数的数量，并且将它们转给 &lt;code&gt;do_call&lt;/code&gt;。我们将在后面重新回到这些优化因为他们很有意思，不过现在先让我们看看核心的流程。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;do_call&lt;/code&gt; 从栈中将参数加载到 &lt;code&gt;PyObject&lt;/code&gt; 对象中 (定位参数存入一个元组，关键词对象存入一个字典)，做一些跟综和优化，最后调用 &lt;code&gt;PyObject_Call&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;PyObject_Call&lt;/code&gt; 是一个极其重要的函数。它可以在 Python 的 C API 中被扩展。这就是它完整的代码：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;
+&lt;span class="nf"&gt;PyObject_Call&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;kw&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;ternaryfunc&lt;/span&gt; &lt;span class="n"&gt;call&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;call&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;ob_type&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tp_call&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;PyObject&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Py_EnterRecursiveCall&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot; while calling a Python object&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;call&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;kw&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;Py_LeaveRecursiveCall&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;PyErr_Occurred&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+            &lt;span class="n"&gt;PyErr_SetString&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="n"&gt;PyExc_SystemError&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="s"&gt;&amp;quot;NULL result without error in PyObject_Call&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;PyErr_Format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyExc_TypeError&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;#39;%.200s&amp;#39; object is not callable&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;ob_type&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tp_name&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;抛开深递归保护和错误处理 &lt;a id="note_id3"&gt;&lt;/a&gt;&lt;a href="#ref_id3"&gt;[3]&lt;/a&gt;，&lt;code&gt;PyObject_Call&lt;/code&gt; 提取出对象的 &lt;code&gt;tp_call&lt;/code&gt; 属性并且调用它 &lt;a id="note_id4"&gt;&lt;/a&gt;&lt;a href="#ref_id4"&gt;[4]&lt;/a&gt;，&lt;code&gt;tp_call&lt;/code&gt; 是一个函数指针，因此我们可以这样做。&lt;/p&gt;
+&lt;p&gt;先让它这样一会儿。忽略所有那些精彩的优化，&lt;em&gt;Python 中的所有调用&lt;/em&gt;都可以浓缩为下面这些内容：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href="http://en.wikipedia.org/wiki/Magic_SysRq_key"&gt;Magic SysRq key – Wikipedia, the free encyclopedia&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</summary><category term="Linux"></category></entry><entry><title>探秘 Linux 权限控制</title><link href="http://upsuper.github.com/blog/access-control-of-linux.html" rel="alternate"></link><updated>2009-07-06T16:08:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-07-06:access-control-of-linux.html</id><summary type="html">&lt;p&gt;众所周知，Linux 的权限控制虽然很简单，但却十分严格和有效的。（和 Windows 复杂却没用的权限控制形成鲜明对比……）由于最近编写测评机，希望利用 Linux 的高安全性做运行级恶意代码防护，因此就顺带地研究了一下 Linux 的权限控制。经过这次探秘，我对 Linux 的权限有了更新的认识，确实是一个很强大的东西啊！&lt;/p&gt;
+&lt;li&gt;Python 中一切皆对象 &lt;a id="note_id5"&gt;&lt;/a&gt;&lt;a href="#ref_id5"&gt;[5]&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;所有对象都有类型，对象的类型规定了对象可以做和被做的事情。&lt;/li&gt;
+&lt;li&gt;当一个对象是可被调用的，它的类型的 &lt;code&gt;tp_call&lt;/code&gt; 将被调用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;作为一个 Python 用户，你唯一需要直接与 &lt;code&gt;tp_call&lt;/code&gt; 进行的交互是在你希望你的对象可以被调用的时候。当你在 Python 中定义你的类时，你需要实现 &lt;code&gt;__call__&lt;/code&gt; 方法来达到这一目的。这个方法被 CPython 直接映射到了 &lt;code&gt;tp_call&lt;/code&gt; 上。如果你在 C 扩展中定义你的类，你需要自己手动给类对象的 &lt;code&gt;tp_call&lt;/code&gt; 属性赋值。&lt;/p&gt;
+&lt;p&gt;我们回想起类本身也可以被“调用”以创建新的对象，所以 &lt;code&gt;tp_call&lt;/code&gt; 也在这里起到了作用。甚至更加基本地，当你定义一个类时也会产生一次调用——在类的元类中。这是一个有意思的话题，我将会在未来的文章中讨论它。&lt;/p&gt;
+&lt;h2&gt;附加：CALL_FUNCTION 里的优化&lt;/h2&gt;
+&lt;p&gt;文章的主要部分在前面那个小节已经讲完了，所以这一部分是选读的。之前说过，我觉得这些内容很有意思，它展示了一些你可能并不认为是对象但事实上却是对象的东西。&lt;/p&gt;
+&lt;p&gt;我之前提到过，我们对于所有的 &lt;code&gt;CALL_FUNCTION&lt;/code&gt; 仅仅需要使用 &lt;code&gt;PyObject_Call&lt;/code&gt; 就可以处理。事实上，对一些常见的情况做一些优化是很有意义的，对这些情况来说，前面的方法可能过于麻烦了。&lt;code&gt;PyObject_Call&lt;/code&gt; 是一个非常通用的函数，它需要将所有的参数放入专门的元组和字典对象中 (按顺序对应于定位参数和关键词参数)。&lt;code&gt;PyObject_Call&lt;/code&gt; 需要它的调用者为它从栈中取出所有这些参数，并且存放好。然而在一些常见的情况中，我们可以避免很多这样的开销，这正是 &lt;code&gt;call_function&lt;/code&gt; 中优化的所在。&lt;/p&gt;
+&lt;p&gt;在 &lt;code&gt;call_function&lt;/code&gt; 中的第一个特殊情况是：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="cm"&gt;/* Always dispatch PyCFunction first, because these are&lt;/span&gt;
+&lt;span class="cm"&gt;   presumed to be the most frequent callable object.&lt;/span&gt;
+&lt;span class="cm"&gt;*/&lt;/span&gt;
+&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyCFunction_Check&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;nk&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这处理了 &lt;code&gt;builtin_function_or_method&lt;/code&gt; 类型的对象 (在 C 实现中表现为 PyCFunction 类型)。正如上面的注释所说的，Python 里有很多这样的函数。所有使用 C 实现的函数，无论是 CPython 解析器自带的还是 C 扩展里的，都会进入这一类。例如说：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nb"&gt;type&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;chr&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="nc"&gt;builtin_function_or_method&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&amp;gt;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nb"&gt;type&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;split&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="nc"&gt;builtin_function_or_method&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&amp;gt;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pickle&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;dump&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nb"&gt;type&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dump&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="nc"&gt;builtin_function_or_method&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的 &lt;code&gt;if&lt;/code&gt; 还有一个附加条件——传入函数的关键词参数数量为0。如果这个函数不接受任何参数 (在函数创建时以 &lt;code&gt;METH_NOARGS&lt;/code&gt; 标志标明) 或仅仅一个对象参数 (&lt;code&gt;METH_0&lt;/code&gt; 标志)，&lt;code&gt;call_function&lt;/code&gt; 就不需要通过正常的参数打包流程而可以直接调用函数指针。为了搞清楚这是如何实现的，我高度推荐你读一读&lt;a href="http://docs.python.org/dev/c-api/structures.html"&gt;文档这个部分&lt;/a&gt;关于 &lt;code&gt;PyCFunction&lt;/code&gt; 和 &lt;code&gt;METH_&lt;/code&gt; 标志的介绍。&lt;/p&gt;
+&lt;p&gt;下面，还有一个对 Python 写的类方法的特殊处理：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyMethod_Check&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;PyMethod_GET_SELF&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;PyMethod&lt;/code&gt; 是一个用于表示&lt;a href="http://docs.python.org/dev/c-api/structures.html"&gt;有界方法&lt;/a&gt; (bound methods) 的内部对象。方法的特殊之处在于它还带有一个所在对象的引用。&lt;code&gt;call_function&lt;/code&gt; 提取这个对象并且将他放入栈中作为下一步的准备工作。&lt;/p&gt;
+&lt;p&gt;这是调用部分的代码剩下的部分 (在这之后在 &lt;code&gt;call_object&lt;/code&gt; 中只有一些清理栈的代码)：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;PyFunction_Check&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+    &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;fast_function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;pp_stack&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;na&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;nk&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="k"&gt;else&lt;/span&gt;
+    &lt;span class="n"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;do_call&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;func&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;pp_stack&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;na&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;nk&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们已经见过 &lt;code&gt;do_call&lt;/code&gt; 了——它实现了调用的最通用形式。然而，这里还有一个优化——如果 &lt;code&gt;func&lt;/code&gt; 是一个 &lt;code&gt;PyFunction&lt;/code&gt; 对象 (一个在&lt;a href="http://docs.python.org/dev/c-api/function.html"&gt;内部&lt;/a&gt;用于表示使用 Python 代码定义的函数的对象)，程序选择了另一条路径——&lt;code&gt;fast_function&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;为了理解 &lt;code&gt;fast_function&lt;/code&gt; 做了什么，最重要的是首先要考虑在执行一个 Python 函数时发生了什么。简单地说，它的代码对象被执行 (也就是 &lt;code&gt;PyEval_EvalCodeEx&lt;/code&gt; 本身)。这些代码期望它的参数已经在栈中，因此在大多数情况下，没必要将参数打包到容器中再重新释放出来。稍稍注意一下，就可以将参数留在栈中，这样许多宝贵的 CPU 周期就可以被节省出来。&lt;/p&gt;
+&lt;p&gt;剩下的一切最终落回到 &lt;code&gt;do_call&lt;/code&gt; 上，顺便，包括含有关键词参数的 PyCFunction 对象。一个不寻常的事实是，对于那些既接受关键词参数又接受定位参数的 C 函数，不给它们传递关键词参数要稍稍更高效一些。例如说 &lt;a id="note_id6"&gt;&lt;/a&gt;&lt;a href="#ref_id6"&gt;[6]&lt;/a&gt;：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;~/test/python_src/33/python -m timeit -s&lt;span class="s1"&gt;&amp;#39;s=&amp;quot;a;b;c;d;e&amp;quot;&amp;#39;&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;s.split(&amp;quot;;&amp;quot;)&amp;#39;&lt;/span&gt;
+1000000 loops, best of 3: 0.3 usec per loop
+&lt;span class="nv"&gt;$ &lt;/span&gt;~/test/python_src/33/python -m timeit -s&lt;span class="s1"&gt;&amp;#39;s=&amp;quot;a;b;c;d;e&amp;quot;&amp;#39;&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;s.split(sep=&amp;quot;;&amp;quot;)&amp;#39;&lt;/span&gt;
+1000000 loops, best of 3: 0.469 usec per loop
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这是一个巨大的差异，但输入数据很小。对于更大的字符串，这个差异就几乎没有了：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;~/test/python_src/33/python -m timeit -s&lt;span class="s1"&gt;&amp;#39;s=&amp;quot;a;b;c;d;e&amp;quot;*1000&amp;#39;&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;s.split(&amp;quot;;&amp;quot;)&amp;#39;&lt;/span&gt;
+10000 loops, best of 3: 98.4 usec per loop
+&lt;span class="nv"&gt;$ &lt;/span&gt;~/test/python_src/33/python -m timeit -s&lt;span class="s1"&gt;&amp;#39;s=&amp;quot;a;b;c;d;e&amp;quot;*1000&amp;#39;&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;s.split(sep=&amp;quot;;&amp;quot;)&amp;#39;&lt;/span&gt;
+10000 loops, best of 3: 98.7 usec per loop
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;总结&lt;/h2&gt;
+&lt;p&gt;这篇文章的目的是讨论在 Python 中，可调用对象意味着什么，并且从尽可能最底层的概念——CPython 虚拟机中的实现细节——来接近它。就我个人来说，我觉得这个实现非常优雅，因为它将不同的概念统一到了同一个东西上。在附加部分里我们看到，在 Python 中有些我们常常认为不是对象的东西如函数和方法，实际上也是对象，并且也可以以相同的统一的方法来处理。我保证了，在以后的文章中我将会深入 &lt;code&gt;tp_call&lt;/code&gt; 创建新的 Python 对象和类的内容。&lt;/p&gt;
+&lt;hr /&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a id="ref_id1"&gt;&lt;/a&gt;&lt;a href="#note_id1"&gt;[1]&lt;/a&gt; 这是故意的简化——&lt;code&gt;()&lt;/code&gt; 同样可以用作其他用途如类定义 (用以列举基类)、函数定义 (列举参数)、修饰器等等，但它们并不在表达式中。我同样也故意忽略了生成器表达式。&lt;/li&gt;
+&lt;li&gt;&lt;a id="ref_id2"&gt;&lt;/a&gt;&lt;a href="#note_id2"&gt;[2]&lt;/a&gt; CPython 虚拟机是一个&lt;a href="http://zh.wikipedia.org/wiki/%E5%A0%86%E7%96%8A%E7%B5%90%E6%A7%8B%E6%A9%9F%E5%99%A8"&gt;栈机器&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;a id="ref_id3"&gt;&lt;/a&gt;&lt;a href="#note_id3"&gt;[3]&lt;/a&gt; 在 C 代码可能结束调用 Python 代码的地方需要使用 &lt;code&gt;Py_EnterRecursiveCall&lt;/code&gt; 来让 CPython 保持对递归层级的跟踪，并在递归过深时跳出。注意，用 C 写的函数并不需要遵守这个递归限制。这也是为什么 &lt;code&gt;do_call&lt;/code&gt; 的特殊情况 &lt;code&gt;PyCFunction&lt;/code&gt; 先于调用 &lt;code&gt;PyObject_Call&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;a id="ref_id4"&gt;&lt;/a&gt;&lt;a href="#note_id4"&gt;[4]&lt;/a&gt; 这里的“属性”我表示的是一个结构体的字段。如果你对于 Python C 扩展的定义方式完全不熟悉，可以看看&lt;a href="http://docs.python.org/dev/extending/newtypes.html"&gt;这个页面&lt;/a&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;a id="ref_id5"&gt;&lt;/a&gt;&lt;a href="#note_id5"&gt;[5]&lt;/a&gt; 当我说&lt;em&gt;一切&lt;/em&gt;皆对象时，我的意思就是它。你也许会觉得对象是你定义的类的实例。然而，深入到 C 一级，CPython 如你一样创建和耍弄许许多多的对象。类型 (类)、内置对象、函数、模块，所有这些都表现为对象。&lt;/li&gt;
+&lt;li&gt;&lt;a id="ref_id6"&gt;&lt;/a&gt;&lt;a href="#note_id6"&gt;[6]&lt;/a&gt; 这个例子只能在 Python 3.3 中运行，因为 &lt;code&gt;split&lt;/code&gt; 的 &lt;code&gt;sep&lt;/code&gt; 这个关键词参数是在这个版本中新加的。在之前版本的 Python 中 &lt;code&gt;split&lt;/code&gt; 仅仅接受定位参数。&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Python"></category><category term="C"></category></entry><entry><title>探秘 Linux 权限控制</title><link href="http://upsuper.github.com/blog/access-control-of-linux.html" rel="alternate"></link><updated>2009-07-06T16:08:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2009-07-06:access-control-of-linux.html</id><summary type="html">&lt;p&gt;众所周知，Linux 的权限控制虽然很简单，但却十分严格和有效的。（和 Windows 复杂却没用的权限控制形成鲜明对比……）由于最近编写测评机，希望利用 Linux 的高安全性做运行级恶意代码防护，因此就顺带地研究了一下 Linux 的权限控制。经过这次探秘，我对 Linux 的权限有了更新的认识，确实是一个很强大的东西啊！&lt;/p&gt;
 &lt;p&gt;由于本人的能力有限，文章中的不足和谬误也请大家多多指教！&lt;/p&gt;
 &lt;p&gt;我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux 又是如何确定这些权限的呢？&lt;/p&gt;
 &lt;p&gt;说到 Linux 下的权限，一定要先说的是 Linux 下文件权限的控制。在 Linux 下，每个文件都有“所有者”和“所在组”这两个基本属性，而各种权限也是根据所有者、所在组和其他人划分的。每个文件的权限，最简单的情况下可以表示为一个3位八进制数，每一位八进制数表示一系列人的权限，如八进制数751就标示所有者有7的权限，所在组的其他人有5的权限，而既不是所有者也不在所在组的人只有1的权限。至于一位的八进制数表示的意义，我们应该将其进一步转换为3位二进制数，如7对应111，5对应101，1对应001。在这个二进制数上最高位如果为1则表示有读权限，第二位表示写权限，而最后一位表示执行权限。（说到这里我就想再插一句了，Linux 的文件是什么类型或可不可以执行，几乎完全不是根据扩展名，只有有执行权限的文件才能执行，而文件类型也是根据 MIME Type 来决定的。）&lt;/p&gt;

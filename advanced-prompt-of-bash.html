@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>增强版的 Bash 提示符</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="./theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie.css"/>
+                <script src="./js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="./">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="./category/blog.html">Blog</a></li>
+                                    <li ><a href="./category/research.html">Research</a></li>
+                                    <li ><a href="./category/script.html">Script</a></li>
+                                    <li ><a href="./category/study.html">Study</a></li>
+                                    <li class="active"><a href="./category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+        <section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="./advanced-prompt-of-bash.html" rel="bookmark"
+           title="Permalink to 增强版的 Bash 提示符">增强版的 Bash 提示符</a></h1>
+          </header>
+
+    <div class="entry-content">
+      <footer class="post-info">
+        <abbr class="published" title="2011-02-28T14:40:00">
+                一 28 二月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/bash.html">bash</a></p>
+</footer><!-- /.post-info -->      <p>上周六参加了好久没有参加的的 SHLUG 月聚，恰逢 <a href="http://imtx.me/">TualatriX</a> 也带团来上海。自由讨论的时候，我看到 TualatriX 的终端十分色彩斑斓，便询问，他给我们展示了他的 bash 的两个特色功能：1、当上一条命令返回结果不为0时显示返回值并高亮显示提示符；2、自动检测git分支。他说这个在他的博客上都可以找到，今天想起来去找了一下，发现了这篇：<a href="http://imtx.me/archives/1298.html">史上最强的PS1 | I’m TualatriX</a>，感觉满强大的。</p>
+<p>不过，说实话，我觉的这个还不够完美，原因有二：一是我发觉高亮显示的时候那个配色相当不怎么样，二是我本来就讨厌提示符太长，这样一下就更长了……于是我就想起 ghosTM 的 zsh 里面有一些信息是放在右边的，我想把返回值也扔右边去，并且是右边上移一行。此外，由于很少使用 <code>git</code>，所以检测 <code>git</code> 分支的功能也就不需要了~</p>
+<p>先放一个最终效果图：
+<img alt="Bash 提示符的最终效果图" src="./static/images/advanced-prompt-of-bash-01.png" /></p>
+<p>然后直接写出了我的新的 <code>PS1</code>：</p>
+<div class="codehilite"><pre><span class="nv">PS1</span><span class="o">=</span><span class="s1">&#39;`a=$?;if [ $a -ne 0 ]; then a=&quot;  &quot;$a; echo -ne &quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&quot;; fi`\[\e[1;32m\]\u@\h:\[\e[0m\e[1;34m\]\W\[\e[1;34m\]\$ \[\e[0m\]&#39;</span>
+</pre></div>
+
+
+<p>非常复杂唉……让我自己再看一次都头晕……</p>
+<h2>分解这个提示符</h2>
+<p>上面看到这个 <code>PS1</code> 写的非常之复杂，不过其实拆解开来也没什么了不起的，只不过看起来蛋疼罢了~</p>
+<p>这个 <code>PS1</code> 可以分为两个部分，第一个部分是：</p>
+<div class="codehilite"><pre><span class="sb">`</span><span class="nv">a</span><span class="o">=</span><span class="nv">$?</span>;<span class="k">if</span> <span class="o">[</span> <span class="nv">$a</span> -ne 0 <span class="o">]</span>; <span class="k">then </span><span class="nv">a</span><span class="o">=</span><span class="s2">&quot;  &quot;</span><span class="nv">$a</span>; <span class="nb">echo</span> -ne <span class="s2">&quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&quot;</span>; <span class="k">fi</span><span class="sb">`</span>
+</pre></div>
+
+
+<p>第二个部分是：</p>
+<div class="codehilite"><pre><span class="se">\[\e</span><span class="o">[</span>1;32m<span class="se">\]\u</span>@<span class="se">\h</span>:<span class="se">\[\e</span><span class="o">[</span>0m<span class="se">\e</span><span class="o">[</span>1;34m<span class="se">\]\W\[\e</span><span class="o">[</span>1;34m<span class="se">\]\$</span> <span class="se">\[\e</span><span class="o">[</span>0m<span class="se">\]</span>
+</pre></div>
+
+
+<p>我们先来研究第二部份，这个部分看起来比较简短。其中我们可以看到一个 <code>PS1</code> 里面非常基本的结构：<code>\u@\h:\W\$</code> ，这个结构在我的电脑里就显示为 <code>upsuper@upsuper-laptop:~$</code> 大家大概可以猜到里面是什么意思了吧。</p>
+<p>这个基本骨架理出来，剩下的是看过去最蛋疼的那堆莫名其妙的符号了~我们看到很多 \e[ 这样的东西，事实上这个叫做 ANSI 控制码，在 Linux 和 Windows 的命令行里面都是通用的，<code>\e</code> 是 Escape 键的键码，<code>\e[</code> 是一切 ANSI 控制码的开头。首先来到 <code>\e[1;32m</code> 这个控制码，这表示设置这个符号之后的字符为亮绿色，而 <code>\e[0m</code> 则是清除所有格式，这样看有没有一点清晰了呢？更多用法可以参考维基百科条目ANSI escape code。</p>
+<p>之后还有两个东西不清楚，就是 <code>\[</code> 和 <code>\]</code>，这两个并不是 ANSI 控制码，而是 Bash 提供的转义符。他们的解释说实话我没看太懂，不过我的理解大概就是，夹在 <code>\[</code> 和 <code>\]</code> 之间的部分 Bash 假定他们的宽度为0，不正确地标注这两个符号会导致 Bash 的换行错误。总之在所有控制符两侧都加上这两个就对了~</p>
+<p>第二个部分解决了，下面来看蛋疼的第一部份</p>
+<div class="codehilite"><pre><span class="sb">`</span><span class="nv">a</span><span class="o">=</span><span class="nv">$?</span>;<span class="k">if</span> <span class="o">[</span> <span class="nv">$a</span> -ne 0 <span class="o">]</span>; <span class="k">then </span><span class="nv">a</span><span class="o">=</span><span class="s2">&quot;  &quot;</span><span class="nv">$a</span>; <span class="nb">echo</span> -ne <span class="s2">&quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&quot;</span>; <span class="k">fi</span><span class="sb">`</span>
+</pre></div>
+
+
+<p>很明显，整个结构被一个正引号引起来，表示执行并返回其中的结果。这样我们就可以把这个部分分解开来了：</p>
+<div class="codehilite"><pre><span class="nv">a</span><span class="o">=</span><span class="nv">$?</span>
+<span class="k">if</span> <span class="o">[</span> <span class="nv">$a</span> -ne 0 <span class="o">]</span>; <span class="k">then</span>
+<span class="k">    </span><span class="nv">a</span><span class="o">=</span><span class="s2">&quot;  &quot;</span><span class="nv">$a</span>
+    <span class="nb">echo</span> -ne <span class="s2">&quot;\[\e[s\e[1A\e[$((COLUMNS-2))G\e[31m\e[1;41m${a:(-3)}\e[u\]\[\e[0m\e[7m\e[2m\]&quot;</span>
+<span class="k">fi</span>
+</pre></div>
+
+
+<p>稍微懂点编程就会觉得这也没什么技术含量嘛，其中 <code>$?</code> 就是上一个程序运行的返回值，我们获取并判断他，如果不为零就进行下面的操作。<code>a=" "$a</code> 这句我们待会而再看，先看下面那个 <code>echo -ne</code> 的语句。<code>echo</code> 我们知道是显示字符串，而 <code>-ne</code> 实际上是两个参数 <code>-n</code> 和 <code>-e</code>，<code>-n</code> 表示输出字符串后不输出换行符，<code>-e</code> 表示解析后面的转义符。</p>
+<p>最后就剩分析那个打印的东西了。我们发现主要部分其实和上面是一样的，无非就是一些设置格式的事情，我们去掉格式设置，发现主要是这样的：</p>
+<div class="codehilite"><pre><span class="se">\e</span><span class="o">[</span>s<span class="se">\e</span><span class="o">[</span>1A<span class="se">\e</span><span class="o">[</span><span class="k">$((</span>COLUMNS-2<span class="k">))</span>G<span class="k">${</span><span class="nv">a</span><span class="p">:(-3)</span><span class="k">}</span><span class="se">\e</span><span class="o">[</span>u
+</pre></div>
+
+
+<p>这个部分仍然包含许多 ANSI 控制符，第一个是 <code>\e[s</code>，表示保存当前光标位置，与最后一个表示恢复光标位置的控制符 <code>\e[u</code> 遥相呼应，由于我们需要大规模移动光标，所以我们要备份一下位置。然后我们看到 <code>\e[1A</code>，这个控制符表示将光标上移一行。然后之后有一个很复杂的东西 <code>\e[$((COLUMNS-2))G</code>，这个对应的控制符是 <code>\e[*G</code>，表示设置光标到第几列，而 <code>$((COLUMNS-2))</code> 表示这个列数为当前可显示的最大列数-2。后面有一个 <code>${a:(-3)}</code>，也就是取前面的后三位显示（返回值的范围是0-255）。</p>
+<p>现在我们回到前面的 <code>a=" "$a</code>，发现这个的目的其实是和 <code>${a:(-3)}</code> 对应，让这个部分无论如何保证有三个字符可以出现。事实上最初我并不是这么写的，而是写 <code>$((COLUMNS-${#a}+1))</code>，表示 <code>$a</code> 有多长就显示多长。但这样感觉不美观，就改成了固定3字符长。</p>
+<p>到这里也就结束了，然后我们发现，其实看过去很复杂的东西，拆开来还是挺简单的嘛~</p>
+<h2>参考资料</h2>
+<ul>
+<li><a href="http://imtx.me/archives/1298.html">史上最强的PS1 | I’m TualatriX</a></li>
+<li><a href="http://hi.baidu.com/shappen/blog/item/4171f5ef57e6e434adafd5aa.html">Bash颜色控制_宠辱不惊，看庭前花开花落；去留无意，望天空云卷云舒_百度空间</a></li>
+<li><a href="http://en.wikipedia.org/wiki/ANSI_escape_code">ANSI escape code – Wikipedia, the free encyclopedia</a></li>
+<li><a href="http://www.issociate.de/board/post/434218/Mimic_zsh%27s_right_prompt_in_bash.html">Mimic zsh’s right prompt in bash</a></li>
+</ul>
+    </div><!-- /.entry-content -->
+    
+  </article>
+</section>
+        <section id="extras" class="body">
+                        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

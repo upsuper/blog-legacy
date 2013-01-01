@@ -34,8 +34,348 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../automatically-run-top-in-tty.html">在 tty 里添加一个开机自启动的任务管理器</a></h1> 
+                    <h1 class="entry-title"><a href="../implementing-a-generator-yield-in-a-python-c-extension.html">[翻译] 使用 Python C 扩展实现生成器/yield</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2012-04-13T21:53:00">
+                五 13 四月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/c.html">C</a></p>
+</footer><!-- /.post-info --><p>原文：<a href="http://eli.thegreenplace.net/2012/04/05/implementing-a-generatoryield-in-a-python-c-extension/">Implementing a generator/yield in a Python C extension</a></p>
+<p>在 Python 中，生成器 (generator) 是一个返回迭代器 (iterator) 对象的函数。虽然有很多方法来实现，不过最优雅和常用的形式是使用 <code>yield</code> 语句。</p>
+<p>举例来说，这是一个简单的例子：</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">pyrevgen</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">seq</span><span class="p">)):</span>
+        <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span>
+</pre></div>
+
+
+<p>这里的 <code>pyrevgen</code> 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：</p>
+<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]):</span>
+<span class="o">...</span> <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+<span class="o">...</span>
+<span class="mi">0</span> <span class="n">c</span>
+<span class="mi">1</span> <span class="n">b</span>
+<span class="mi">2</span> <span class="n">a</span>
+</pre></div>
+
+
+<p>这篇文章的目的是说明使用 Python 的 C API ，换言之，在一个 C 的扩展模块中，如何实现相同的功能。我们主要关注的是 Python 3，对于 Python 2 来说原理是一样的，不过细节上可能会有一些差异。</p>
+<p><code>yield</code> 是 Python 中一个非常强大的东西，在 C 中没有与之对应的能力 (除非你使用一些协程宏函数，不过这不在我们这里的讨论范围之内)。因此我们不得不显式地返回一个迭代器对象，并且处理迭代的细节。</p>
+<p>在 Python 中写一个<a href="http://docs.python.org/dev/library/stdtypes.html#iterator-types">迭代器</a>我们需要创建一个实现了 <code>__iter__</code> 和 <code>__next__</code> 特殊函数的类，C API 中与之对应的方法分别是 <code>tp_iter</code> 和 <code>tp_iternext</code>。</p>
+<p>我们来创建一个叫做 <code>spam</code> 的新的扩展模块，他将导出一个对象——<code>revgen</code> 类型，这个类型可以像上面的 Python 代码一样被调用。换句话说，Python 可以这样使用它：</p>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">spam</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">spam</span><span class="o">.</span><span class="n">revgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+</pre></div>
+
+
+<p>我们开始吧 (在这篇文章的末尾会给出完整代码的链接)：</p>
+<div class="codehilite"><pre><span class="n">PyTypeObject</span> <span class="n">PyRevgen_Type</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">PyVarObject_HEAD_INIT</span><span class="p">(</span><span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="s">&quot;revgen&quot;</span><span class="p">,</span>                       <span class="cm">/* tp_name */</span>
+    <span class="k">sizeof</span><span class="p">(</span><span class="n">RevgenState</span><span class="p">),</span>            <span class="cm">/* tp_basicsize */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_itemsize */</span>
+    <span class="p">(</span><span class="n">destructor</span><span class="p">)</span><span class="n">revgen_dealloc</span><span class="p">,</span>     <span class="cm">/* tp_dealloc */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_print */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getattr */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_setattr */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_reserved */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_repr */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_number */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_sequence */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_mapping */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_hash */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_call */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_str */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getattro */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_setattro */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_buffer */</span>
+    <span class="n">Py_TPFLAGS_DEFAULT</span><span class="p">,</span>             <span class="cm">/* tp_flags */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_doc */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_traverse */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_clear */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_richcompare */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_weaklistoffset */</span>
+    <span class="n">PyObject_SelfIter</span><span class="p">,</span>              <span class="cm">/* tp_iter */</span>
+    <span class="p">(</span><span class="n">iternextfunc</span><span class="p">)</span><span class="n">revgen_next</span><span class="p">,</span>      <span class="cm">/* tp_iternext */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_methods */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_members */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getset */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_base */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_dict */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_descr_get */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_descr_set */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_dictoffset */</span>
+    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_init */</span>
+    <span class="n">PyType_GenericAlloc</span><span class="p">,</span>            <span class="cm">/* tp_alloc */</span>
+    <span class="n">revgen_new</span><span class="p">,</span>                     <span class="cm">/* tp_new */</span>
+<span class="p">};</span>
+
+<span class="k">static</span> <span class="k">struct</span> <span class="n">PyModuleDef</span> <span class="n">spammodule</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
+    <span class="s">&quot;spam&quot;</span><span class="p">,</span>                  <span class="cm">/* m_name */</span>
+    <span class="s">&quot;&quot;</span><span class="p">,</span>                      <span class="cm">/* m_doc */</span>
+    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>                      <span class="cm">/* m_size */</span>
+<span class="p">};</span>
+
+    <span class="n">PyMODINIT_FUNC</span>
+<span class="nf">PyInit_spam</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">PyObject</span> <span class="o">*</span><span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">spammodule</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">PyType_Ready</span><span class="p">(</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="n">Py_INCREF</span><span class="p">((</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">);</span>
+    <span class="n">PyModule_AddObject</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&quot;revgen&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这是创建一个新模块和一个新类型的标准代码。模块初始化函数 (<code>PyInit_spam</code>) 添加了一个叫做 <code>revgen</code> 的对象到模块，这个对象是类型 <code>PyRevgen_Type</code>。通过调用这个对象，用户可以创建这个类型的一个新实例。</p>
+<p>下面的结构 (<code>PyObject</code> 的子类) 是将用来表示 <code>revgen</code> 的实例的：</p>
+<div class="codehilite"><pre><span class="cm">/* RevgenState - reverse generator instance.</span>
+<span class="cm"> *</span>
+<span class="cm"> * sequence: ref to the sequence that&#39;s being iterated</span>
+<span class="cm"> * seq_index: index of the next element in the sequence to yield</span>
+<span class="cm"> * enum_index: next enumeration index to yield</span>
+<span class="cm"> *</span>
+<span class="cm"> * In pseudo-notation, the yielded tuple at each step is:</span>
+<span class="cm"> *  enum_index, sequence[seq_index]</span>
+<span class="cm"> *</span>
+<span class="cm">*/</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+    <span class="n">PyObject_HEAD</span>
+    <span class="n">Py_ssize_t</span> <span class="n">seq_index</span><span class="p">,</span> <span class="n">enum_index</span><span class="p">;</span>
+    <span class="n">PyObject</span> <span class="o">*</span><span class="n">sequence</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">RevgenState</span><span class="p">;</span>
+</pre></div>
+
+
+<p>这里需要特别点出的一个非常有趣的东西是对我们在迭代的序列的引用。每当 <code>next</code> 被调用时，迭代器需要它来访问那个序列。</p>
+<p>这里是用来创建新的实例的那个函数，它被赋给了 <code>tp_new</code>。注意我们没有给 <code>tp_init</code> 赋值，所以默认的“什么都不做”的初始化器将会被使用：</p>
+<div class="codehilite"><pre><span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+<span class="nf">revgen_new</span><span class="p">(</span><span class="n">PyTypeObject</span> <span class="o">*</span><span class="n">type</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">kwargs</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">PyObject</span> <span class="o">*</span><span class="n">sequence</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PyArg_UnpackTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;revgen&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sequence</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="cm">/* We expect an argument that supports the sequence protocol */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PySequence_Check</span><span class="p">(</span><span class="n">sequence</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_TypeError</span><span class="p">,</span> <span class="s">&quot;revgen() expects a sequence&quot;</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">Py_ssize_t</span> <span class="n">len</span> <span class="o">=</span> <span class="n">PySequence_Length</span><span class="p">(</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="cm">/* Create a new RevgenState and initialize its state - pointing to the last</span>
+<span class="cm">     * index in the sequence.</span>
+<span class="cm">    */</span>
+    <span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span> <span class="o">=</span> <span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="p">)</span><span class="n">type</span><span class="o">-&gt;</span><span class="n">tp_alloc</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rgstate</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+
+    <span class="n">Py_INCREF</span><span class="p">(</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">sequence</span><span class="p">;</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">=</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="n">rgstate</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>这是个非常直观的 <code>tp_new</code> 实现，它保证了要迭代的对象是一个序列，同时初始化了状态，准备好第一次 <code>next</code> 调用时将要返回的最后一个元素。与之对应的销毁函数也并没有什么特别的：</p>
+<div class="codehilite"><pre><span class="k">static</span> <span class="kt">void</span>
+<span class="nf">revgen_dealloc</span><span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* We need XDECREF here because when the generator is exhausted,</span>
+<span class="cm">     * rgstate-&gt;sequence is cleared with Py_CLEAR which sets it to NULL.</span>
+<span class="cm">    */</span>
+    <span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="n">Py_TYPE</span><span class="p">(</span><span class="n">rgstate</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">tp_free</span><span class="p">(</span><span class="n">rgstate</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>现在剩下的就是看看 <code>tp_iter</code> 和 <code>tp_iternext</code> 的实现。因为我们的类型是一个迭代器，我们可以简单的将 <code>PyObject_SelfIter</code> 函数赋给 <code>tp_iter</code>。<code>tp_iternext</code> 才是发生有趣的事情的地方。它正是执行内置函数 <code>next</code> 时真正调用的东西，也是 <code>for</code> 循环使用迭代器时调用的：</p>
+<div class="codehilite"><pre><span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
+<span class="nf">revgen_next</span><span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="cm">/* seq_index &lt; 0 means that the generator is exhausted.</span>
+<span class="cm">     * Returning NULL in this case is enough. The next() builtin will raise the</span>
+<span class="cm">     * StopIteration error for us.</span>
+<span class="cm">    */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">PyObject</span> <span class="o">*</span><span class="n">elem</span> <span class="o">=</span> <span class="n">PySequence_GetItem</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">,</span>
+                                            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span><span class="p">);</span>
+        <span class="cm">/* Exceptions from PySequence_GetItem are propagated to the caller</span>
+<span class="cm">         * (elem will be NULL so we also return NULL).</span>
+<span class="cm">        */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">PyObject</span> <span class="o">*</span><span class="n">result</span> <span class="o">=</span> <span class="n">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;lO&quot;</span><span class="p">,</span> <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span><span class="p">,</span> <span class="n">elem</span><span class="p">);</span>
+            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span><span class="o">--</span><span class="p">;</span>
+            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span><span class="o">++</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="cm">/* The reference to the sequence is cleared in the first generator call</span>
+<span class="cm">     * after its exhaustion (after the call that returned the last element).</span>
+<span class="cm">     * Py_CLEAR will be harmless for subsequent calls since it&#39;s idempotent</span>
+<span class="cm">     * on NULL.</span>
+<span class="cm">    */</span>
+    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>在这里，应该被牢记的最重要的一点是迭代的状态应该被完全地保存在迭代器对象中。相比与 Python 实现，这需要多做许多工作。Python 的 <code>yield</code> 语句让我们可以用 Python 解析器自己来为我们保存这些状态。这也是为什么<a href="http://eli.thegreenplace.net/2009/08/29/co-routines-as-an-alternative-to-state-machines/">在 Python 中协程如此强大</a>——几乎没有显式的状态需要手工保存。正如我在文章一开始就提到的，在 C 扩展中我们没有这样的奢侈品，所以我们不得不自己动手。由于现在这个例子还非常简单，而且是线性的，这还相对简单一些。在更复杂的例子中，为了正确地设计状态对象和 <code>tp_iternext</code> 函数，需要更用心。</p>
+<p>这篇文章的完整代码以及简单的 Python 测试脚本，还有用于使用 distutils 构建这个扩展的 <code>setup.py</code> 都可以<a href="http://eli.thegreenplace.net/wp-content/uploads/2012/04/generator_c_ext.tgz">在这里下载</a>。</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../setup-lxr.html" rel="bookmark"
+                           title="Permalink to 安装配置 LXR">安装配置 LXR</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-10-03T15:07:00">
+                一 03 十月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>专业课学习操作系统，满心欢喜地以为可以是 Linux 代码导读，结果选用了一本八十年代的教材，介绍 UNIX v6 的。于是自己从图书馆借来了内核开发的入门读物《Linux 内核设计与实现》。既然是介绍内核的书，自然少不了代码，但是书中又不可能将每个提到的代码的相关信息全部写出来，这时就得自己去查看代码。查看代码的话，虽然 Linux 的代码可以很容易地得到，但那来看终归有些麻烦，各种调用需要查找半天。于是想起了很有名的一个网站 <a href="http://lxr.linux.no">LXR</a>，Linux 交叉引用。这个网站好是好，就是网络原因速度太慢，于是就想自己装一个。</p>
+<p>先说一句，下面的安装环境都是64位 Gentoo。</p>
+<p>最开始找到了 <a href="http://sourceforge.net/projects/lxr/">LXR Cross Referencer</a> 这个项目，一看最后更新时间还挺新，看起来是一直都还在维护的。然后在 Gentoo 的网站上查到 LXR 是可以直接用 portage 安装的，于是安装，安装相关的包，最后放弃了。出于什么原因我也不记得了 ...</p>
+                <a class="readmore" href="../setup-lxr.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../gmail-super-sub-mailbox.html" rel="bookmark"
+                           title="Permalink to Gmail 的超级子邮箱功能">Gmail 的超级子邮箱功能</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-03-06T22:11:00">
+                日 06 三月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/gmail.html">Gmail</a></p>
+</footer><!-- /.post-info -->                <p>如果你也用 Gmail，他可以让你轻易拥有无限多的子邮箱，发给这些邮箱也就等于发给你的邮箱。这有什么意义呢？很简单，你可以在每个地方注册的时候都使用不同的邮箱，这样当你收到垃圾邮件广告邮件，你就可以知道是从哪里来的了~再结合 Gmail 强大的过滤器，你也可以针对性的进行屏蔽~</p>
+<p>Gmail 事实上支持两种方式来扩张你的邮箱，第一种是在你的用户名后面加上“+”和任意字符串，比如我的邮箱 <code>quanxunzhen@gmail.com</code>（我这邮箱无所谓了已经嗯），如果我想要识别不同的网站，比如豆瓣，我可以直接在豆瓣的注册邮箱里填写 <code>quanxunzhen+douban@gmail.com</code>，所有验证邮件都可以发给我，我如果不想申请一个新邮箱却想注册个豆瓣小号，也可以再写 <code>quanxunzhen+douban2@gmail.com</code>。</p>
+<p>当然，支持上面的方式固然是最好的，但遗憾的是很多网站并不支持带加号的邮箱，那就要稍稍麻烦点了。</p>
+<p>根据 <a href="http://fanfou.com/fanzeyi">@fanzeyi</a> 的说法，Gmail 的邮箱是自动忽略点，也就是“.”的，也就是说对于我上面的邮箱，如果写为 <code>quan ...</code></p>
+                <a class="readmore" href="../gmail-super-sub-mailbox.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../advanced-prompt-of-bash.html" rel="bookmark"
+                           title="Permalink to 增强版的 Bash 提示符">增强版的 Bash 提示符</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-02-28T14:40:00">
+                一 28 二月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/bash.html">bash</a></p>
+</footer><!-- /.post-info -->                <p>上周六参加了好久没有参加的的 SHLUG 月聚，恰逢 <a href="http://imtx.me/">TualatriX</a> 也带团来上海。自由讨论的时候，我看到 TualatriX 的终端十分色彩斑斓，便询问，他给我们展示了他的 bash 的两个特色功能：1、当上一条命令返回结果不为0时显示返回值并高亮显示提示符；2、自动检测git分支。他说这个在他的博客上都可以找到，今天想起来去找了一下，发现了这篇：<a href="http://imtx.me/archives/1298.html">史上最强的PS1 | I’m TualatriX</a>，感觉满强大的。</p>
+<p>不过，说实话，我觉的这个还不够完美，原因有二：一是我发觉高亮显示的时候那个配色相当不怎么样，二是我本来就讨厌提示符太长，这样一下就更长了……于是我就想起 ghosTM 的 zsh 里面有一些信息是放在右边的，我想把返回值也扔右边去，并且是右边上移一行。此外，由于很少使用 <code>git</code>，所以检测 <code>git</code> 分支的功能也就不需要了~</p>
+<p>先放一个最终效果图：
+<img alt="Bash 提示符的最终效果图" src="../static/images/advanced-prompt-of-bash-01.png" /></p>
+<p>然后直接写出了我的新的 <code>PS1</code>：</p>
+<div class="codehilite"><pre><span class="nv">PS1 ...</span></pre></div>
+                <a class="readmore" href="../advanced-prompt-of-bash.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../usb-key-for-linux.html" rel="bookmark"
+                           title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-01-14T20:25:00">
+                五 14 一月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a><a href="../tag/security.html">Security</a></p>
+</footer><!-- /.post-info -->                <p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
+<p>这个<a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f">问题提出</a>后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~</p>
+<p>其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令</p>
+<div class="codehilite"><pre>sudo apt-get install pamusb-tools
+</pre></div>
+
+
+<p>直接安装。当然如果你连终端也懒得打开，可以直接点击这里：<a href="apt:pamusb-tools">安装 pamusb-tools</a>。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。</p>
+<p>另外，Fedora 源里有 pam_usb 包，Arch ...</p>
+                <a class="readmore" href="../usb-key-for-linux.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../automatically-run-top-in-tty.html" rel="bookmark"
+                           title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2010-03-31T10:31:00">
                 三 31 三月 2010
         </abbr>
@@ -45,64 +385,14 @@
         </address>
         <p>In <a href="../category/technique.html">Technique</a>. </p>
 <p>tags: <a href="../tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info --><p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
+</footer><!-- /.post-info -->                <p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
 <p>既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 <code>top</code> 无疑最方便了~</p>
 <p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
-<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 38400 tty6
-</pre></div>
-
-
-<p>就知道，肯定和 <code>getty</code> 有关系。<code>man getty</code> 里面查到可以通过 <code>-l</code> 参数设置登入程序替代 <code>/bin/login</code>。查了一下 <code>man login</code>，发现可以通过 <code>-f username</code> 的方式不进行验证地登入。</p>
-<p>于是我就在 <code>/bin</code> 下面新建了一个 <code>autologin</code> 文件（其实理论上放哪里都可以，不过最好要用 root 权限创建，不然可以乱改就不好了），里面写上</p>
-<div class="codehilite"><pre><span class="c">#!/bin/sh</span>
-/bin/login -f upsuper
-</pre></div>
-
-
-<p>给这个文件加上可执行属性，接着将 <code>/etc/init/tty6.conf</code> 里面刚才那一行改成</p>
-<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 -l <span class="s1">&#39;/bin/autologin&#39;</span> 38400 tty6
-</pre></div>
-
-
-<p>重启。</p>
-<p>进入 tty6 发现没有效果，还是提示用户名，无语……于是输入了用户名 upsuper，结果发现没有要求密码，直接进入了。我退出登入，再输入 root，发现依然没有要求密码而直接进入了 upsuper 权限。</p>
-<p>再查查 <code>man getty</code>，发现那个请求用户名是 <code>getty</code> 输出的，里面提到了 <code>-n</code> 参数，可以消除对用户名的请求，以及 <code>-i</code> 参数，不输出请求前的文字（在我的 Ubuntu 里面就是“Ubuntu 9.10”）。于是上面那行被改成了</p>
-<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8in -l <span class="s1">&#39;/bin/autologin&#39;</span> 38400 tty6
-</pre></div>
-
-
-<p>重新启动，发现已经可以自动进入。</p>
-<p>不过我要的不是这个效果~</p>
-<p>其实简单地说，我那个要实现也不难，按照现在的情况，就是在 <code>~/.bashrc</code> 里面加上一行判断的事情了。不过我可不想这样。这样的话如果退出了 <code>top</code> 就会进入命令行。我的想法是，永远不让他进入命令行，这样看过去比较爽~</p>
-<p>于是我就倒腾起了 <code>login</code> 程序的 <code>FAKE_SHELL</code>，如果在 <code>autologin</code> 脚本里改变环境变量，根本影响不了 <code>login</code> 程序，无论我改 <code>FAKE_SHELL</code>，还是 <code>SHELL</code>，都没有用，<code>login</code> 仍然义无反顾地进入了 <code>bash</code>……</p>
-<p>最后我就想，唉，其实 <code>autologin</code> 脚本就是一正常脚本，只不过在登入的时候以 root 权限运行嘛，那我直接在里面运行 <code>top</code> 不久行了~考虑到权限因素，就是用 <code>su</code> 把权限改一下，不就解决问题了么？</p>
-<p>于是最终版的 <code>autologin</code> 就出炉了：</p>
-<div class="codehilite"><pre><span class="c">#!/bin/sh</span>
-su -c <span class="s1">&#39;/usr/bin/top&#39;</span> upsuper
-</pre></div>
-
-
-<p>这个最后效果是什么样的呢？就是 <code>top</code> 以我的用户权限运行，然后点击 <code>q</code> 退出就会重新启动一个 <code>top</code>。这就是我要得效果了~很好很强大~算是合理的利用了一个 tty 了。现在只要点击 Ctrl-Alt-F6 就可以有现成的任务管理器了~</p>
-<p>其实根据这个思路，tty 可以做的事情还很多。本来那个什么 <code>-l</code> 啦，<code>-n</code> 什么的，是拿来做自定义登入验证方式的，我觉得这个也大有文章可做~最后再感叹一下，Linux 实在太强大了~</p>
-<p>补充：</p>
-<p>这篇文章被我投递到了 LinuxTOY 上面，然后下面有人提到使用 <code>htop</code> 代替 <code>top</code>，我试了一下，貌似 <code>htop</code> 的资源占用要比 <code>top</code> 高出许多，因此我最后没有替换。</p>
-<p>不过 <code>htop</code> 貌似确实好用很多，如果需要的话，只要安装 <code>htop</code> 后（Ubuntu 源里是有的），然后把 <code>autologin</code> 里面的</p>
-<div class="codehilite"><pre>su -c <span class="s1">&#39;/usr/bin/top&#39;</span> upsuper
-</pre></div>
-
-
-<p>改成</p>
-<div class="codehilite"><pre>su -c <span class="s1">&#39;/usr/bin/htop&#39;</span> upsuper
-</pre></div>
-
-
-<p>下面只要进入那个 tty 点 <code>q</code> 退出当前 <code>top</code>，马上就会自动替换为 <code>htop</code> 启动了~</p>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
+                <a class="readmore" href="../automatically-run-top-in-tty.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    
@@ -123,7 +413,7 @@ su -c <span class="s1">&#39;/usr/bin/top&#39;</span> upsuper
         <p>In <a href="../category/technique.html">Technique</a>. </p>
 <p>tags: <a href="../tag/c.html">C</a><a href="../tag/microsoft.html">Microsoft</a></p>
 </footer><!-- /.post-info -->                <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
-<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="./simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
+<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="../simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
 <p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
 <p>在网上一找，还真找到一个简单的方法：</p>
 <div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
@@ -162,6 +452,32 @@ su -c <span class="s1">&#39;/usr/bin/top&#39;</span> upsuper
 <span class="cp">  &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
 <span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999 ...</span></pre></div>
                 <a class="readmore" href="../replacing-css-via-jquery.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../what-to-do-if-linux-crash.html" rel="bookmark"
+                           title="Permalink to Linux 死机了该怎么办？">Linux 死机了该怎么办？</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-07-28T23:20:00">
+                二 28 七月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>Linux 会死机么？我可以很肯定地说，会！如何？很简单，<a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9">fork 炸弹</a>就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。</p>
+<p>Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？</p>
+<p>不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的 ...</p>
+                <a class="readmore" href="../what-to-do-if-linux-crash.html">read more</a>
                                 </div><!-- /.entry-content -->
             </article></li>
                             

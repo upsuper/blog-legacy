@@ -79,6 +79,35 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../advanced-prompt-of-bash.html" rel="bookmark"
+                           title="Permalink to 增强版的 Bash 提示符">增强版的 Bash 提示符</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-02-28T14:40:00">
+                一 28 二月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/bash.html">bash</a></p>
+</footer><!-- /.post-info -->                <p>上周六参加了好久没有参加的的 SHLUG 月聚，恰逢 <a href="http://imtx.me/">TualatriX</a> 也带团来上海。自由讨论的时候，我看到 TualatriX 的终端十分色彩斑斓，便询问，他给我们展示了他的 bash 的两个特色功能：1、当上一条命令返回结果不为0时显示返回值并高亮显示提示符；2、自动检测git分支。他说这个在他的博客上都可以找到，今天想起来去找了一下，发现了这篇：<a href="http://imtx.me/archives/1298.html">史上最强的PS1 | I’m TualatriX</a>，感觉满强大的。</p>
+<p>不过，说实话，我觉的这个还不够完美，原因有二：一是我发觉高亮显示的时候那个配色相当不怎么样，二是我本来就讨厌提示符太长，这样一下就更长了……于是我就想起 ghosTM 的 zsh 里面有一些信息是放在右边的，我想把返回值也扔右边去，并且是右边上移一行。此外，由于很少使用 <code>git</code>，所以检测 <code>git</code> 分支的功能也就不需要了~</p>
+<p>先放一个最终效果图：
+<img alt="Bash 提示符的最终效果图" src="../static/images/advanced-prompt-of-bash-01.png" /></p>
+<p>然后直接写出了我的新的 <code>PS1</code>：</p>
+<div class="codehilite"><pre><span class="nv">PS1 ...</span></pre></div>
+                <a class="readmore" href="../advanced-prompt-of-bash.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../automatically-run-top-in-tty.html" rel="bookmark"
                            title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
                 </header>
@@ -135,6 +164,121 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../dynamic-modify-cpu-number.html" rel="bookmark"
+                           title="Permalink to 动态切换 Linux 使用的 CPU 数量">动态切换 Linux 使用的 CPU 数量</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-10-19T14:04:00">
+                三 19 十月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>由于要测试一些代码，其运行结果会受到多核并行的影响，所以希望能够调整使用的 CPU 数量。网络上之前看到的方法是在内核的启动参数上添加一个 <code>maxcpus</code>，但是如果这样的话每切换一次都要重启一次，是在太麻烦了。想想 Linux 应该是很强大的，所以可以动态修改 CPU 数量才对。</p>
+<p>无意中看到 Linux 代码的 <code>Documentation</code> 文件夹下有个文件叫做 <code>cpu-hotplug.txt</code>，于是就看了一下，发现可以在 <code>/sys/devices/system/cpu</code> 看到代表各 CPU 的文件夹按照 <code>cpuX</code> 的命名方式，如 <code>cpu0</code>、<code>cpu1</code>、<code>cpu2</code> 等。这些文件夹里面有一个 <code>online</code> 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 <code>root</code> 权限哦。</p>
+<p>因为我只要在单核和多核之间切换 ...</p>
+                <a class="readmore" href="../dynamic-modify-cpu-number.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../exploring-python-code-objects.html" rel="bookmark"
+                           title="Permalink to [翻译] 探索 Python 代码对象">[翻译] 探索 Python 代码对象</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-31T05:50:00">
+                六 31 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://late.am/post/2012/03/26/exploring-python-code-objects">Exploring Python Code Objects</a></p>
+<p>由于受到 <a href="http://www.dabeaz.com/">David Beazley</a> 在 <a href="https://us.pycon.org/2012/">PyCon</a> 上的 <a href="http://pyvideo.org/video/659/keynote-david-beazley">Keynote</a> 的启发，近来我四处学习与 Python 代码对象 (code object) 相关的内容。我并没有什么特别的利器，也没有专门的任务去解决 (至今为止？)，所以请将这篇文章看做一些也许有趣的记录和随笔 (如果没意思的话，抱歉)。</p>
+<p><em>免责声明：</em>这篇文章是关于 CPython 2.7 的，虽然其中的大部分对于其他的 CPython 版本应该也是正确的 (包括 3.x)。但我不保证它在 PyPy、Jython、IronPython 等实现上是正确和适用的。</p>
+<h2>第0步：是什么？</h2>
+<p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人 ...</p>
+                <a class="readmore" href="../exploring-python-code-objects.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../gmail-super-sub-mailbox.html" rel="bookmark"
+                           title="Permalink to Gmail 的超级子邮箱功能">Gmail 的超级子邮箱功能</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-03-06T22:11:00">
+                日 06 三月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/gmail.html">Gmail</a></p>
+</footer><!-- /.post-info -->                <p>如果你也用 Gmail，他可以让你轻易拥有无限多的子邮箱，发给这些邮箱也就等于发给你的邮箱。这有什么意义呢？很简单，你可以在每个地方注册的时候都使用不同的邮箱，这样当你收到垃圾邮件广告邮件，你就可以知道是从哪里来的了~再结合 Gmail 强大的过滤器，你也可以针对性的进行屏蔽~</p>
+<p>Gmail 事实上支持两种方式来扩张你的邮箱，第一种是在你的用户名后面加上“+”和任意字符串，比如我的邮箱 <code>quanxunzhen@gmail.com</code>（我这邮箱无所谓了已经嗯），如果我想要识别不同的网站，比如豆瓣，我可以直接在豆瓣的注册邮箱里填写 <code>quanxunzhen+douban@gmail.com</code>，所有验证邮件都可以发给我，我如果不想申请一个新邮箱却想注册个豆瓣小号，也可以再写 <code>quanxunzhen+douban2@gmail.com</code>。</p>
+<p>当然，支持上面的方式固然是最好的，但遗憾的是很多网站并不支持带加号的邮箱，那就要稍稍麻烦点了。</p>
+<p>根据 <a href="http://fanfou.com/fanzeyi">@fanzeyi</a> 的说法，Gmail 的邮箱是自动忽略点，也就是“.”的，也就是说对于我上面的邮箱，如果写为 <code>quan ...</code></p>
+                <a class="readmore" href="../gmail-super-sub-mailbox.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../implementing-a-generator-yield-in-a-python-c-extension.html" rel="bookmark"
+                           title="Permalink to [翻译] 使用 Python C 扩展实现生成器/yield">[翻译] 使用 Python C 扩展实现生成器/yield</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-04-13T21:53:00">
+                五 13 四月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/c.html">C</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://eli.thegreenplace.net/2012/04/05/implementing-a-generatoryield-in-a-python-c-extension/">Implementing a generator/yield in a Python C extension</a></p>
+<p>在 Python 中，生成器 (generator) 是一个返回迭代器 (iterator) 对象的函数。虽然有很多方法来实现，不过最优雅和常用的形式是使用 <code>yield</code> 语句。</p>
+<p>举例来说，这是一个简单的例子：</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">pyrevgen</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">seq</span><span class="p">)):</span>
+        <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span>
+</pre></div>
+
+
+<p>这里的 <code>pyrevgen</code> 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：</p>
+<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b ...</span></pre></div>
+                <a class="readmore" href="../implementing-a-generator-yield-in-a-python-c-extension.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../little-vc6-fix.md.html" rel="bookmark"
                            title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
                 </header>
@@ -151,7 +295,7 @@
         <p>In <a href="../category/technique.html">Technique</a>. </p>
 <p>tags: <a href="../tag/c.html">C</a><a href="../tag/microsoft.html">Microsoft</a></p>
 </footer><!-- /.post-info -->                <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
-<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="./simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
+<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="../simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
 <p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
 <p>在网上一找，还真找到一个简单的方法：</p>
 <div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
@@ -187,171 +331,6 @@
 <p>这个博客的标题“鬼の领地”是延续自之前的博客的，它取自我中二的年代，正如我的常用 ID upsuper 一样。同时与之前我的每一个博客一样，我会把过去的内容挑选一些放入新的博客里面。另外原来参与 <a href="https://twitter.com/fanzeyi">@fanzeyi</a> 同学的 <a href="https://github.com/PyCodersCN">PyCodersCN</a> 项目的时候翻译过的一些文章也准备放进来。因为实在懒于写自己的东西（大多只是一些小东西，就不想单独写文章了），所以也考虑不定期的译一些自己觉得不错的文章放在这个博客里，就当练练中英文水平好了（其实是为了充数吧）。</p>
 <p>关于这个博客本身，目前是准备使用 ...</p>
                 <a class="readmore" href="../new-blog-in-github.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../optimize-leap-year-checking.html" rel="bookmark"
-                           title="Permalink to 闰年判断的优化及其他">闰年判断的优化及其他</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-10-10T21:11:00">
-                六 10 十月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/research.html">Research</a>. </p>
-<p>tags: <a href="../tag/c.html">C</a><a href="../tag/optimize.html">Optimize</a></p>
-</footer><!-- /.post-info -->                <p>今天 Javran 发来短信给了一个短小的论年判断代码，并且问我是否认为有更简单的表达。下面是他最初给的代码：</p>
-<div class="codehilite"><pre><span class="k">return</span> <span class="p">((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
-</pre></div>
-
-
-<p>一切的探究就从这个代码开始了。</p>
-<p>当然，这个代码是错的，因为疏忽了运算符的优先级，为达到本来的目的，这段代码大概应该这样改（测试代码3）：</p>
-<div class="codehilite"><pre><span class="k">return</span> <span class="p">(((</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">));</span>
-</pre></div>
-
-
-<p>接着，我将其中“!=0”和“==0”可以进一步缩短，现在代码现在变成这样（测试代码4）：</p>
-<div class="codehilite"><pre><span class="k">return</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">&amp;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">^</span> <span class="o">!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">^</span> <span class="o">!!</span><span class="p">(</span><span class="n">y</span> <span class="o">%</span> <span class="mi">400</span><span class="p">);</span>
-</pre></div>
-
-
-<p>OK，对于抑或得到的思路，精简到这里差不多了 ...</p>
-                <a class="readmore" href="../optimize-leap-year-checking.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../php-show-latex-formula.html" rel="bookmark"
-                           title="Permalink to PHP 空间也做 LaTeX 公式显示">PHP 空间也做 LaTeX 公式显示</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-04-03T10:43:00">
-                五 03 四月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/technique.html">Technique</a>. </p>
-<p>tags: <a href="../tag/php.html">PHP</a><a href="../tag/latex.html">LaTeX</a></p>
-</footer><!-- /.post-info -->                <p>原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。</p>
-<p>今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！</p>
-<p>要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。</p>
-<p>如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：<a href="http://www.forkosh.com/mimetex.zip">mimetex.zip</a>。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入 ...</p>
-                <a class="readmore" href="../php-show-latex-formula.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../python-variable-type-and-reference.html" rel="bookmark"
-                           title="Permalink to 探索 Python 的变量、类型和引用">探索 Python 的变量、类型和引用</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-06-25T22:23:00">
-                四 25 六月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/study.html">Study</a>. </p>
-<p>tags: <a href="../tag/python.html">Python</a></p>
-</footer><!-- /.post-info -->                <p>我一开始为 Python 的强大和简洁所震撼，看了些 Python 的教程，学了不少东西。前面那些探索就以后再写吧……今天先讲讲今天知道的东西。</p>
-<p>在探索到 Python 函数的参数传递的时候，我不禁赞叹 Python 灵活的参数设计，但慢慢的，开始迷惑与传递参数的修改和返回。</p>
-<p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
-<p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
-                <a class="readmore" href="../python-variable-type-and-reference.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../replacing-css-via-jquery.html" rel="bookmark"
-                           title="Permalink to 基于 jQuery 的 CSS 更换术">基于 jQuery 的 CSS 更换术</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-10-18T20:57:00">
-                日 18 十月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/technique.html">Technique</a>. </p>
-
-</footer><!-- /.post-info -->                <p>最近开始写一中的新选歌系统，这次要大改，顺便练手。</p>
-<p>想加入换肤功能（不然女生肯定觉得老是蓝色不好……），而且我想到的换肤，最简单的方式就是换 CSS，把界面颜色、图形相关的内容放入皮肤的 CSS 中就很容易了~不过问题是换肤呢？</p>
-<p>正好新系统中因为客户端代码可能非常强大，准备引入 jQuery 框架来简化开发，便学了一些。于是我就想，能不能通过 jQuery 来解决呢？</p>
-<p>首先，我给出了下面这个简单的页面：</p>
-<div class="codehilite"><pre><span class="cp">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot;</span>
-<span class="cp">  &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd&quot;&gt;</span>
-<span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999 ...</span></pre></div>
-                <a class="readmore" href="../replacing-css-via-jquery.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../simple-script-for-using-vc6-compiler.html" rel="bookmark"
-                           title="Permalink to 方便使用 VC6 编译器的小脚本">方便使用 VC6 编译器的小脚本</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-12-30T18:46:00">
-                三 30 十二月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/script.html">Script</a>. </p>
-<p>tags: <a href="../tag/c.html">C</a><a href="../tag/sh.html">sh</a><a href="../tag/wine.html">wine</a></p>
-</footer><!-- /.post-info -->                <p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
-<p>于是就有了下面这个小脚本：</p>
-<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
-<span class="c"># - * - coding: UTF-8 - * -</span>
-
-<span class="nv">VC6_DIR</span><span class="o">=</span><span class="s2">&quot;这里写上VC6的安装地址&quot;</span>
-
-<span class="nv">BIN</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Bin&quot;</span>
-<span class="nb">export </span><span class="nv">INCLUDE</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Include&quot;</span>
-<span class="nb">export </span><span class="nv">LIB</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Lib&quot;</span>
-
-<span class="nv">ARGS</span><span class="o">=</span>
-
-<span class="k">while </span><span class="nb">getopts</span> <span class="s2">&quot;o:c&quot;</span> optname
-<span class="k">do</span>
-<span class="k">  case</span> <span class="s2">&quot;$optname&quot;</span> in
-  <span class="s2">&quot;o&quot;</span><span class="o">)</span>
-    <span class="nv">ARGS ...</span></pre></div>
-                <a class="readmore" href="../simple-script-for-using-vc6-compiler.html">read more</a>
                                 </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->

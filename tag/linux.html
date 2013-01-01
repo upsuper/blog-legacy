@@ -34,8 +34,128 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../automatically-run-top-in-tty.html">在 tty 里添加一个开机自启动的任务管理器</a></h1> 
+                    <h1 class="entry-title"><a href="../dynamic-modify-cpu-number.html">动态切换 Linux 使用的 CPU 数量</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2011-10-19T14:04:00">
+                三 19 十月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info --><p>由于要测试一些代码，其运行结果会受到多核并行的影响，所以希望能够调整使用的 CPU 数量。网络上之前看到的方法是在内核的启动参数上添加一个 <code>maxcpus</code>，但是如果这样的话每切换一次都要重启一次，是在太麻烦了。想想 Linux 应该是很强大的，所以可以动态修改 CPU 数量才对。</p>
+<p>无意中看到 Linux 代码的 <code>Documentation</code> 文件夹下有个文件叫做 <code>cpu-hotplug.txt</code>，于是就看了一下，发现可以在 <code>/sys/devices/system/cpu</code> 看到代表各 CPU 的文件夹按照 <code>cpuX</code> 的命名方式，如 <code>cpu0</code>、<code>cpu1</code>、<code>cpu2</code> 等。这些文件夹里面有一个 <code>online</code> 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 <code>root</code> 权限哦。</p>
+<p>因为我只要在单核和多核之间切换，所以我写了两个脚本放在 <code>/usr/local/sbin</code> 里面：</p>
+<p>singlecore</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+
+<span class="nv">cpus_dir</span><span class="o">=</span><span class="s2">&quot;/sys/devices/system/cpu&quot;</span>
+
+<span class="k">for </span>cpu in <span class="k">$(</span>ls <span class="s2">&quot;$cpus_dir&quot;</span> | grep <span class="s1">&#39;cpu[0-9]\+&#39;</span><span class="k">)</span>
+<span class="k">do</span>
+<span class="k">    </span><span class="nv">cpu_online</span><span class="o">=</span><span class="s2">&quot;$cpus_dir/$cpu/online&quot;</span>
+    <span class="k">if</span> <span class="o">[[</span> -e <span class="s2">&quot;$cpu_online&quot;</span> <span class="o">&amp;&amp;</span> <span class="k">$(</span>cat <span class="nv">$cpu_online</span><span class="k">)</span> <span class="o">=</span> 1 <span class="o">]]</span>
+    <span class="k">then</span>
+<span class="k">        </span><span class="nb">echo </span>0 &gt; <span class="s2">&quot;$cpu_online&quot;</span>
+    <span class="k">fi</span>
+<span class="k">done</span>
+</pre></div>
+
+
+<p>multicore</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+
+<span class="nv">cpus_dir</span><span class="o">=</span><span class="s2">&quot;/sys/devices/system/cpu&quot;</span>
+
+<span class="k">for </span>cpu in <span class="k">$(</span>ls <span class="s2">&quot;$cpus_dir&quot;</span> | grep <span class="s1">&#39;cpu[0-9]\+&#39;</span><span class="k">)</span>
+<span class="k">do</span>
+<span class="k">    </span><span class="nv">cpu_online</span><span class="o">=</span><span class="s2">&quot;$cpus_dir/$cpu/online&quot;</span>
+    <span class="k">if</span> <span class="o">[[</span> -e <span class="s2">&quot;$cpu_online&quot;</span> <span class="o">&amp;&amp;</span> <span class="k">$(</span>cat <span class="nv">$cpu_online</span><span class="k">)</span> <span class="o">=</span> 0 <span class="o">]]</span>
+    <span class="k">then</span>
+<span class="k">        </span><span class="nb">echo </span>1 &gt; <span class="s2">&quot;$cpu_online&quot;</span>
+    <span class="k">fi</span>
+<span class="k">done</span>
+</pre></div>
+
+
+<p>之后需要切换的时候，只要运行 <code>sudo singlecore</code> 或者 <code>sudo multicore</code> 就可以了~</p>
+<p>顺便说一句，我当时在想，如果我禁用了所有的 CPU 会怎么样呢？结果发现 <code>cpu0</code> 是没有 <code>online</code> 文件的，也就是 Linux 至少保证一个 CPU 处于可用状态。</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../setup-lxr.html" rel="bookmark"
+                           title="Permalink to 安装配置 LXR">安装配置 LXR</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-10-03T15:07:00">
+                一 03 十月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>专业课学习操作系统，满心欢喜地以为可以是 Linux 代码导读，结果选用了一本八十年代的教材，介绍 UNIX v6 的。于是自己从图书馆借来了内核开发的入门读物《Linux 内核设计与实现》。既然是介绍内核的书，自然少不了代码，但是书中又不可能将每个提到的代码的相关信息全部写出来，这时就得自己去查看代码。查看代码的话，虽然 Linux 的代码可以很容易地得到，但那来看终归有些麻烦，各种调用需要查找半天。于是想起了很有名的一个网站 <a href="http://lxr.linux.no">LXR</a>，Linux 交叉引用。这个网站好是好，就是网络原因速度太慢，于是就想自己装一个。</p>
+<p>先说一句，下面的安装环境都是64位 Gentoo。</p>
+<p>最开始找到了 <a href="http://sourceforge.net/projects/lxr/">LXR Cross Referencer</a> 这个项目，一看最后更新时间还挺新，看起来是一直都还在维护的。然后在 Gentoo 的网站上查到 LXR 是可以直接用 portage 安装的，于是安装，安装相关的包，最后放弃了。出于什么原因我也不记得了 ...</p>
+                <a class="readmore" href="../setup-lxr.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../usb-key-for-linux.html" rel="bookmark"
+                           title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-01-14T20:25:00">
+                五 14 一月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a><a href="../tag/security.html">Security</a></p>
+</footer><!-- /.post-info -->                <p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
+<p>这个<a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f">问题提出</a>后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~</p>
+<p>其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令</p>
+<div class="codehilite"><pre>sudo apt-get install pamusb-tools
+</pre></div>
+
+
+<p>直接安装。当然如果你连终端也懒得打开，可以直接点击这里：<a href="apt:pamusb-tools">安装 pamusb-tools</a>。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。</p>
+<p>另外，Fedora 源里有 pam_usb 包，Arch ...</p>
+                <a class="readmore" href="../usb-key-for-linux.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../automatically-run-top-in-tty.html" rel="bookmark"
+                           title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2010-03-31T10:31:00">
                 三 31 三月 2010
         </abbr>
@@ -45,64 +165,14 @@
         </address>
         <p>In <a href="../category/technique.html">Technique</a>. </p>
 <p>tags: <a href="../tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info --><p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
+</footer><!-- /.post-info -->                <p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
 <p>既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 <code>top</code> 无疑最方便了~</p>
 <p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
-<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 38400 tty6
-</pre></div>
-
-
-<p>就知道，肯定和 <code>getty</code> 有关系。<code>man getty</code> 里面查到可以通过 <code>-l</code> 参数设置登入程序替代 <code>/bin/login</code>。查了一下 <code>man login</code>，发现可以通过 <code>-f username</code> 的方式不进行验证地登入。</p>
-<p>于是我就在 <code>/bin</code> 下面新建了一个 <code>autologin</code> 文件（其实理论上放哪里都可以，不过最好要用 root 权限创建，不然可以乱改就不好了），里面写上</p>
-<div class="codehilite"><pre><span class="c">#!/bin/sh</span>
-/bin/login -f upsuper
-</pre></div>
-
-
-<p>给这个文件加上可执行属性，接着将 <code>/etc/init/tty6.conf</code> 里面刚才那一行改成</p>
-<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 -l <span class="s1">&#39;/bin/autologin&#39;</span> 38400 tty6
-</pre></div>
-
-
-<p>重启。</p>
-<p>进入 tty6 发现没有效果，还是提示用户名，无语……于是输入了用户名 upsuper，结果发现没有要求密码，直接进入了。我退出登入，再输入 root，发现依然没有要求密码而直接进入了 upsuper 权限。</p>
-<p>再查查 <code>man getty</code>，发现那个请求用户名是 <code>getty</code> 输出的，里面提到了 <code>-n</code> 参数，可以消除对用户名的请求，以及 <code>-i</code> 参数，不输出请求前的文字（在我的 Ubuntu 里面就是“Ubuntu 9.10”）。于是上面那行被改成了</p>
-<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8in -l <span class="s1">&#39;/bin/autologin&#39;</span> 38400 tty6
-</pre></div>
-
-
-<p>重新启动，发现已经可以自动进入。</p>
-<p>不过我要的不是这个效果~</p>
-<p>其实简单地说，我那个要实现也不难，按照现在的情况，就是在 <code>~/.bashrc</code> 里面加上一行判断的事情了。不过我可不想这样。这样的话如果退出了 <code>top</code> 就会进入命令行。我的想法是，永远不让他进入命令行，这样看过去比较爽~</p>
-<p>于是我就倒腾起了 <code>login</code> 程序的 <code>FAKE_SHELL</code>，如果在 <code>autologin</code> 脚本里改变环境变量，根本影响不了 <code>login</code> 程序，无论我改 <code>FAKE_SHELL</code>，还是 <code>SHELL</code>，都没有用，<code>login</code> 仍然义无反顾地进入了 <code>bash</code>……</p>
-<p>最后我就想，唉，其实 <code>autologin</code> 脚本就是一正常脚本，只不过在登入的时候以 root 权限运行嘛，那我直接在里面运行 <code>top</code> 不久行了~考虑到权限因素，就是用 <code>su</code> 把权限改一下，不就解决问题了么？</p>
-<p>于是最终版的 <code>autologin</code> 就出炉了：</p>
-<div class="codehilite"><pre><span class="c">#!/bin/sh</span>
-su -c <span class="s1">&#39;/usr/bin/top&#39;</span> upsuper
-</pre></div>
-
-
-<p>这个最后效果是什么样的呢？就是 <code>top</code> 以我的用户权限运行，然后点击 <code>q</code> 退出就会重新启动一个 <code>top</code>。这就是我要得效果了~很好很强大~算是合理的利用了一个 tty 了。现在只要点击 Ctrl-Alt-F6 就可以有现成的任务管理器了~</p>
-<p>其实根据这个思路，tty 可以做的事情还很多。本来那个什么 <code>-l</code> 啦，<code>-n</code> 什么的，是拿来做自定义登入验证方式的，我觉得这个也大有文章可做~最后再感叹一下，Linux 实在太强大了~</p>
-<p>补充：</p>
-<p>这篇文章被我投递到了 LinuxTOY 上面，然后下面有人提到使用 <code>htop</code> 代替 <code>top</code>，我试了一下，貌似 <code>htop</code> 的资源占用要比 <code>top</code> 高出许多，因此我最后没有替换。</p>
-<p>不过 <code>htop</code> 貌似确实好用很多，如果需要的话，只要安装 <code>htop</code> 后（Ubuntu 源里是有的），然后把 <code>autologin</code> 里面的</p>
-<div class="codehilite"><pre>su -c <span class="s1">&#39;/usr/bin/top&#39;</span> upsuper
-</pre></div>
-
-
-<p>改成</p>
-<div class="codehilite"><pre>su -c <span class="s1">&#39;/usr/bin/htop&#39;</span> upsuper
-</pre></div>
-
-
-<p>下面只要进入那个 tty 点 <code>q</code> 退出当前 <code>top</code>，马上就会自动替换为 <code>htop</code> 启动了~</p>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
+                <a class="readmore" href="../automatically-run-top-in-tty.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    
@@ -120,7 +190,7 @@ su -c <span class="s1">&#39;/usr/bin/top&#39;</span> upsuper
                 <address class="vcard author">
                 By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
         </address>
-        <p>In <a href="../category/study.html">Study</a>. </p>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
 <p>tags: <a href="../tag/linux.html">Linux</a></p>
 </footer><!-- /.post-info -->                <p>Linux 会死机么？我可以很肯定地说，会！如何？很简单，<a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9">fork 炸弹</a>就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。</p>
 <p>Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？</p>
