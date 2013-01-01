@@ -9,6 +9,8 @@ SITEURL = 'http://upsuper.github.com/blog'
 
 DELETE_OUTPUT_DIRECTORY = True
 
+GOOGLE_ANALYTICS = 'UA-37354064-1'
+
 # Following items are often useful when publishing
 
 # Uncomment following line for absolute URLs in production:
