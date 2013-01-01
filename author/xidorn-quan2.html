@@ -255,6 +255,37 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../static-modification-of-python-with-python-the-ast-module.html" rel="bookmark"
+                           title="Permalink to [翻译] AST 模块：用 Python 修改 Python 代码">[翻译] AST 模块：用 Python 修改 Python 代码</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-03T16:47:00">
+                六 03 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://blueprintforge.com/blog/2012/02/27/static-modification-of-python-with-python-the-ast-module/">Static Modification of Python With Python: The AST Module</a></p>
+<p>修改代码在有时会变的十分有用，比如在进行测试和分析的时候。在这篇文章中，我们将看到如何使用 <code>ast</code> 模块对 Python 代码进行修改，同时还将看到一些使用了这个技术的工具。</p>
+<h2>CPython 的编译过程</h2>
+<div style="float: left; margin-right: 20px;"><img src="../static/images/pep339.png" /></div>
+
+<p>在开始之前，我们应该先看看 CPython 的编译过程，这个过程在 <a href="http://www.python.org/dev/peps/pep-0339/">PEP 339</a> 中有详细的描述。</p>
+<p>当然，在读这篇文章的时候，你并不需要对这个步骤有很深入的理解，不过这可以帮助你对整个过程有一个大体的了解。</p>
+<p>首先，编译器会根据源代码生成一棵语法分析树 (Parse Tree)，随后，再根据语法分析树建立抽象语法树 (AST, Abstract Syntax Tree)。从 AST 中可以生成出控制流图 (CFG, Control Flow Graph ...</p>
+                <a class="readmore" href="../static-modification-of-python-with-python-the-ast-module.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../usb-key-for-linux.html" rel="bookmark"
                            title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
                 </header>
@@ -312,36 +343,11 @@
                 <a class="readmore" href="../use-mouse-as-music-player-controller.html">read more</a>
                                 </div><!-- /.entry-content -->
             </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../what-to-do-if-linux-crash.html" rel="bookmark"
-                           title="Permalink to Linux 死机了该怎么办？">Linux 死机了该怎么办？</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-07-28T23:20:00">
-                二 28 七月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/technique.html">Technique</a>. </p>
-<p>tags: <a href="../tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info -->                <p>Linux 会死机么？我可以很肯定地说，会！如何？很简单，<a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9">fork 炸弹</a>就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。</p>
-<p>Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？</p>
-<p>不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的 ...</p>
-                <a class="readmore" href="../what-to-do-if-linux-crash.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
                         <a href="../author/xidorn-quan.html">&laquo;</a>
-                Page 2 / 2
+                Page 2 / 3
+            <a href="../author/xidorn-quan3.html">&raquo;</a>
     </p>
                         </section><!-- /#content -->
                     <section id="extras" class="body">

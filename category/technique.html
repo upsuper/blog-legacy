@@ -256,6 +256,64 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../using-fuzzy-matching-to-search-by-sound-with-python.html" rel="bookmark"
+                           title="Permalink to [翻译] 在 Python 中使用模糊匹配根据发音搜索">[翻译] 在 Python 中使用模糊匹配根据发音搜索</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-10T16:39:00">
+                六 10 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/sound.html">Sound</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://www.informit.com/articles/article.aspx?p=1848528">Using Fuzzy Matching to Search by Sound with Python</a></p>
+<p><strong>当你编写代码搜索数据库时，你不能总是依赖于相信所有的数据项都有正确的拼写。DreamHost 的开发者以及《Python 标准库编程范例》(<em><a href="http://www.informit.com/store/product.aspx?isbn=0321767349">The Python Standard Library by Example</a></em>) 的作者 Doug Hellmann 在这篇文章中回顾了一些根据目标的发音，而不是准确的拼写，进行数据库搜索的方法。</strong></p>
+<p>在数据库中搜索人名是一项独特的挑战。对于不同来源和不同年代的数据，你不但不能指望其中名字的拼写是正确的，甚至相同的名字如果多次出现时，它们的拼写都不一定一样。而储存的数据和搜索项之间也有可能因为个人喜好、文化差异、<a href="http://zh.wikipedia.org/wiki/%E5%90%8C%E9%9F%B3%E7%95%B0%E7%BE%A9%E8%AA%9E">同音词</a>、拼写错误、文盲或仅仅因为在某些时期根本没有标准拼法而出现差异。这些问题在历史学家、谱系学家和其他研究者的手写的文本记录中尤为常见。</p>
+<p>一个常用的解决这样的字符串搜索问题的方法是寻找与搜索目标相近的值。但是，使用传统的<a href="http://en.wikipedia.org/wiki/Approximate_string_matching">模糊匹配算法</a>计算两个任意字符串之间的相似度，代价是很大的，同时它也不适合用于搜索大规模数据集。一个更好的解决方案是为数据库里的每一项预先计算一个哈希值，有一些专门的哈希算法正是为此设计的。这些语音算法 ...</p>
+                <a class="readmore" href="../using-fuzzy-matching-to-search-by-sound-with-python.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../static-modification-of-python-with-python-the-ast-module.html" rel="bookmark"
+                           title="Permalink to [翻译] AST 模块：用 Python 修改 Python 代码">[翻译] AST 模块：用 Python 修改 Python 代码</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-03T16:47:00">
+                六 03 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://blueprintforge.com/blog/2012/02/27/static-modification-of-python-with-python-the-ast-module/">Static Modification of Python With Python: The AST Module</a></p>
+<p>修改代码在有时会变的十分有用，比如在进行测试和分析的时候。在这篇文章中，我们将看到如何使用 <code>ast</code> 模块对 Python 代码进行修改，同时还将看到一些使用了这个技术的工具。</p>
+<h2>CPython 的编译过程</h2>
+<div style="float: left; margin-right: 20px;"><img src="../static/images/pep339.png" /></div>
+
+<p>在开始之前，我们应该先看看 CPython 的编译过程，这个过程在 <a href="http://www.python.org/dev/peps/pep-0339/">PEP 339</a> 中有详细的描述。</p>
+<p>当然，在读这篇文章的时候，你并不需要对这个步骤有很深入的理解，不过这可以帮助你对整个过程有一个大体的了解。</p>
+<p>首先，编译器会根据源代码生成一棵语法分析树 (Parse Tree)，随后，再根据语法分析树建立抽象语法树 (AST, Abstract Syntax Tree)。从 AST 中可以生成出控制流图 (CFG, Control Flow Graph ...</p>
+                <a class="readmore" href="../static-modification-of-python-with-python-the-ast-module.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../setup-lxr.html" rel="bookmark"
                            title="Permalink to 安装配置 LXR">安装配置 LXR</a></h1>
                 </header>
@@ -454,62 +512,10 @@
                 <a class="readmore" href="../replacing-css-via-jquery.html">read more</a>
                                 </div><!-- /.entry-content -->
             </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../what-to-do-if-linux-crash.html" rel="bookmark"
-                           title="Permalink to Linux 死机了该怎么办？">Linux 死机了该怎么办？</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-07-28T23:20:00">
-                二 28 七月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/technique.html">Technique</a>. </p>
-<p>tags: <a href="../tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info -->                <p>Linux 会死机么？我可以很肯定地说，会！如何？很简单，<a href="http://zh.wikipedia.org/zh/Fork%E7%82%B8%E5%BC%B9">fork 炸弹</a>就可以~要让 Linux 死机很容易，但难的是在死机以后如何安全的让他摆脱死机状态。</p>
-<p>Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？</p>
-<p>不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的 ...</p>
-                <a class="readmore" href="../what-to-do-if-linux-crash.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../php-show-latex-formula.html" rel="bookmark"
-                           title="Permalink to PHP 空间也做 LaTeX 公式显示">PHP 空间也做 LaTeX 公式显示</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-04-03T10:43:00">
-                五 03 四月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/technique.html">Technique</a>. </p>
-<p>tags: <a href="../tag/php.html">PHP</a><a href="../tag/latex.html">LaTeX</a></p>
-</footer><!-- /.post-info -->                <p>原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。</p>
-<p>今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！</p>
-<p>要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。</p>
-<p>如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：<a href="http://www.forkosh.com/mimetex.zip">mimetex.zip</a>。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入 ...</p>
-                <a class="readmore" href="../php-show-latex-formula.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
-        Page 1 / 1
+        Page 1 / 2
+            <a href="../category/technique2.html">&raquo;</a>
     </p>
                         </section><!-- /#content -->
                     <section id="extras" class="body">

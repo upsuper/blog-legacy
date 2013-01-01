@@ -148,6 +148,64 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="./using-fuzzy-matching-to-search-by-sound-with-python.html" rel="bookmark"
+                           title="Permalink to [翻译] 在 Python 中使用模糊匹配根据发音搜索">[翻译] 在 Python 中使用模糊匹配根据发音搜索</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-10T16:39:00">
+                六 10 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a><a href="./tag/sound.html">Sound</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://www.informit.com/articles/article.aspx?p=1848528">Using Fuzzy Matching to Search by Sound with Python</a></p>
+<p><strong>当你编写代码搜索数据库时，你不能总是依赖于相信所有的数据项都有正确的拼写。DreamHost 的开发者以及《Python 标准库编程范例》(<em><a href="http://www.informit.com/store/product.aspx?isbn=0321767349">The Python Standard Library by Example</a></em>) 的作者 Doug Hellmann 在这篇文章中回顾了一些根据目标的发音，而不是准确的拼写，进行数据库搜索的方法。</strong></p>
+<p>在数据库中搜索人名是一项独特的挑战。对于不同来源和不同年代的数据，你不但不能指望其中名字的拼写是正确的，甚至相同的名字如果多次出现时，它们的拼写都不一定一样。而储存的数据和搜索项之间也有可能因为个人喜好、文化差异、<a href="http://zh.wikipedia.org/wiki/%E5%90%8C%E9%9F%B3%E7%95%B0%E7%BE%A9%E8%AA%9E">同音词</a>、拼写错误、文盲或仅仅因为在某些时期根本没有标准拼法而出现差异。这些问题在历史学家、谱系学家和其他研究者的手写的文本记录中尤为常见。</p>
+<p>一个常用的解决这样的字符串搜索问题的方法是寻找与搜索目标相近的值。但是，使用传统的<a href="http://en.wikipedia.org/wiki/Approximate_string_matching">模糊匹配算法</a>计算两个任意字符串之间的相似度，代价是很大的，同时它也不适合用于搜索大规模数据集。一个更好的解决方案是为数据库里的每一项预先计算一个哈希值，有一些专门的哈希算法正是为此设计的。这些语音算法 ...</p>
+                <a class="readmore" href="./using-fuzzy-matching-to-search-by-sound-with-python.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./static-modification-of-python-with-python-the-ast-module.html" rel="bookmark"
+                           title="Permalink to [翻译] AST 模块：用 Python 修改 Python 代码">[翻译] AST 模块：用 Python 修改 Python 代码</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-03T16:47:00">
+                六 03 三月 2012
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://blueprintforge.com/blog/2012/02/27/static-modification-of-python-with-python-the-ast-module/">Static Modification of Python With Python: The AST Module</a></p>
+<p>修改代码在有时会变的十分有用，比如在进行测试和分析的时候。在这篇文章中，我们将看到如何使用 <code>ast</code> 模块对 Python 代码进行修改，同时还将看到一些使用了这个技术的工具。</p>
+<h2>CPython 的编译过程</h2>
+<div style="float: left; margin-right: 20px;"><img src="./static/images/pep339.png" /></div>
+
+<p>在开始之前，我们应该先看看 CPython 的编译过程，这个过程在 <a href="http://www.python.org/dev/peps/pep-0339/">PEP 339</a> 中有详细的描述。</p>
+<p>当然，在读这篇文章的时候，你并不需要对这个步骤有很深入的理解，不过这可以帮助你对整个过程有一个大体的了解。</p>
+<p>首先，编译器会根据源代码生成一棵语法分析树 (Parse Tree)，随后，再根据语法分析树建立抽象语法树 (AST, Abstract Syntax Tree)。从 AST 中可以生成出控制流图 (CFG, Control Flow Graph ...</p>
+                <a class="readmore" href="./static-modification-of-python-with-python-the-ast-module.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="./dynamic-modify-cpu-number.html" rel="bookmark"
                            title="Permalink to 动态切换 Linux 使用的 CPU 数量">动态切换 Linux 使用的 CPU 数量</a></h1>
                 </header>
@@ -251,68 +309,9 @@
                 <a class="readmore" href="./advanced-prompt-of-bash.html">read more</a>
                                 </div><!-- /.entry-content -->
             </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./usb-key-for-linux.html" rel="bookmark"
-                           title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2011-01-14T20:25:00">
-                五 14 一月 2011
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/technique.html">Technique</a>. </p>
-<p>tags: <a href="./tag/linux.html">Linux</a><a href="./tag/security.html">Security</a></p>
-</footer><!-- /.post-info -->                <p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
-<p>这个<a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f">问题提出</a>后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~</p>
-<p>其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令</p>
-<div class="codehilite"><pre>sudo apt-get install pamusb-tools
-</pre></div>
-
-
-<p>直接安装。当然如果你连终端也懒得打开，可以直接点击这里：<a href="apt:pamusb-tools">安装 pamusb-tools</a>。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。</p>
-<p>另外，Fedora 源里有 pam_usb 包，Arch ...</p>
-                <a class="readmore" href="./usb-key-for-linux.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./automatically-run-top-in-tty.html" rel="bookmark"
-                           title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2010-03-31T10:31:00">
-                三 31 三月 2010
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/technique.html">Technique</a>. </p>
-<p>tags: <a href="./tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info -->                <p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
-<p>既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 <code>top</code> 无疑最方便了~</p>
-<p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
-<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
-                <a class="readmore" href="./automatically-run-top-in-tty.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
-        Page 1 / 2
+        Page 1 / 3
             <a href="./index2.html">&raquo;</a>
     </p>
                         </section><!-- /#content -->

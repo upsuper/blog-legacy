@@ -37,6 +37,65 @@
                     <ol id="posts-list" class="hfeed" start="9">
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="./usb-key-for-linux.html" rel="bookmark"
+                           title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-01-14T20:25:00">
+                五 14 一月 2011
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a><a href="./tag/security.html">Security</a></p>
+</footer><!-- /.post-info -->                <p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
+<p>这个<a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f">问题提出</a>后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~</p>
+<p>其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令</p>
+<div class="codehilite"><pre>sudo apt-get install pamusb-tools
+</pre></div>
+
+
+<p>直接安装。当然如果你连终端也懒得打开，可以直接点击这里：<a href="apt:pamusb-tools">安装 pamusb-tools</a>。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。</p>
+<p>另外，Fedora 源里有 pam_usb 包，Arch ...</p>
+                <a class="readmore" href="./usb-key-for-linux.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./automatically-run-top-in-tty.html" rel="bookmark"
+                           title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-03-31T10:31:00">
+                三 31 三月 2010
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/linux.html">Linux</a></p>
+</footer><!-- /.post-info -->                <p>每当感觉到系统卡的时候，最好的方法无外乎进入 tty，登入，打开一个 <code>top</code> 监视。可是每次到了需要的时候才去开，打开的效率自然不敢恭维。于是便想，每次开机的时候，记起来就跑到 tty 下面去先开起来。不过这件事情总归是麻烦的，于是才有了现在的方案。</p>
+<p>既然 tty 那么多，那我们就把他利用一下吧~让他开机自动在某个 tty 里面启动 <code>top</code> 无疑最方便了~</p>
+<p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
+<div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
+                <a class="readmore" href="./automatically-run-top-in-tty.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="./little-vc6-fix.md.html" rel="bookmark"
                            title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
                 </header>
@@ -284,66 +343,11 @@
                 <a class="readmore" href="./python-variable-type-and-reference.html">read more</a>
                                 </div><!-- /.entry-content -->
             </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./php-show-latex-formula.html" rel="bookmark"
-                           title="Permalink to PHP 空间也做 LaTeX 公式显示">PHP 空间也做 LaTeX 公式显示</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-04-03T10:43:00">
-                五 03 四月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/technique.html">Technique</a>. </p>
-<p>tags: <a href="./tag/php.html">PHP</a><a href="./tag/latex.html">LaTeX</a></p>
-</footer><!-- /.post-info -->                <p>原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。</p>
-<p>今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！</p>
-<p>要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。</p>
-<p>如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：<a href="http://www.forkosh.com/mimetex.zip">mimetex.zip</a>。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入 ...</p>
-                <a class="readmore" href="./php-show-latex-formula.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./benchmark-of-string-combining-methods.html" rel="bookmark"
-                           title="Permalink to 对字符串加长和数组合并的效率比较">对字符串加长和数组合并的效率比较</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-02-13T12:59:00">
-                五 13 二月 2009
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/research.html">Research</a>. </p>
-<p>tags: <a href="./tag/javascript.html">Javascript</a><a href="./tag/php.html">PHP</a><a href="./tag/benchmark.html">Benchmark</a></p>
-</footer><!-- /.post-info -->                <p>对于字符串累加的处理，在 PHP 或 JavaScript 中似乎都可以通过类似 += (.= for PHP) 的方式实现，但有不少人抱怨道，这种方式效率很低。事实上，在我还在用 VB 的时候我就注意到这样的效率很低，当时的效率低是因为累加需要反复申请内存，而解决方法也很简单，就是用 Space$ 命令事先申请内存，然后用 Mid$ 来修改，这样效率大大提高！</p>
-<p>然而在这里就不一样了，PHP 和 JavaScript 的内存机制我不是非常了解，同时我们似乎也不再使用预申请的方法来加速了（似乎也比较困难……），而是直接用上了 += 这样的符号。</p>
-<p>下面就是问题了：这样的效率低吗？</p>
-<p>很多人（包括我自己最初）根据自己的想象，认为使用添加数组内容，最后合并数组为字符串，这样效率比简单的 += 要快，但我经过反复实验认为并不是这样的。首先是 JavaScript，我使用的测试代码如下：</p>
-<div class="codehilite"><pre><span class="kd">function</span> <span class="nx">getTime</span><span class="p">()</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="p">(</span><span class="k">new ...</span></pre></div>
-                <a class="readmore" href="./benchmark-of-string-combining-methods.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
                         <a href="./index.html">&laquo;</a>
-                Page 2 / 2
+                Page 2 / 3
+            <a href="./index3.html">&raquo;</a>
     </p>
                         </section><!-- /#content -->
                     <section id="extras" class="body">

@@ -555,7 +555,355 @@
 &lt;li&gt;&lt;a id="ref_id4"&gt;&lt;/a&gt;&lt;a href="#note_id4"&gt;[4]&lt;/a&gt; 这里的“属性”我表示的是一个结构体的字段。如果你对于 Python C 扩展的定义方式完全不熟悉，可以看看&lt;a href="http://docs.python.org/dev/extending/newtypes.html"&gt;这个页面&lt;/a&gt;。&lt;/li&gt;
 &lt;li&gt;&lt;a id="ref_id5"&gt;&lt;/a&gt;&lt;a href="#note_id5"&gt;[5]&lt;/a&gt; 当我说&lt;em&gt;一切&lt;/em&gt;皆对象时，我的意思就是它。你也许会觉得对象是你定义的类的实例。然而，深入到 C 一级，CPython 如你一样创建和耍弄许许多多的对象。类型 (类)、内置对象、函数、模块，所有这些都表现为对象。&lt;/li&gt;
 &lt;li&gt;&lt;a id="ref_id6"&gt;&lt;/a&gt;&lt;a href="#note_id6"&gt;[6]&lt;/a&gt; 这个例子只能在 Python 3.3 中运行，因为 &lt;code&gt;split&lt;/code&gt; 的 &lt;code&gt;sep&lt;/code&gt; 这个关键词参数是在这个版本中新加的。在之前版本的 Python 中 &lt;code&gt;split&lt;/code&gt; 仅仅接受定位参数。&lt;/li&gt;
-&lt;/ul&gt;</summary><category term="Python"></category><category term="C"></category></entry><entry><title>动态切换 Linux 使用的 CPU 数量</title><link href="http://upsuper.github.com/blog/dynamic-modify-cpu-number.html" rel="alternate"></link><updated>2011-10-19T14:04:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2011-10-19:dynamic-modify-cpu-number.html</id><summary type="html">&lt;p&gt;由于要测试一些代码，其运行结果会受到多核并行的影响，所以希望能够调整使用的 CPU 数量。网络上之前看到的方法是在内核的启动参数上添加一个 &lt;code&gt;maxcpus&lt;/code&gt;，但是如果这样的话每切换一次都要重启一次，是在太麻烦了。想想 Linux 应该是很强大的，所以可以动态修改 CPU 数量才对。&lt;/p&gt;
+&lt;/ul&gt;</summary><category term="Python"></category><category term="C"></category></entry><entry><title>[翻译] 在 Python 中使用模糊匹配根据发音搜索</title><link href="http://upsuper.github.com/blog/using-fuzzy-matching-to-search-by-sound-with-python.html" rel="alternate"></link><updated>2012-03-10T16:39:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2012-03-10:using-fuzzy-matching-to-search-by-sound-with-python.html</id><summary type="html">&lt;p&gt;原文：&lt;a href="http://www.informit.com/articles/article.aspx?p=1848528"&gt;Using Fuzzy Matching to Search by Sound with Python&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;当你编写代码搜索数据库时，你不能总是依赖于相信所有的数据项都有正确的拼写。DreamHost 的开发者以及《Python 标准库编程范例》(&lt;em&gt;&lt;a href="http://www.informit.com/store/product.aspx?isbn=0321767349"&gt;The Python Standard Library by Example&lt;/a&gt;&lt;/em&gt;) 的作者 Doug Hellmann 在这篇文章中回顾了一些根据目标的发音，而不是准确的拼写，进行数据库搜索的方法。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在数据库中搜索人名是一项独特的挑战。对于不同来源和不同年代的数据，你不但不能指望其中名字的拼写是正确的，甚至相同的名字如果多次出现时，它们的拼写都不一定一样。而储存的数据和搜索项之间也有可能因为个人喜好、文化差异、&lt;a href="http://zh.wikipedia.org/wiki/%E5%90%8C%E9%9F%B3%E7%95%B0%E7%BE%A9%E8%AA%9E"&gt;同音词&lt;/a&gt;、拼写错误、文盲或仅仅因为在某些时期根本没有标准拼法而出现差异。这些问题在历史学家、谱系学家和其他研究者的手写的文本记录中尤为常见。&lt;/p&gt;
+&lt;p&gt;一个常用的解决这样的字符串搜索问题的方法是寻找与搜索目标相近的值。但是，使用传统的&lt;a href="http://en.wikipedia.org/wiki/Approximate_string_matching"&gt;模糊匹配算法&lt;/a&gt;计算两个任意字符串之间的相似度，代价是很大的，同时它也不适合用于搜索大规模数据集。一个更好的解决方案是为数据库里的每一项预先计算一个哈希值，有一些专门的哈希算法正是为此设计的。这些语音算法 (Phonetic algorithm) 让你可以基于发音，而不是精确的拼写，来比较两个单词或者名字。&lt;/p&gt;
+&lt;h2&gt;早期成果：Soundex&lt;/h2&gt;
+&lt;p&gt;一个这样的算法叫做 &lt;a href="http://zh.wikipedia.org/wiki/Soundex"&gt;Soundex&lt;/a&gt;，它由 Margaret K. Odell、Robert C. Russell 于1900年代早期开发出来。由于 Soundex 算法被美国人口普查所使用，并且它正是专门为编码姓名所设计的，因此在谱系相关的环境中十分常见。计算 Soundex 的哈希值，首先保留名字的首字母，之后将后面的辅音字母根据一张简单的对照表转换为数字。舍去元音和连续的数字，并将结果保留到4个字符。&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://pypi.python.org/pypi/Fuzzy"&gt;Fuzzy&lt;/a&gt; 库包含了一个 Python 程序可以使用的 Soundex 实现：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;fuzzy&lt;/span&gt;
+
+&lt;span class="n"&gt;names&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Catherine&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Katherine&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Katarina&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Johnathan&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Jonathan&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;John&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Teresa&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Theresa&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Smith&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Smyth&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Jessica&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Joshua&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;soundex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Soundex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;names&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%-10s&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;soundex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个程序 &lt;code&gt;show_soundex.py&lt;/code&gt; 的输出显示出有一部分有相近读音的名字被编码为了相同的哈希值，但结果并不理想：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;python show_soundex.py
+Catherine  C365
+Katherine  K365
+Katarina   K365
+Johnathan  J535
+Jonathan   J535
+John       J500
+Teresa     T620
+Theresa    T620
+Smith      S530
+Smyth      S530
+Jessica    J200
+Joshua     J200
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在这个例子中，&lt;em&gt;Theresa&lt;/em&gt; 和 &lt;em&gt;Teresa&lt;/em&gt; 产生了相同的 Soundex 值，但 &lt;em&gt;Catherine&lt;/em&gt; 和 &lt;em&gt;Katherine&lt;/em&gt; 虽然听起来一样，却因为有不同的首字母而输出了不同的结果。而最后两个名字 &lt;em&gt;Jessica&lt;/em&gt; 和 &lt;em&gt;Joshua&lt;/em&gt; 他们一点关系都没有，但却得到了相同的结果，仅仅因为字母 J、S 和 C 都映射到了数字2上，并且算法删除了重复项。这类错误正体现出了 Soundex 的主要缺陷。&lt;/p&gt;
+&lt;h2&gt;超越英语：NYSIIS&lt;/h2&gt;
+&lt;p&gt;在 Soundex 之后又发展出一些使用不同编码方案的算法，有的基于 Soundex 并改进了对照表，有的从头开始构建了自己的规则。所有这些算法都用不同的方法来处理&lt;a href="http://zh.wikipedia.org/wiki/%E9%9F%B3%E4%BD%8D"&gt;音位&lt;/a&gt;以提高精确度。例如70年代，由 Robert L. Taft 公布的&lt;a href="http://en.wikipedia.org/wiki/NYSIIS"&gt;纽约州模式识别与智能系统&lt;/a&gt; (New York State Identification and Intelligence System, NYSIIS) 算法。NYSIIS 最初被用于现在被称作纽约州刑事司法服务处 (New York State Division of Criminal Justice Services) 的部门，用以帮助他们识别他们数据库中的人。由于特别关注了对欧洲和西班牙姓氏中出现的音元的处理，它产生的结果好于 Soundex。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;fuzzy&lt;/span&gt;
+
+&lt;span class="n"&gt;names&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Catherine&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Katherine&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Katarina&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Johnathan&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Jonathan&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;John&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Teresa&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Theresa&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Smith&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Smyth&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Jessica&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Joshua&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;names&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%-10s&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;nysiis&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在我们的样例数据中，&lt;code&gt;show_nysiis.py&lt;/code&gt; 的输出结果要好于 Soundex：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;python show_nysiis.py
+Catherine  CATARAN
+Katherine  CATARAN
+Katarina   CATARAN
+Johnathan  JANATAN
+Jonathan   JANATAN
+John       JAN
+Teresa     TARAS
+Theresa    TARAS
+Smith      SNATH
+Smyth      SNATH
+Jessica    JASAC
+Joshua     JAS
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在这里，&lt;em&gt;Catherine&lt;/em&gt;、&lt;em&gt;Katherine&lt;/em&gt; 和 &lt;em&gt;Katariha&lt;/em&gt; 被映射到了相同的哈希值上。而由于 NYSIIS 使用了更多字母，&lt;em&gt;Jessica&lt;/em&gt; 和 &lt;em&gt;Joshua&lt;/em&gt; 的错误匹配也被消除了。&lt;/p&gt;
+&lt;h2&gt;新方法：Metaphone&lt;/h2&gt;
+&lt;p&gt;由 Lawrence Philips 在1990年发布的 Metaphone 算法是对早期系统如 Soundex 和 NYSIIS 的另一个改进。这种算法比其他的算法要远远复杂得多，因为它包含了许多特殊的规则用于处理拼写不一致和检查辅音与一些元音的组合。一个叫做 Double Metaphone 的升级版算法走得更远，它进一步添加了一些用于处理其他语言的拼写和发音的规则。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;fuzzy&lt;/span&gt;
+
+&lt;span class="n"&gt;names&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Catherine&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Katherine&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Katarina&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Johnathan&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Jonathan&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;John&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Teresa&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Theresa&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Smith&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Smyth&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Jessica&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s"&gt;&amp;#39;Joshua&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;dmetaphone&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DMetaphone&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;names&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%-10s&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dmetaphone&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;除了有更大的编码规则集，Double Metaphone 还为每个输入的单词产生两个可选的哈希值，这让调用者可以实现两级精度的搜索。在我们样例程序的结果中，&lt;em&gt;Catherine&lt;/em&gt; 和 &lt;em&gt;Katherine&lt;/em&gt; 的主哈希值是相同的，它们的次哈希值和 &lt;em&gt;Katarina&lt;/em&gt; 的主哈希值是相同的。这样就发现了 Soundex 无法发现的匹配，同时又降低了结果的权重，不像 NYSIIS 那样完全没有差别。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;python show_dmetaphone.py
+Catherine  &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;K0RN&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;KTRN&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Katherine  &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;K0RN&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;KTRN&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Katarina   &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;KTRN&amp;#39;&lt;/span&gt;, None&lt;span class="o"&gt;]&lt;/span&gt;
+Johnathan  &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;JN0N&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;ANTN&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Jonathan   &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;JN0N&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;ANTN&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+John       &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;JN&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;AN&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Teresa     &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;TRS&amp;#39;&lt;/span&gt;, None&lt;span class="o"&gt;]&lt;/span&gt;
+Theresa    &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;0RS&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;TRS&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Smith      &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;SM0&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;XMT&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Smyth      &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;SM0&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;XMT&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Jessica    &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;JSK&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;ASK&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+Joshua     &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;JX&amp;#39;&lt;/span&gt;, &lt;span class="s1"&gt;&amp;#39;AX&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;应用语音检索&lt;/h2&gt;
+&lt;p&gt;在你的程序中使用语音检索是非常简单的，但是你也许需要给数据库服务器添加扩展或者给你的程序捆绑第三方库。MySQL、PostgreSQL、SQLite 和 Microsoft SQL Server 都支持使用一个可以直接在查询中调用的字符串函数来计算 Soundex。PostgreSQL 同时也包含了用于计算原始的 Metaphone 和 Double Metaphone 的函数。&lt;/p&gt;
+&lt;p&gt;对于主流的语言，如 Python、PHP、Ruby、Perl、C/C++ 和 Java，每种算法也都有独立的实现。这些库可以被用于那些没有提供内建的语音算法支持的数据库，如 MongoDB。举例来说，下面的脚本加载一系列的名字到数据库，同时为每个名字预计算他们的哈希值使得将来的搜索更容易：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;argparse&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;fuzzy&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pymongo&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;
+
+&lt;span class="n"&gt;parser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;argparse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ArgumentParser&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;description&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Load names into the database&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;nargs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;+&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;args&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;phonetic_search&lt;/span&gt;
+&lt;span class="n"&gt;dmetaphone&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DMetaphone&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;soundex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Soundex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="c"&gt;# Compute the hashes. Save soundex&lt;/span&gt;
+    &lt;span class="c"&gt;# and nysiis as lists to be consistent&lt;/span&gt;
+    &lt;span class="c"&gt;# with dmetaphone return type.&lt;/span&gt;
+    &lt;span class="n"&gt;values&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;soundex&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="n"&gt;soundex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)],&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;nysiis&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:[&lt;/span&gt;&lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;nysiis&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)],&lt;/span&gt;
+            &lt;span class="s"&gt;&amp;#39;dmetaphone&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;dmetaphone&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;Loading &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;: &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;, &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;, &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; \
+        &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;soundex&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;nysiis&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;
+        &lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;dmetaphone&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+    &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;people&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;update&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;_id&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="c"&gt;# insert if not found&lt;/span&gt;
+            &lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在命令行执行 &lt;code&gt;mongodb_load.py&lt;/code&gt; 来保存名字，并且稍后将他们取出来：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;$ &lt;span class="n"&gt;python&lt;/span&gt; &lt;span class="n"&gt;mongodb_load&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt; &lt;span class="n"&gt;Jonathan&lt;/span&gt; &lt;span class="n"&gt;Johnathan&lt;/span&gt; &lt;span class="n"&gt;Joshua&lt;/span&gt; &lt;span class="n"&gt;Jessica&lt;/span&gt;
+&lt;span class="n"&gt;Loading&lt;/span&gt; &lt;span class="n"&gt;Jonathan&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;J535&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;JANATAN&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;JN0N&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;ANTN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;Loading&lt;/span&gt; &lt;span class="n"&gt;Johnathan&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;J535&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;JANATAN&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;JN0N&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;ANTN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;Loading&lt;/span&gt; &lt;span class="n"&gt;Joshua&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;J200&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;JAS&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;JX&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;AX&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;Loading&lt;/span&gt; &lt;span class="n"&gt;Jessica&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;J200&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;JASAC&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;JSK&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;ASK&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+$ &lt;span class="n"&gt;python&lt;/span&gt; &lt;span class="n"&gt;mongodb_load&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;py&lt;/span&gt; &lt;span class="n"&gt;Catherine&lt;/span&gt; &lt;span class="n"&gt;Katherine&lt;/span&gt; &lt;span class="n"&gt;Katarina&lt;/span&gt;
+&lt;span class="n"&gt;Loading&lt;/span&gt; &lt;span class="n"&gt;Catherine&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;C365&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;CATARAN&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;K0RN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;KTRN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;Loading&lt;/span&gt; &lt;span class="n"&gt;Katherine&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;K365&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;CATARAN&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;K0RN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;KTRN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;Loading&lt;/span&gt; &lt;span class="n"&gt;Katarina&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;K365&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;CATARAN&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;KTRN&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;搜索程序 &lt;code&gt;mongodb_search.py&lt;/code&gt; 让用户可以选择一种哈希函数，然后构建一个 MongoDB 查询来找到所有哈希值与输入的名字匹配的项。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="c"&gt;#!/usr/bin/env python&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;argparse&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;fuzzy&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pymongo&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;
+
+&lt;span class="n"&gt;ENCODERS&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;soundex&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Soundex&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;nysiis&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;nysiis&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;dmetaphone&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;fuzzy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;DMetaphone&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="n"&gt;parser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;argparse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ArgumentParser&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;description&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;Search for a name in the database&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;algorithm&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;choices&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;soundex&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;nysiis&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;dmetaphone&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;add_argument&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;args&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse_args&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;phonetic_search&lt;/span&gt;
+
+&lt;span class="n"&gt;encoded_name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ENCODERS&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;algorithm&lt;/span&gt;&lt;span class="p"&gt;](&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;query&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;algorithm&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;encoded_name&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;person&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;people&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;person&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;name&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在这样例中，结果集里额外返回的值正是我们所需要的，因为它们是正确的匹配项。另一方面我们也看到，用 Soundex 搜索 &lt;em&gt;Joshua&lt;/em&gt; 再次返回了不相关的值 &lt;em&gt;Jessica&lt;/em&gt;：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="nv"&gt;$ &lt;/span&gt;python mongodb_search.py soundex Katherine
+Katherine
+Katarina
+
+&lt;span class="nv"&gt;$ &lt;/span&gt;python mongodb_search.py nysiis Katherine
+Catherine
+Katherine
+Katarina
+
+&lt;span class="nv"&gt;$ &lt;/span&gt;python mongodb_search.py soundex Joshua
+Joshua
+Jessica
+
+&lt;span class="nv"&gt;$ &lt;/span&gt;python mongodb_search.py nysiis Joshua
+Joshua
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;虽然 Soundex 产生的结果比其他的算法差很多，但由于它内建于许多数据库服务器，它仍然被广泛地应用。同时它的简单也让它比 NYSIIS 或 Double Metaphone 更快。在它的结果可以被接受的情况下，它的速度就成为了选择它的决定性因素。&lt;/p&gt;
+&lt;h2&gt;最后的思考&lt;/h2&gt;
+&lt;p&gt;我希望这篇文章给你展示了语音算法可以给你程序增添的搜索特性的力量，以及如何简单地实现他们。你的数据和你想要进行的搜索决定了哪一种算法才是你的正确选择。如果从数据上看，很难决定使用哪一个，或许你可以给用户提供一个选项让他们来选择一个恰当的算法。虽然给用户提供选择会让你需要做更多的工作来建立索引，但这为实验和改善搜索带来了极大的灵活性。很多研究者、历史学家和谱系学家对于这些算法的名字都很熟悉，即使不清楚他们的实现。所以给他们相应的选项应该不会吓跑这些用户。&lt;/p&gt;
+&lt;h2&gt;引用&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="http://www.archives.gov/research/census/soundex.html"&gt;The Soundex Indexing System&lt;/a&gt;, U.S. National Archives&lt;/li&gt;
+&lt;li&gt;R. L. Taft, Name Search Techniques (Albany, New York: New York State Identification and Intelligence System, 1970)&lt;/li&gt;
+&lt;li&gt;Lawrence Philips, "&lt;a href="http://drdobbs.com/184401251?pgno=2"&gt;The Double Metaphone Search Algorithm&lt;/a&gt;," Dr. Dobb's (June 1, 2000)&lt;/li&gt;
+&lt;li&gt;&lt;a href="http://pypi.python.org/pypi/Fuzzy"&gt;Fuzzy&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</summary><category term="Python"></category><category term="Sound"></category></entry><entry><title>[翻译] AST 模块：用 Python 修改 Python 代码</title><link href="http://upsuper.github.com/blog/static-modification-of-python-with-python-the-ast-module.html" rel="alternate"></link><updated>2012-03-03T16:47:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2012-03-03:static-modification-of-python-with-python-the-ast-module.html</id><summary type="html">&lt;p&gt;原文：&lt;a href="http://blueprintforge.com/blog/2012/02/27/static-modification-of-python-with-python-the-ast-module/"&gt;Static Modification of Python With Python: The AST Module&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;修改代码在有时会变的十分有用，比如在进行测试和分析的时候。在这篇文章中，我们将看到如何使用 &lt;code&gt;ast&lt;/code&gt; 模块对 Python 代码进行修改，同时还将看到一些使用了这个技术的工具。&lt;/p&gt;
+&lt;h2&gt;CPython 的编译过程&lt;/h2&gt;
+&lt;div style="float: left; margin-right: 20px;"&gt;&lt;img src="http://upsuper.github.com/blog/static/images/pep339.png" /&gt;&lt;/div&gt;
+
+&lt;p&gt;在开始之前，我们应该先看看 CPython 的编译过程，这个过程在 &lt;a href="http://www.python.org/dev/peps/pep-0339/"&gt;PEP 339&lt;/a&gt; 中有详细的描述。&lt;/p&gt;
+&lt;p&gt;当然，在读这篇文章的时候，你并不需要对这个步骤有很深入的理解，不过这可以帮助你对整个过程有一个大体的了解。&lt;/p&gt;
+&lt;p&gt;首先，编译器会根据源代码生成一棵语法分析树 (Parse Tree)，随后，再根据语法分析树建立抽象语法树 (AST, Abstract Syntax Tree)。从 AST 中可以生成出控制流图 (CFG, Control Flow Graph)，最后再将控制流图编译为代码对象 (Code Object)。&lt;/p&gt;
+&lt;p&gt;图中标蓝的部分就是 AST 这一步，也就是我们今天所关注的部分。Python 从 2.6 开始就提供了现在这样的 &lt;code&gt;ast&lt;/code&gt; 模块，它提供了一种访问和修改 AST 的简单方式。&lt;/p&gt;
+&lt;p&gt;通过这个，我们可以从 AST 中生成代码对象，也可以出于某些原因，根据修改过的 AST 重新生成源代码。&lt;/p&gt;
+&lt;h2&gt;创建 AST&lt;/h2&gt;
+&lt;p&gt;先来写一点简单的代码，我们写一个叫做 &lt;code&gt;add&lt;/code&gt; 的函数，然后观察它所生成的 AST。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;ast&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;expr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;... def add(arg1, arg2):&lt;/span&gt;
+&lt;span class="s"&gt;...     return arg1 + arg2&lt;/span&gt;
+&lt;span class="s"&gt;... &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;expr_ast&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;expr&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;expr_ast&lt;/span&gt;
+&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;_ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Module&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x10a7a09d0&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;现在我们已经生成了一个 &lt;code&gt;ast.Module&lt;/code&gt; 对象，我们来看看它的内容：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dump&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;expr_ast&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;Module(&lt;/span&gt;
+    &lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
+        &lt;span class="n"&gt;FunctionDef&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;add&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;arguments&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
+                    &lt;span class="n"&gt;Name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;arg1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ctx&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Param&lt;/span&gt;&lt;span class="p"&gt;()),&lt;/span&gt;
+                    &lt;span class="n"&gt;Name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;arg2&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ctx&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Param&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+                    &lt;span class="p"&gt;],&lt;/span&gt;
+                    &lt;span class="n"&gt;vararg&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;kwarg&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;defaults&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[]),&lt;/span&gt;
+            &lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;
+                &lt;span class="n"&gt;Return&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                    &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;BinOp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+                        &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;arg1&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ctx&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Load&lt;/span&gt;&lt;span class="p"&gt;()),&lt;/span&gt;
+                        &lt;span class="n"&gt;op&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Add&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+                        &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;arg2&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ctx&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;Load&lt;/span&gt;&lt;span class="p"&gt;())))&lt;/span&gt;
+                &lt;span class="p"&gt;],&lt;/span&gt; 
+            &lt;span class="n"&gt;decorator_list&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[])&lt;/span&gt;
+    &lt;span class="p"&gt;])&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;正如我们所见，&lt;code&gt;Module&lt;/code&gt; 是父节点，它的 &lt;code&gt;body&lt;/code&gt; 中包含了一个函数定义的元素，这个函数定义包含了函数名、参数列表和函数体。函数体又包含了一个单独的 &lt;code&gt;Return&lt;/code&gt; 节点，节点中含有一个 &lt;code&gt;Add&lt;/code&gt; 运算。&lt;/p&gt;
+&lt;h2&gt;修改 AST&lt;/h2&gt;
+&lt;p&gt;我们如何修改这棵树以改变代码的作用呢？为了说明这个问题，我们来做点也许你永远也不会在你自己代码中做的疯狂的事情吧。我们将遍历这棵树，并且将 &lt;code&gt;Add&lt;/code&gt; 运算修改为 &lt;code&gt;Mult&lt;/code&gt; 运算。看，我说过这很疯狂吧！&lt;/p&gt;
+&lt;p&gt;我们要先建立一个 &lt;code&gt;NodeTransformer&lt;/code&gt; 变换器的子类，并且定义 &lt;code&gt;visit_BinOp&lt;/code&gt; 方法。每当这个变换器访问到一个二元运算符节点时，就会调用这个方法。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;CrazyTransformer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;NodeTransformer&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;visit_BinOp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;node&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;node&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__dict__&lt;/span&gt;
+        &lt;span class="n"&gt;node&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;op&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Mult&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;node&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__dict__&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;node&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;现在我们已经定义好了我们这个奇怪的变换器，让我们看看将它应用于我们开始时写的那些代码会怎么样：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;transformer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;CrazyTransformer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;transformer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;visit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;expr_ast&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;op&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;_ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Add&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x10a8321d0&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;right&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;_ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Name&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x10a839390&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;lineno&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;col_offset&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;left&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;_ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Name&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x10a839350&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;op&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;_ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Mult&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x10a839510&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;right&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;_ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Name&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x10a839390&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;lineno&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;col_offset&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+    &lt;span class="s"&gt;&amp;#39;left&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;_ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Name&lt;/span&gt; &lt;span class="nb"&gt;object&lt;/span&gt; &lt;span class="n"&gt;at&lt;/span&gt; &lt;span class="mh"&gt;0x10a839350&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;你可以从输出的结果对比发现，&lt;code&gt;Add&lt;/code&gt; 节点已经被替换成了一个 &lt;code&gt;Mult&lt;/code&gt;。我们有许多方法没有提到，比如访问子节点，不过这个例子已经足以刻画出它的基本原理。&lt;/p&gt;
+&lt;h2&gt;编译和执行修改后的 AST&lt;/h2&gt;
+&lt;p&gt;我们在最初的代码后面加上一个调用，比如：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;让我们看看这些代码是如何运行的：&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;unmodified&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ast&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;expr&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;exec&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;unmodified&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;exec&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mi"&gt;9&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;transformer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;CrazyTransformer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;modified&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;transformer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;visit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;unmodified&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="k"&gt;exec&lt;/span&gt; &lt;span class="nb"&gt;compile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;modified&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;lt;string&amp;gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;exec&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="mi"&gt;20&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们可以看到，未修改的和修改后的 AST 所编译出的代码，一个输出了9，一个输出了20。&lt;/p&gt;
+&lt;h2&gt;重新翻译回源代码&lt;/h2&gt;
+&lt;p&gt;最后，我们可以用 &lt;code&gt;unparse&lt;/code&gt; 模块将修改后的代码转换回对应的源代码，&lt;code&gt;unparse&lt;/code&gt; 模块可以在&lt;a href="http://svn.python.org/projects/python/trunk/Demo/parser/unparse.py" title="unparse.py"&gt;这里&lt;/a&gt;找到。&lt;/p&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;unparse&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Unparser&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;modified&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;stdout&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;arg1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;arg2&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;arg1&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;arg2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="n"&gt;add&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;正如我们所看到的，&lt;code&gt;*&lt;/code&gt; 运算符取代了 &lt;code&gt;+&lt;/code&gt;。在这个反解析工具对于理解你的 AST 变换器如何修改代码很有帮助。&lt;/p&gt;
+&lt;h2&gt;实践应用&lt;/h2&gt;
+&lt;p&gt;显然，我们上面的例子在实际应用中几乎没有意义。然而静态分析和修改代码却是十分有用的。&lt;/p&gt;
+&lt;p&gt;比如你可以为测试程序而注入一些代码。你可以看看&lt;a href="http://www.tudou.com/programs/view/5IHp-wxyt3c/" title="PyCon 2011: What would you do with an ast?"&gt;这篇 Pycon 演讲&lt;/a&gt;以理解如何使用一个节点转换器注入指令代码来测试程序。&lt;/p&gt;
+&lt;p&gt;除此之外，&lt;a href="http://pythoscope.org/"&gt;Pythonscope 项目&lt;/a&gt;也使用了 AST 访问器 (visitor) 来处理源代码并根据函数签名生成测试。&lt;/p&gt;
+&lt;p&gt;还有像 pylint 这样的项目使用 AST 步移法 (walking method) 来分析源代码。在 pylint 中，Logilab 还建立了一个模块专门用于：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;提供一个通用的 Python 源代码基本表示方式以为如 pychecker、pyreverse 或 pylint 等项目的开发提供方便。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;你可以在&lt;a href="http://www.logilab.org/project/logilab-astng" title="logilab-astng (Python Abstract Syntax Tree New Generation)"&gt;这里&lt;/a&gt;看到更多关于这个项目的信息。&lt;/p&gt;
+&lt;h2&gt;引用&lt;/h2&gt;
+&lt;p&gt;Matthew J Desmarais 的&lt;a href="http://www.tudou.com/programs/view/5IHp-wxyt3c/" title="PyCon 2011: What would you do with an ast?"&gt;这篇 Pycon 演讲&lt;/a&gt;以及 Eli Bendersky 的&lt;a href="http://eli.thegreenplace.net/2009/11/28/python-internals-working-with-python-asts/" title="Python internals: Working with Python ASTs"&gt;这篇博客&lt;/a&gt;对于本文的帮助是无可估量的。&lt;/p&gt;</summary><category term="Python"></category></entry><entry><title>动态切换 Linux 使用的 CPU 数量</title><link href="http://upsuper.github.com/blog/dynamic-modify-cpu-number.html" rel="alternate"></link><updated>2011-10-19T14:04:00+08:00</updated><author><name>Xidorn Quan</name></author><id>tag:upsuper.github.com/blog,2011-10-19:dynamic-modify-cpu-number.html</id><summary type="html">&lt;p&gt;由于要测试一些代码，其运行结果会受到多核并行的影响，所以希望能够调整使用的 CPU 数量。网络上之前看到的方法是在内核的启动参数上添加一个 &lt;code&gt;maxcpus&lt;/code&gt;，但是如果这样的话每切换一次都要重启一次，是在太麻烦了。想想 Linux 应该是很强大的，所以可以动态修改 CPU 数量才对。&lt;/p&gt;
 &lt;p&gt;无意中看到 Linux 代码的 &lt;code&gt;Documentation&lt;/code&gt; 文件夹下有个文件叫做 &lt;code&gt;cpu-hotplug.txt&lt;/code&gt;，于是就看了一下，发现可以在 &lt;code&gt;/sys/devices/system/cpu&lt;/code&gt; 看到代表各 CPU 的文件夹按照 &lt;code&gt;cpuX&lt;/code&gt; 的命名方式，如 &lt;code&gt;cpu0&lt;/code&gt;、&lt;code&gt;cpu1&lt;/code&gt;、&lt;code&gt;cpu2&lt;/code&gt; 等。这些文件夹里面有一个 &lt;code&gt;online&lt;/code&gt; 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 &lt;code&gt;root&lt;/code&gt; 权限哦。&lt;/p&gt;
 &lt;p&gt;因为我只要在单核和多核之间切换，所以我写了两个脚本放在 &lt;code&gt;/usr/local/sbin&lt;/code&gt; 里面：&lt;/p&gt;
 &lt;p&gt;singlecore&lt;/p&gt;

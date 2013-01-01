@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>鬼の领地</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="./theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie.css"/>
+                <script src="./js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="./">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="./category/blog.html">Blog</a></li>
+                                    <li ><a href="./category/research.html">Research</a></li>
+                                    <li ><a href="./category/script.html">Script</a></li>
+                                    <li ><a href="./category/study.html">Study</a></li>
+                                    <li ><a href="./category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+                
+            
+
+                 
+                            <section id="content" class="body">
+                    <ol id="posts-list" class="hfeed" start="9">
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./php-show-latex-formula.html" rel="bookmark"
+                           title="Permalink to PHP 空间也做 LaTeX 公式显示">PHP 空间也做 LaTeX 公式显示</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-04-03T10:43:00">
+                五 03 四月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/php.html">PHP</a><a href="./tag/latex.html">LaTeX</a></p>
+</footer><!-- /.post-info -->                <p>原来一直以为只有自己的机子安装了 LaTeX、dvips 等等这些软件才能显示 LaTeX 公式。</p>
+<p>今天上网查找了一下，发现不是这样的，原来比较基本的 LAMP 空间也可以这样了，这完全得益于一个叫做 mimeTeX 的开源软件。虽然这个软件生成的没有 LaTeX 生成的漂亮，不过还是比 Word 的公式编辑器生成的漂亮，最重要的是可以在网站上使用！</p>
+<p>要安装这个，有一个比较必要的前提，就是你的网站必须不能运行在 PHP 的安全模式下，还有就是网站必须允许是用 .htaccess 配置文件，否则可能不行……不是……是肯定不行……另外权限设置比较严格的服务器上注意把相应权限设置妥当。</p>
+<p>如果服务器是 Linux 平台下的，首先，我们要下载这个软件，源代码可以点击这里下载：<a href="http://www.forkosh.com/mimetex.zip">mimetex.zip</a>。这里推荐解压后直接上传整个文件夹的代码上去，因为最好可以在服务器端编译，而非客户端编译好，否则平台可能不兼容。在解压出来的文件目录中新建一个 complie.php 文件，其中输入 ...</p>
+                <a class="readmore" href="./php-show-latex-formula.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./benchmark-of-string-combining-methods.html" rel="bookmark"
+                           title="Permalink to 对字符串加长和数组合并的效率比较">对字符串加长和数组合并的效率比较</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-02-13T12:59:00">
+                五 13 二月 2009
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/research.html">Research</a>. </p>
+<p>tags: <a href="./tag/javascript.html">Javascript</a><a href="./tag/php.html">PHP</a><a href="./tag/benchmark.html">Benchmark</a></p>
+</footer><!-- /.post-info -->                <p>对于字符串累加的处理，在 PHP 或 JavaScript 中似乎都可以通过类似 += (.= for PHP) 的方式实现，但有不少人抱怨道，这种方式效率很低。事实上，在我还在用 VB 的时候我就注意到这样的效率很低，当时的效率低是因为累加需要反复申请内存，而解决方法也很简单，就是用 Space$ 命令事先申请内存，然后用 Mid$ 来修改，这样效率大大提高！</p>
+<p>然而在这里就不一样了，PHP 和 JavaScript 的内存机制我不是非常了解，同时我们似乎也不再使用预申请的方法来加速了（似乎也比较困难……），而是直接用上了 += 这样的符号。</p>
+<p>下面就是问题了：这样的效率低吗？</p>
+<p>很多人（包括我自己最初）根据自己的想象，认为使用添加数组内容，最后合并数组为字符串，这样效率比简单的 += 要快，但我经过反复实验认为并不是这样的。首先是 JavaScript，我使用的测试代码如下：</p>
+<div class="codehilite"><pre><span class="kd">function</span> <span class="nx">getTime</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="k">new ...</span></pre></div>
+                <a class="readmore" href="./benchmark-of-string-combining-methods.html">read more</a>
+                                </div><!-- /.entry-content -->
+            </article></li>
+                            </ol><!-- /#posts-list -->
+                            <p class="paginator">
+                        <a href="./index2.html">&laquo;</a>
+                Page 3 / 3
+    </p>
+                        </section><!-- /#content -->
+                    <section id="extras" class="body">
+                        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
