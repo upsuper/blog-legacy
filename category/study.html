@@ -34,8 +34,48 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../exploring-python-code-objects.html">[翻译] 探索 Python 代码对象</a></h1> 
+                    <h1 class="entry-title"><a href="../https-and-server-name.html">HTTPS 与服务器名</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2013-01-23T18:11:00">
+                2013&#24180;01&#26376;23&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/security.html">Security</a></p>
+</footer><!-- /.post-info --><p>一直以来都觉得用 HTTPS 的话，所有传输的信息都是密文传输的。正是因为如此，用 hosts 配合 HTTPS 来绕过墙访问一些敏感网站一直是一种看过去天衣无缝的完美方法：所有的程序都不需要修改，不需要知道如何使用代理，只要照常使用就可以了。唯一的缺陷是，hosts 的地址可能不时会失效，需要更换。而这唯一的缺陷，还可以用私设反向代理来解决。完美，毫无破绽。</p>
+<h2>提问</h2>
+<p>可当我对安全协议有一些了解之后，发现这件事情并没有那么简单。HTTPS 只是简单地将 HTTP 协议包裹进了 SSL/TLS，作为它们的应用数据。而 SSL/TLS 的协议流程，简单地来说可以分为握手和交换数据两大部分。而 HTTP 的数据，作为应用数据，显然是在传输阶段进行传送的，换句话说，握手这件事情，应该跟 HTTP 协议里的东西没有半毛钱关系。毕竟，握手的大多数内容都可以被认为是明文进行的嘛，如果握手的内容里有 HTTP 协议里的内容，不就泄密了？</p>
+<p>说不定还真是如此呢。</p>
+<p>我们知道 HTTPS 协议在连接服务器的时候，需要向服务器要求一个证书，服务器如果返回和访问的域名匹配的证书，才能认为它真的是我们要找的服务器。这不，前几天 GitHub 的 HTTPS 就被劫持了，访问时出示了一个无效的证书，于是被浏览器拦下来了。</p>
+<p>这就有一个问题了，既然证书是用来证明域名的，但是域名我们知道，实际上是由 HTTP 协议头中的 <code>Host:</code> 字段指出的，HTTP 协议的一切内容都是在握手结束之后才开始的，可证书又是在 SSL/TLS 的握手阶段由服务器提供的。那么服务器如何在发送证书之前，搞清楚客户端到底想要访问哪个域名，要求它出示哪张证书呢？</p>
+<p>最简单最原始的解决方法就是：一个 IP 地址绑定一个证书，而这个 IP 地址专为指定的域名服务。这显然不算是个坏主意，即使多个域名绑定在一台机器上，在 IP 地址被认为还有很多的年代，一台机器配好几个 IP 也并不稀奇，分别给这不同的 IP 绑上不同的域名和不同的证书就可以了。</p>
+<p>那么现在如果还想这么玩，大概就没那么容易了吧？毕竟 IPv4 的地址已经成了一种稀缺品。现在的凡人如果想要在一台机器上面、一个 IP 上面放多个不同的域名不同的网站，不得不使用基于名称的虚拟主机 (Name-based Virtual Host)，著名的 Apache 当然支持。可是我们不小心发现，Apache 对基于名称的虚拟主机，甚至也支持 HTTPS！这果然是一件奇怪的事，它是怎么做到的呢？</p>
+<h2>回答</h2>
+<p>我发现这个问题后，有两个猜想，一是服务器将其所持有的所有证书都发过来，客户端自己挑选自己需要的那个来作为服务器的证明；二是客户端有某种办法将需要的域名在握手阶段就告知服务器端，以便服务器端做出选择。</p>
+<p>第一种方法的弊病是显而易见的，如果证书很多的话，会浪费不少流量和时间，而且服务器所持有的证书也瞬间全部暴露了，这可没什么好处。但是第二种方法，在握手阶段告知就意味着域名会被明文传输，看起来似乎也不怎么妙啊。</p>
+<p>我当然不可能是第一个提出这个问题的人，Stack Overflow 上面早已有类似的<a href="http://stackoverflow.com/questions/517336/apache-name-virtual-host-with-ssl">提问</a>。而这种解决方法，正是上文所述的第二种——在要求服务器发送证书之前提前告知自己所请求的域名。这种技术叫做 SNI (Server Name Indication)，是一个 SSL/TLS 的扩展。这个扩展也已经被 IETF 标准化为了 <a href="http://tools.ietf.org/html/rfc6066#page-6">RFC 6066 的一部分</a>。这种方法正是在最初的握手过程中明文提交域名以供服务器参考。</p>
+<h2>思考</h2>
+<p>我的疑问算是被回答了，但是这显然是一个很麻烦的事情。我们知道墙的屏蔽方法无非是——网址关键词、DNS 污染和 IP 丢包。其中网址关键词本可以使用 HTTPS 的方式来规避掉的，这也是 hosts 方式的技术基础。但如果域名在握手阶段就被提前暴露了，剩下的还有什么用意义呢？</p>
+<p>RFC 6066 中也有提到<a href="http://tools.ietf.org/html/rfc6066#page-19">服务器名的安全考虑</a>，不过只是草草带过，并认为这并没有带来什么严重的安全问题。对于美国人民来说当然是没有的嘛。不过话说回来，证书里的域名也是明文保存的，所以确实可以说没有引入安全问题吧。只能祈祷墙不会嗅探到这种东西了？</p><p>There are <a href="../https-and-server-name.html#disqus_thread">comments</a>.</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../exploring-python-code-objects.html" rel="bookmark"
+                           title="Permalink to [翻译] 探索 Python 代码对象">[翻译] 探索 Python 代码对象</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2012-03-31T05:50:00">
                 2012&#24180;03&#26376;31&#26085;
         </abbr>
@@ -45,219 +85,15 @@
         </address>
         <p>In <a href="../category/study.html">Study</a>. </p>
 <p>tags: <a href="../tag/python.html">Python</a></p>
-</footer><!-- /.post-info --><p>原文：<a href="http://late.am/post/2012/03/26/exploring-python-code-objects">Exploring Python Code Objects</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://late.am/post/2012/03/26/exploring-python-code-objects">Exploring Python Code Objects</a></p>
 <p>由于受到 <a href="http://www.dabeaz.com/">David Beazley</a> 在 <a href="https://us.pycon.org/2012/">PyCon</a> 上的 <a href="http://pyvideo.org/video/659/keynote-david-beazley">Keynote</a> 的启发，近来我四处学习与 Python 代码对象 (code object) 相关的内容。我并没有什么特别的利器，也没有专门的任务去解决 (至今为止？)，所以请将这篇文章看做一些也许有趣的记录和随笔 (如果没意思的话，抱歉)。</p>
 <p><em>免责声明：</em>这篇文章是关于 CPython 2.7 的，虽然其中的大部分对于其他的 CPython 版本应该也是正确的 (包括 3.x)。但我不保证它在 PyPy、Jython、IronPython 等实现上是正确和适用的。</p>
 <h2>第0步：是什么？</h2>
-<p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人) 声称 Python 是一个解释型语言，但是事实上你所有的 Python 代码在执行之前都被编译了，甚至于你在 Python 命令行程序中交互式输入的代码也是如此。CPython 实现了一个执行基于栈的字节码 (stack-based bytecode) 的虚拟机。在运行时，任何可执行的东西 (函数、方法、模块、类主体 (class body)、Lambda 式、语句、表达式等等) 都以字节码的形式由 Python 虚拟机执行。</p>
-<p>然后，代码对象是用于表示字节码片段的 Python 对象，同时还附带了所有执行需要的东西：预期的参数名称和数量的声明、一个本地变量的列表 (不是字典！稍后会有更多说明)、字节码生成时与源代码相关的信息 (用于调试和输出栈跟踪) 等——哦，还有 (也许很显然地) 字节码本身，以 <code>str</code> 来保存 (在 Python 3 中为 <code>bytes</code>)。</p>
-<p>虽然代码对象表示了一些可执行的代码，但它们本身并不能被直接调用。要运行一个代码对象，你必须使用 <code>exec</code> 关键字或者 <code>eval()</code> 函数。</p>
-<h2>第1步：制造一些代码</h2>
-<p>在大部分时候，你在平常的 Python 编程中并不需要面对代码对象。这些时候，你不需要特别地注意代码对象，Python 会为你创建和管理它们。但在某些情况下，你可能想要自己创建代码对象，比如在这篇文章中我们就要用他们来进行实验：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_str</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... print &quot;Hello, world&quot;</span>
-<span class="s">... &quot;&quot;&quot;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;exec&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span>
-<span class="o">&lt;</span><span class="n">code</span> <span class="nb">object</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x1054c74b0</span><span class="p">,</span> <span class="nb">file</span> <span class="s">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2</span><span class="o">&gt;</span>
-</pre></div>
-
-
-<blockquote>
-<p>Woohoo，你的第一个代码对象！</p>
-</blockquote>
-<p>传递给 <a href="http://docs.python.org/library/functions.html#compile"><code>compile()</code></a> 的第一个参数，很明显是需要编译的 Python 代码字符串。第二个定义了代码的“文件名” (在这里，方便起见我们用了 <code>&lt;string&gt;</code> 来表示代码从交互命令行中获得)。第三个参数是编译的类型，这个参数在大多数情况下都是 <code>exec</code> 正如你在这里看到的。其他可能的模式还有适用于仅包含一条表达式的字符串的 <code>eval</code>，和生成仅含有一条语句的代码对象的 <code>single</code>。后者的返回值如果不是 <code>None</code> 的话将会被打印出来 (正如交互式命令行一样)。</p>
-<p>当使用 <code>eval</code> 模式时，如果代码中含有语句 (如我们上面包含 <code>print</code> 语句的例子那样) 编译将会因为一个符号错误失败：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_str</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... print &quot;Hello, world&quot;</span>
-<span class="s">... &quot;&quot;&quot;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;eval&#39;</span><span class="p">)</span>
-<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-  <span class="n">File</span> <span class="s">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2</span>
-    <span class="k">print</span> <span class="s">&quot;Hello, world&quot;</span>
-        <span class="o">^</span>
-<span class="ne">SyntaxError</span><span class="p">:</span> <span class="n">invalid</span> <span class="n">syntax</span>
-</pre></div>
-
-
-<p>当使用 <code>single</code> 的时候，只有一个语句将会被处理，更多的语句 (或者其他什么) 将会被忽略：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_str</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... print &quot;Hello, world&quot;</span>
-<span class="s">... print &quot;Goodbye, world&quot;</span>
-<span class="s">... &quot;&quot;&quot;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;single&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="k">exec</span> <span class="n">code_obj</span>
-<span class="n">Hello</span><span class="p">,</span> <span class="n">world</span>
-</pre></div>
-
-
-<blockquote>
-<p>我的 “goodbye” 发生了什么？</p>
-</blockquote>
-<p>在这篇文章的余下部分，我们将继续分析 <code>exec</code>，它也是在你导入模块时 Python 为你做的编译类型。</p>
-<h2>第2步：打开它</h2>
-<p>让我们回到我们的第一个例子然后进入代码对象内部看看我们有些什么：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_str</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... print &quot;Hello, world&quot;</span>
-<span class="s">... &quot;&quot;&quot;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;exec&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="n">code_obj</span><span class="p">)</span>
-<span class="c"># 处于可读性考虑，这里排除了无关的属性</span>
-<span class="p">[</span><span class="s">&#39;co_argcount&#39;</span><span class="p">,</span> <span class="s">&#39;co_cellvars&#39;</span><span class="p">,</span> <span class="s">&#39;co_code&#39;</span><span class="p">,</span> <span class="s">&#39;co_consts&#39;</span><span class="p">,</span> <span class="s">&#39;co_filename&#39;</span><span class="p">,</span> <span class="s">&#39;co_firstlineno&#39;</span><span class="p">,</span> <span class="s">&#39;co_flags&#39;</span><span class="p">,</span> <span class="s">&#39;co_freevars&#39;</span><span class="p">,</span> <span class="s">&#39;co_lnotab&#39;</span><span class="p">,</span> <span class="s">&#39;co_name&#39;</span><span class="p">,</span><span class="s">&#39;co_names&#39;</span><span class="p">,</span> <span class="s">&#39;co_nlocals&#39;</span><span class="p">,</span> <span class="s">&#39;co_stacksize&#39;</span><span class="p">,</span> <span class="s">&#39;co_varnames&#39;</span><span class="p">]</span>
-</pre></div>
-
-
-<p>这些属性都在 <a href="http://docs.python.org/library/inspect.html"><code>inspect</code></a> 模块的文档中都有写明，不过这里我将特别说一说其中几个很酷的属性：</p>
-<p>首先，我们可以看看我们传递给 <code>compile()</code> 的第二个参数最后到了哪里：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_filename</span>
-<span class="s">&#39;&lt;string&gt;&#39;</span>
-</pre></div>
-
-
-<p>还有也许让人吃惊的，我们的代码表示了一个匿名模块 (以 <code>exec</code> 模式编译的代码总是被当做模块级的代码，所以理所当然地它可以包含函数或类的定义，或者其他任何有效的 Python 代码)：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_name</span>
-<span class="s">&#39;&lt;module&gt;&#39;</span>
-</pre></div>
-
-
-<p>并且正如我们所期望的，一个表示 Python 模块的代码对象是没有参数的 (事实上这是因为我们的代码串仅仅是由一系列在没有任何缩进，在最顶层的语句组成)：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_argcount</span>
-<span class="mi">0</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_varnames</span>
-<span class="p">()</span>
-</pre></div>
-
-
-<p>如果我们从函数中取出一段含有参数的代码，我们将看到它们：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="o">...</span>     <span class="k">print</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
-<span class="o">...</span> 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">foo</span><span class="o">.</span><span class="n">func_code</span>
-<span class="o">&lt;</span><span class="n">code</span> <span class="nb">object</span> <span class="n">foo</span> <span class="n">at</span> <span class="mh">0x1054b9830</span><span class="p">,</span> <span class="nb">file</span> <span class="s">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="o">&gt;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">foo</span><span class="o">.</span><span class="n">func_code</span><span class="o">.</span><span class="n">co_varnames</span>
-<span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">foo</span><span class="o">.</span><span class="n">func_code</span><span class="o">.</span><span class="n">co_argcount</span>
-<span class="mi">2</span>
-</pre></div>
-
-
-<p>如果你很好奇，你也可以看看 Python 虚拟机将会处理的原始字节码：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_code</span>
-<span class="s">&#39;d</span><span class="se">\x00\x00</span><span class="s">GHd</span><span class="se">\x01\x00</span><span class="s">S&#39;</span>
-</pre></div>
-
-
-<p>我不推荐尝试直接去阅读这个代码，我们有一些更简单的方式 (注释：看看下一小节)。</p>
-<p>最后，在代码中我们有一个常量对象，即我们的代码输出的字符串 “Hello, world”：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_consts</span>
-<span class="p">(</span><span class="s">&#39;Hello, world&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-</pre></div>
-
-
-<p>等等，那个 <code>None</code> 是哪儿来的？</p>
-<h3>稍稍绕道到代码反编译</h3>
-<p><a href="http://docs.python.org/library/dis.html"><code>dis</code></a> 模块可以将代码对象反汇编为人类可读的一系列字节码指令，我们可以用它来精确的观察我们的代码对象中到底有些什么：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">dis</span><span class="p">.</span><span class="n">dis</span><span class="p">(</span><span class="n">code_obj</span><span class="p">)</span>
-  2           0 <span class="n">LOAD_CONST</span>               0 <span class="p">(</span><span class="s">&#39;hello, world&#39;</span><span class="p">)</span>
-              3 <span class="n">PRINT_ITEM</span>          
-              4 <span class="n">PRINT_NEWLINE</span>       
-              5 <span class="n">LOAD_CONST</span>               1 <span class="p">(</span><span class="n">None</span><span class="p">)</span>
-              8 <span class="n">RETURN_VALUE</span>
-</pre></div>
-
-
-<p>阅读反汇编的 Python 代码需要一点经验，所以让我来带你探索它。<code>LOAD_CONST</code> 指令从 <code>co_consts</code> 元组中读取一个值，并将其压入栈顶。<code>PRINT_ITEM</code> 指令则弹出栈顶元素并输出其字符串表示。<code>PRINT_NEWLINE</code> 指令的名字可以很好地说明自己的用途。</p>
-<p>下面我们来看看神秘的 <code>None</code>。这被证明是 CPython 虚拟机实现细节中的一个怪异之处。因为任何 Python 中的函数调用 (包括隐含的函数调用如 <code>import</code> 语句) 在 Python 虚拟机中被实现为 C 函数调用。模块事实上有返回值，这提醒 Python 虚拟机模块的运行已经结束，并且将控制权返回给调用者 (即 <code>import</code> 语句所在的模块)。我不想尝试在这个问题上做更深入的解释，如果你有兴趣的话，可以看看 <a href="http://www.larryhastings.com/">Larry Hastings</a> 在 PyCon 的演讲 <a href="http://pyvideo.org/video/635/stepping-through-cpython">Steping through CPython</a> 大约 44:22 的位置。这个视频说的是 Python 3.x，不过 Python 2.7 其实是一样的。如果你对整个实现细节都感兴趣，你肯定应该完整地看完这个视频以及 David Beazley 的 Keynote。</p>
-<h2>第3步：有趣的内部实现</h2>
-<p>我们已经看过的那些特性显然对于 Python 虚拟机的执行是非常有用的，但是关于人的部分呢？如果我们想要交互地调试代码 (用 <code>pdb</code> 或者类似的工具)，获得有用的、可读的异常回溯信息，该怎么办？</p>
-<p>可以证明，代码对象也同样支持这些。我们之前已经看到，代码对象可以给出它是依据哪个文件生成出来的，这显然可以帮助我们查看源代码。它同样可以指出它自己是从源代码的哪一行开始的：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_firstlineno</span>
-<span class="mi">2</span>
-</pre></div>
-
-
-<p>还有神秘的 <code>co_lnotab</code> 属性。为了描述它的用途，我们需要更长一点的代码段：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_str</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... x = 1</span>
-<span class="s">... y = 1</span>
-<span class="s">... print x + y</span>
-<span class="s">... &quot;&quot;&quot;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;exec&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_lnotab</span>
-<span class="s">&#39;</span><span class="se">\x06\x01\x06\x01</span><span class="s">&#39;</span>
-</pre></div>
-
-
-<p>嗯，然后我们能从中知道些什么呢？也许 <code>dis</code> 模块在这儿能够帮点忙：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">dis</span><span class="o">.</span><span class="n">dis</span><span class="p">(</span><span class="n">code_obj</span><span class="p">)</span>
-  <span class="mi">2</span>           <span class="mi">0</span> <span class="n">LOAD_CONST</span>           <span class="mi">0</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-              <span class="mi">3</span> <span class="n">STORE_NAME</span>           <span class="mi">0</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-  <span class="mi">3</span>           <span class="mi">6</span> <span class="n">LOAD_CONST</span>           <span class="mi">1</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-              <span class="mi">9</span> <span class="n">STORE_NAME</span>           <span class="mi">1</span> <span class="p">(</span><span class="n">y</span><span class="p">)</span>
-
-  <span class="mi">4</span>          <span class="mi">12</span> <span class="n">LOAD_NAME</span>            <span class="mi">0</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
-             <span class="mi">15</span> <span class="n">LOAD_NAME</span>            <span class="mi">1</span> <span class="p">(</span><span class="n">y</span><span class="p">)</span>
-             <span class="mi">18</span> <span class="n">BINARY_ADD</span>
-             <span class="mi">19</span> <span class="n">PRINT_ITEM</span>
-             <span class="mi">20</span> <span class="n">PRINT_NEWLINE</span>
-             <span class="mi">21</span> <span class="n">LOAD_CONST</span>           <span class="mi">2</span> <span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-             <span class="mi">24</span> <span class="n">RETURN_VALUE</span>
-</pre></div>
-
-
-<p>在一些行的最左边是代码对象所对应的 Python 源代码的行号 (注意到这里的2正对应了 <code>code_obj.co_firstlineno</code> 的值)。后面一列是这个字节码指令在代码中的偏移位置，0字节处是第一条指令，3字节处是第二条这样。第三列是指令名称本身。而如果指令有参数的话，第四列就是参数，参数后面的括号内是参数的值。</p>
-<p>现在我们可以将这些东西与 <code>co_lnotab</code> (其实就是“行号表 (line number table)”的意思) 放到一起来看看 Python 是如何将代码对象与原始的源代码联系起来的：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_lnotab</span>
-<span class="s">&#39;</span><span class="se">\x06\x01\x06\x01</span><span class="s">&#39;</span>
-</pre></div>
-
-
-<p>在经过一些尝试和错误之后，我明白了这是一串字节对：第一个字节是字节码的偏移量 (这里是6字节，加上这之后就到达了我们反汇编之后的第二个 <code>LOAD_CONST</code>)，后面是源代码中跳过的行。</p>
-<p>我们可以稍稍修改我们的源代码来验证这个理论：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_str2</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... x = 1</span>
-<span class="s">... </span>
-<span class="s">... y = 2</span>
-<span class="s">... print x + y</span>
-<span class="s">... &quot;&quot;&quot;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj2</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">code_str2</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;exec&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj2</span><span class="o">.</span><span class="n">co_lnotab</span>
-<span class="s">&#39;</span><span class="se">\x06\x02\x06\x01</span><span class="s">&#39;</span>
-</pre></div>
-
-
-<p>我们将第二条赋值语句向下移了一行，于是我们就看到 <code>co_lnotab</code> 的第二个字节由1变成了2，表示从当前行数向下移2行。</p>
-<p>我们同样可以验证这两个稍稍有些不同的源代码生成的字节码是相同的：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj2</span><span class="o">.</span><span class="n">co_code</span> <span class="o">==</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_code</span>
-<span class="bp">True</span>
-</pre></div>
-
-
-<p>由于字节码偏移和行号偏移都是一个无符号字节，于是你或许会想，如果比如说在 Python 代码中的两个语句之间我有 257 (或更多) 的空行会怎么样？让我们来看看：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">thousand_blanks</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">*</span> <span class="mi">1000</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_str</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... x = 1</span>
-<span class="s">... &quot;&quot;&quot;</span> <span class="o">+</span> <span class="n">thousand_blanks</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;</span>
-<span class="s">... y = 2</span>
-<span class="s">... print x + y</span>
-<span class="s">... &quot;&quot;&quot;</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="s">&#39;&lt;string&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;exec&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code_obj</span><span class="o">.</span><span class="n">co_lnotab</span>
-<span class="s">&#39;</span><span class="se">\x06\xff\x00\xff\x00\xff\x00\xec\x06\x01</span><span class="s">&#39;</span>
-</pre></div>
-
-
-<p>由于字节码便宜和行数偏移终归都是偏移，大的空白仅仅意味着另一边是一个长度为0的便宜。于是我们在字节码上有6字节的偏移，随后跟着一个源代码上 255 行的偏移，然后在字节码上0字节的偏移，之后又是一个 255 行的源代码偏移，还有一个0字节的字节码偏移和一个 255 行的源码偏移，还有一个0字节的字节码偏移和最后一个 236 行的源代码偏移 (接下去就是对于最后一个 <code>print</code> 语句的正常的6个字节的字节码偏移和1行的源代码偏移)。如此优雅！</p>
-<h2>结语</h2>
-<p>我先对这篇文章的散乱表示抱歉，不过我希望它的内容能让你感到很有趣。敬请继续关注对 <code>exec</code> 特性的探索以及在不久的将来其在 <a href="http://late.am/post/2011/11/27/keystone-a-simple-python-web-framework">Keystone</a> 中的应用 (这是作者开发的一个有趣的 Python 网站框架，值得关注一下，译注)。</p>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人 ...</p>
+                <a class="readmore" href="../exploring-python-code-objects.html">read more</a>
+                <p>There are <a href="../exploring-python-code-objects.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    
@@ -282,7 +118,7 @@
 <p>在 Python 中，可调用对象 (callable) 的概念是十分基本的。当我们说什么东西是“可调用的”，马上可以联想到的显而易见的答案便是函数。无论是用户定义的函数 (你所编写的) 还是内置的函数 (经常是在 CPython 解析器内由 C 实现的)，他们总是用来被调用的，不是么？</p>
 <p>当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 <code>__call__</code> 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的 ...</p>
                 <a class="readmore" href="../python-internals-how-callables-work.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../python-internals-how-callables-work.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -308,7 +144,7 @@
 <p>由于本人的能力有限，文章中的不足和谬误也请大家多多指教！</p>
 <p>我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux ...</p>
                 <a class="readmore" href="../access-control-of-linux.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../access-control-of-linux.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -335,7 +171,7 @@
 <p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
 <p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
                 <a class="readmore" href="../python-variable-type-and-reference.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../python-variable-type-and-reference.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
@@ -372,5 +208,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

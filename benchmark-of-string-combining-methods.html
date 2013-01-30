@@ -138,6 +138,18 @@
 <p>上一次用 spidermonkey-bin 中的 js 命令做了一下实验，结果在这种条件下，字符串叠加的效率也是远优于数组合并，而不像在 Firefox 中这样。</p>
 <p>我对于这些脚本语言对字符串和数组的具体实现机理不是很清楚，但可以肯定的是，个个常用的脚本引擎都对字符串处理做了许多优化，我猜测（因为 Ubuntu 下暂时没有 stable 的 Chrome）Chrome 的 V8 引擎中，字符串直接叠加的效率将继续远超数组。因此，我们不应该想当然地认为某某方式效率高，而应该用测试结果说话……</p>
     </div><!-- /.entry-content -->
+        <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "benchmark-of-string-combining-methods.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://upsuper-github.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
     
   </article>
 </section>
@@ -171,5 +183,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

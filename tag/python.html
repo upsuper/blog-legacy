@@ -245,7 +245,7 @@
 
 
 <p>在这里，应该被牢记的最重要的一点是迭代的状态应该被完全地保存在迭代器对象中。相比与 Python 实现，这需要多做许多工作。Python 的 <code>yield</code> 语句让我们可以用 Python 解析器自己来为我们保存这些状态。这也是为什么<a href="http://eli.thegreenplace.net/2009/08/29/co-routines-as-an-alternative-to-state-machines/">在 Python 中协程如此强大</a>——几乎没有显式的状态需要手工保存。正如我在文章一开始就提到的，在 C 扩展中我们没有这样的奢侈品，所以我们不得不自己动手。由于现在这个例子还非常简单，而且是线性的，这还相对简单一些。在更复杂的例子中，为了正确地设计状态对象和 <code>tp_iternext</code> 函数，需要更用心。</p>
-<p>这篇文章的完整代码以及简单的 Python 测试脚本，还有用于使用 distutils 构建这个扩展的 <code>setup.py</code> 都可以<a href="http://eli.thegreenplace.net/wp-content/uploads/2012/04/generator_c_ext.tgz">在这里下载</a>。</p>                </article>
+<p>这篇文章的完整代码以及简单的 Python 测试脚本，还有用于使用 distutils 构建这个扩展的 <code>setup.py</code> 都可以<a href="http://eli.thegreenplace.net/wp-content/uploads/2012/04/generator_c_ext.tgz">在这里下载</a>。</p><p>There are <a href="../implementing-a-generator-yield-in-a-python-c-extension.html#disqus_thread">comments</a>.</p>                </article>
                             </aside><!-- /#featured -->
                             <section id="content" class="body">
                     <h1>Other articles</h1>
@@ -277,7 +277,7 @@
 <h2>第0步：是什么？</h2>
 <p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人 ...</p>
                 <a class="readmore" href="../exploring-python-code-objects.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../exploring-python-code-objects.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -304,7 +304,7 @@
 <p>在 Python 中，可调用对象 (callable) 的概念是十分基本的。当我们说什么东西是“可调用的”，马上可以联想到的显而易见的答案便是函数。无论是用户定义的函数 (你所编写的) 还是内置的函数 (经常是在 CPython 解析器内由 C 实现的)，他们总是用来被调用的，不是么？</p>
 <p>当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 <code>__call__</code> 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的 ...</p>
                 <a class="readmore" href="../python-internals-how-callables-work.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../python-internals-how-callables-work.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -331,7 +331,7 @@
 <p>在数据库中搜索人名是一项独特的挑战。对于不同来源和不同年代的数据，你不但不能指望其中名字的拼写是正确的，甚至相同的名字如果多次出现时，它们的拼写都不一定一样。而储存的数据和搜索项之间也有可能因为个人喜好、文化差异、<a href="http://zh.wikipedia.org/wiki/%E5%90%8C%E9%9F%B3%E7%95%B0%E7%BE%A9%E8%AA%9E">同音词</a>、拼写错误、文盲或仅仅因为在某些时期根本没有标准拼法而出现差异。这些问题在历史学家、谱系学家和其他研究者的手写的文本记录中尤为常见。</p>
 <p>一个常用的解决这样的字符串搜索问题的方法是寻找与搜索目标相近的值。但是，使用传统的<a href="http://en.wikipedia.org/wiki/Approximate_string_matching">模糊匹配算法</a>计算两个任意字符串之间的相似度，代价是很大的，同时它也不适合用于搜索大规模数据集。一个更好的解决方案是为数据库里的每一项预先计算一个哈希值，有一些专门的哈希算法正是为此设计的。这些语音算法 ...</p>
                 <a class="readmore" href="../using-fuzzy-matching-to-search-by-sound-with-python.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../using-fuzzy-matching-to-search-by-sound-with-python.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -362,7 +362,7 @@
 <p>当然，在读这篇文章的时候，你并不需要对这个步骤有很深入的理解，不过这可以帮助你对整个过程有一个大体的了解。</p>
 <p>首先，编译器会根据源代码生成一棵语法分析树 (Parse Tree)，随后，再根据语法分析树建立抽象语法树 (AST, Abstract Syntax Tree)。从 AST 中可以生成出控制流图 (CFG, Control Flow Graph ...</p>
                 <a class="readmore" href="../static-modification-of-python-with-python-the-ast-module.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../static-modification-of-python-with-python-the-ast-module.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -392,7 +392,7 @@
 <p>接下来查找资料。印象中我的 Audacious 是可以用 D-Bus 控制的。简单地查阅了一下相关资料，发现了一个叫做 MPRIS 的播放器控制接口。为此，我还专门学习了一下 python-dbus 的使用。</p>
 <p>插一句话：python-dbus 怎么没有中文教程啊 ...</p>
                 <a class="readmore" href="../use-mouse-as-music-player-controller.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../use-mouse-as-music-player-controller.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -419,7 +419,7 @@
 <p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
 <p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
                 <a class="readmore" href="../python-variable-type-and-reference.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../python-variable-type-and-reference.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
@@ -456,5 +456,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

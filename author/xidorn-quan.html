@@ -68,7 +68,7 @@
 <li><a href="http://idcnews.net/html/edu/20070101/291393.html">用户信息 /etc/passwd，getuid(), getpwuid()</a></li>
 <li><a href="http://hi.baidu.com/phps/blog/item/7e3ba44410cf9580b3b7dc81.html">C语言系统资源控制（getrlimit &amp;&amp; setrlimit)</a></li>
 <li><a href="http://bytes.com/groups/python/36126-permission-problem-os-setuid">permission problem with os.setuid</a></li>
-</ul>                </article>
+</ul><p>There are <a href="../access-control-of-linux.html#disqus_thread">comments</a>.</p>                </article>
                             </aside><!-- /#featured -->
                             <section id="content" class="body">
                     <h1>Other articles</h1>
@@ -101,7 +101,7 @@
 <p>然后直接写出了我的新的 <code>PS1</code>：</p>
 <div class="codehilite"><pre><span class="nv">PS1 ...</span></pre></div>
                 <a class="readmore" href="../advanced-prompt-of-bash.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../advanced-prompt-of-bash.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -128,7 +128,7 @@
 <p>首先呢，我找到了 Ubuntu 里面 tty 配置存放的地方 <code>/etc/init/ttyX.conf</code>，其中的 X 便是 tty 的编号，我这里选择了 <code>tty6.conf</code>。打开这个文件，结构简单极了，看到里面</p>
 <div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
                 <a class="readmore" href="../automatically-run-top-in-tty.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../automatically-run-top-in-tty.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -157,7 +157,7 @@
 <div class="codehilite"><pre><span class="kd">function</span> <span class="nx">getTime</span><span class="p">()</span> <span class="p">{</span>
     <span class="k">return</span> <span class="p">(</span><span class="k">new ...</span></pre></div>
                 <a class="readmore" href="../benchmark-of-string-combining-methods.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../benchmark-of-string-combining-methods.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -183,7 +183,7 @@
 <p>无意中看到 Linux 代码的 <code>Documentation</code> 文件夹下有个文件叫做 <code>cpu-hotplug.txt</code>，于是就看了一下，发现可以在 <code>/sys/devices/system/cpu</code> 看到代表各 CPU 的文件夹按照 <code>cpuX</code> 的命名方式，如 <code>cpu0</code>、<code>cpu1</code>、<code>cpu2</code> 等。这些文件夹里面有一个 <code>online</code> 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 <code>root</code> 权限哦。</p>
 <p>因为我只要在单核和多核之间切换 ...</p>
                 <a class="readmore" href="../dynamic-modify-cpu-number.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../dynamic-modify-cpu-number.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -211,7 +211,7 @@
 <h2>第0步：是什么？</h2>
 <p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人 ...</p>
                 <a class="readmore" href="../exploring-python-code-objects.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../exploring-python-code-objects.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -238,7 +238,33 @@
 <p>当然，支持上面的方式固然是最好的，但遗憾的是很多网站并不支持带加号的邮箱，那就要稍稍麻烦点了。</p>
 <p>根据 <a href="http://fanfou.com/fanzeyi">@fanzeyi</a> 的说法，Gmail 的邮箱是自动忽略点，也就是“.”的，也就是说对于我上面的邮箱，如果写为 <code>quan ...</code></p>
                 <a class="readmore" href="../gmail-super-sub-mailbox.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../gmail-super-sub-mailbox.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../https-and-server-name.html" rel="bookmark"
+                           title="Permalink to HTTPS 与服务器名">HTTPS 与服务器名</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2013-01-23T18:11:00">
+                2013&#24180;01&#26376;23&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/security.html">Security</a></p>
+</footer><!-- /.post-info -->                <p>一直以来都觉得用 HTTPS 的话，所有传输的信息都是密文传输的。正是因为如此，用 hosts 配合 HTTPS 来绕过墙访问一些敏感网站一直是一种看过去天衣无缝的完美方法：所有的程序都不需要修改，不需要知道如何使用代理，只要照常使用就可以了。唯一的缺陷是，hosts 的地址可能不时会失效，需要更换。而这唯一的缺陷，还可以用私设反向代理来解决。完美，毫无破绽。</p>
+<h2>提问</h2>
+<p>可当我对安全协议有一些了解之后，发现这件事情并没有那么简单。HTTPS 只是简单地将 HTTP 协议包裹进了 SSL/TLS，作为它们的应用数据。而 SSL/TLS 的协议流程，简单地来说可以分为握手和交换数据两大部分。而 HTTP 的数据，作为应用数据，显然是在传输阶段进行传送的，换句话说，握手这件事情，应该跟 HTTP 协议里的东西没有半毛钱关系。毕竟，握手的大多数内容都可以被认为是明文进行的嘛，如果握手的内容里有 HTTP ...</p>
+                <a class="readmore" href="../https-and-server-name.html">read more</a>
+                <p>There are <a href="../https-and-server-name.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -272,7 +298,7 @@
 <p>这里的 <code>pyrevgen</code> 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：</p>
 <div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b ...</span></pre></div>
                 <a class="readmore" href="../implementing-a-generator-yield-in-a-python-c-extension.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../implementing-a-generator-yield-in-a-python-c-extension.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -304,34 +330,7 @@
 
 <p>其实我也不知道这个是什么机理 ...</p>
                 <a class="readmore" href="../little-vc6-fix.md.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../new-blog-in-github.html" rel="bookmark"
-                           title="Permalink to 在 GitHub 上建一个新的博客">在 GitHub 上建一个新的博客</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2012-12-31T00:00:00">
-                2012&#24180;12&#26376;31&#26085;
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/blog.html">Blog</a>. </p>
-<p>tags: <a href="../tag/blog.html">Blog</a><a href="../tag/github.html">GitHub</a></p>
-</footer><!-- /.post-info -->                <p>一直想着将技术向博客迁移到 GitHub Pages 上，觉得这样大概可以使我显得更 Geek 一点吧？不过呢，因为一直以来各种事情很多，所以一直没有去做。（其实跟事情多也没什么关系吧，看看你自己都多久没写博客了……）最近看到之前买的虚拟空间快要到期了，因为不怎么打算继续续下去了，所以估量着把里面的东西迁移出来。另一方面，末日的2012过去了，新世界2013年到来了，顺便也就盘算着重新开始写博客？不过果然还是觉得有点麻烦呢……</p>
-<p>既然是将这里定位于技术向的博客的话，自然除了关于这个博客本身的事情以外，其他都是技术讨论了。我其实也一直想把技术之外的一些内容单独放在一个博客里，只不过因为太懒了也是一直没去建的，估计在短时间内也不会去做吧，现在都没什么写东西的激情了呢。</p>
-<p>这个博客的标题“鬼の领地”是延续自之前的博客的，它取自我中二的年代，正如我的常用 ID upsuper 一样。同时与之前我的每一个博客一样，我会把过去的内容挑选一些放入新的博客里面。另外原来参与 <a href="https://twitter.com/fanzeyi">@fanzeyi</a> 同学的 <a href="https://github.com/PyCodersCN">PyCodersCN</a> 项目的时候翻译过的一些文章也准备放进来。因为实在懒于写自己的东西（大多只是一些小东西，就不想单独写文章了），所以也考虑不定期的译一些自己觉得不错的文章放在这个博客里，就当练练中英文水平好了（其实是为了充数吧）。</p>
-<p>关于这个博客本身，目前是准备使用 ...</p>
-                <a class="readmore" href="../new-blog-in-github.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../little-vc6-fix.md.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
@@ -369,5 +368,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

@@ -34,8 +34,48 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="./new-blog-in-github.html">在 GitHub 上建一个新的博客</a></h1> 
+                    <h1 class="entry-title"><a href="./https-and-server-name.html">HTTPS 与服务器名</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2013-01-23T18:11:00">
+                2013&#24180;01&#26376;23&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/study.html">Study</a>. </p>
+<p>tags: <a href="./tag/security.html">Security</a></p>
+</footer><!-- /.post-info --><p>一直以来都觉得用 HTTPS 的话，所有传输的信息都是密文传输的。正是因为如此，用 hosts 配合 HTTPS 来绕过墙访问一些敏感网站一直是一种看过去天衣无缝的完美方法：所有的程序都不需要修改，不需要知道如何使用代理，只要照常使用就可以了。唯一的缺陷是，hosts 的地址可能不时会失效，需要更换。而这唯一的缺陷，还可以用私设反向代理来解决。完美，毫无破绽。</p>
+<h2>提问</h2>
+<p>可当我对安全协议有一些了解之后，发现这件事情并没有那么简单。HTTPS 只是简单地将 HTTP 协议包裹进了 SSL/TLS，作为它们的应用数据。而 SSL/TLS 的协议流程，简单地来说可以分为握手和交换数据两大部分。而 HTTP 的数据，作为应用数据，显然是在传输阶段进行传送的，换句话说，握手这件事情，应该跟 HTTP 协议里的东西没有半毛钱关系。毕竟，握手的大多数内容都可以被认为是明文进行的嘛，如果握手的内容里有 HTTP 协议里的内容，不就泄密了？</p>
+<p>说不定还真是如此呢。</p>
+<p>我们知道 HTTPS 协议在连接服务器的时候，需要向服务器要求一个证书，服务器如果返回和访问的域名匹配的证书，才能认为它真的是我们要找的服务器。这不，前几天 GitHub 的 HTTPS 就被劫持了，访问时出示了一个无效的证书，于是被浏览器拦下来了。</p>
+<p>这就有一个问题了，既然证书是用来证明域名的，但是域名我们知道，实际上是由 HTTP 协议头中的 <code>Host:</code> 字段指出的，HTTP 协议的一切内容都是在握手结束之后才开始的，可证书又是在 SSL/TLS 的握手阶段由服务器提供的。那么服务器如何在发送证书之前，搞清楚客户端到底想要访问哪个域名，要求它出示哪张证书呢？</p>
+<p>最简单最原始的解决方法就是：一个 IP 地址绑定一个证书，而这个 IP 地址专为指定的域名服务。这显然不算是个坏主意，即使多个域名绑定在一台机器上，在 IP 地址被认为还有很多的年代，一台机器配好几个 IP 也并不稀奇，分别给这不同的 IP 绑上不同的域名和不同的证书就可以了。</p>
+<p>那么现在如果还想这么玩，大概就没那么容易了吧？毕竟 IPv4 的地址已经成了一种稀缺品。现在的凡人如果想要在一台机器上面、一个 IP 上面放多个不同的域名不同的网站，不得不使用基于名称的虚拟主机 (Name-based Virtual Host)，著名的 Apache 当然支持。可是我们不小心发现，Apache 对基于名称的虚拟主机，甚至也支持 HTTPS！这果然是一件奇怪的事，它是怎么做到的呢？</p>
+<h2>回答</h2>
+<p>我发现这个问题后，有两个猜想，一是服务器将其所持有的所有证书都发过来，客户端自己挑选自己需要的那个来作为服务器的证明；二是客户端有某种办法将需要的域名在握手阶段就告知服务器端，以便服务器端做出选择。</p>
+<p>第一种方法的弊病是显而易见的，如果证书很多的话，会浪费不少流量和时间，而且服务器所持有的证书也瞬间全部暴露了，这可没什么好处。但是第二种方法，在握手阶段告知就意味着域名会被明文传输，看起来似乎也不怎么妙啊。</p>
+<p>我当然不可能是第一个提出这个问题的人，Stack Overflow 上面早已有类似的<a href="http://stackoverflow.com/questions/517336/apache-name-virtual-host-with-ssl">提问</a>。而这种解决方法，正是上文所述的第二种——在要求服务器发送证书之前提前告知自己所请求的域名。这种技术叫做 SNI (Server Name Indication)，是一个 SSL/TLS 的扩展。这个扩展也已经被 IETF 标准化为了 <a href="http://tools.ietf.org/html/rfc6066#page-6">RFC 6066 的一部分</a>。这种方法正是在最初的握手过程中明文提交域名以供服务器参考。</p>
+<h2>思考</h2>
+<p>我的疑问算是被回答了，但是这显然是一个很麻烦的事情。我们知道墙的屏蔽方法无非是——网址关键词、DNS 污染和 IP 丢包。其中网址关键词本可以使用 HTTPS 的方式来规避掉的，这也是 hosts 方式的技术基础。但如果域名在握手阶段就被提前暴露了，剩下的还有什么用意义呢？</p>
+<p>RFC 6066 中也有提到<a href="http://tools.ietf.org/html/rfc6066#page-19">服务器名的安全考虑</a>，不过只是草草带过，并认为这并没有带来什么严重的安全问题。对于美国人民来说当然是没有的嘛。不过话说回来，证书里的域名也是明文保存的，所以确实可以说没有引入安全问题吧。只能祈祷墙不会嗅探到这种东西了？</p><p>There are <a href="./https-and-server-name.html#disqus_thread">comments</a>.</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./new-blog-in-github.html" rel="bookmark"
+                           title="Permalink to 在 GitHub 上建一个新的博客">在 GitHub 上建一个新的博客</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2012-12-31T00:00:00">
                 2012&#24180;12&#26376;31&#26085;
         </abbr>
@@ -45,16 +85,14 @@
         </address>
         <p>In <a href="./category/blog.html">Blog</a>. </p>
 <p>tags: <a href="./tag/blog.html">Blog</a><a href="./tag/github.html">GitHub</a></p>
-</footer><!-- /.post-info --><p>一直想着将技术向博客迁移到 GitHub Pages 上，觉得这样大概可以使我显得更 Geek 一点吧？不过呢，因为一直以来各种事情很多，所以一直没有去做。（其实跟事情多也没什么关系吧，看看你自己都多久没写博客了……）最近看到之前买的虚拟空间快要到期了，因为不怎么打算继续续下去了，所以估量着把里面的东西迁移出来。另一方面，末日的2012过去了，新世界2013年到来了，顺便也就盘算着重新开始写博客？不过果然还是觉得有点麻烦呢……</p>
+</footer><!-- /.post-info -->                <p>一直想着将技术向博客迁移到 GitHub Pages 上，觉得这样大概可以使我显得更 Geek 一点吧？不过呢，因为一直以来各种事情很多，所以一直没有去做。（其实跟事情多也没什么关系吧，看看你自己都多久没写博客了……）最近看到之前买的虚拟空间快要到期了，因为不怎么打算继续续下去了，所以估量着把里面的东西迁移出来。另一方面，末日的2012过去了，新世界2013年到来了，顺便也就盘算着重新开始写博客？不过果然还是觉得有点麻烦呢……</p>
 <p>既然是将这里定位于技术向的博客的话，自然除了关于这个博客本身的事情以外，其他都是技术讨论了。我其实也一直想把技术之外的一些内容单独放在一个博客里，只不过因为太懒了也是一直没去建的，估计在短时间内也不会去做吧，现在都没什么写东西的激情了呢。</p>
 <p>这个博客的标题“鬼の领地”是延续自之前的博客的，它取自我中二的年代，正如我的常用 ID upsuper 一样。同时与之前我的每一个博客一样，我会把过去的内容挑选一些放入新的博客里面。另外原来参与 <a href="https://twitter.com/fanzeyi">@fanzeyi</a> 同学的 <a href="https://github.com/PyCodersCN">PyCodersCN</a> 项目的时候翻译过的一些文章也准备放进来。因为实在懒于写自己的东西（大多只是一些小东西，就不想单独写文章了），所以也考虑不定期的译一些自己觉得不错的文章放在这个博客里，就当练练中英文水平好了（其实是为了充数吧）。</p>
-<p>关于这个博客本身，目前是准备使用 <a href="http://docs.getpelican.com/">Pelican</a> 来组织博客，使用 <a href="http://daringfireball.net/projects/markdown/">Markdown</a> 来编写。很多人都推荐 <a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a>，但我始终是觉得那个东西比 Markdown 蛋疼得多。之后一段时间还有许许多多的工作要做呢这个博客，比如主题啦，之前文章的迁移，还有评论系统什么之类的。总之就这样吧，先用起来好了（虽然我觉得我也未必会坚持很久呢）。</p>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<p>关于这个博客本身，目前是准备使用 ...</p>
+                <a class="readmore" href="./new-blog-in-github.html">read more</a>
+                <p>There are <a href="./new-blog-in-github.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    
@@ -86,7 +124,7 @@
 <p>这里的 <code>pyrevgen</code> 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：</p>
 <div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b ...</span></pre></div>
                 <a class="readmore" href="./implementing-a-generator-yield-in-a-python-c-extension.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./implementing-a-generator-yield-in-a-python-c-extension.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -114,7 +152,7 @@
 <h2>第0步：是什么？</h2>
 <p>所以首先，代码对象是什么呢？许多人 (特别是仇视 Python 的人 ...</p>
                 <a class="readmore" href="./exploring-python-code-objects.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./exploring-python-code-objects.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -141,7 +179,7 @@
 <p>在 Python 中，可调用对象 (callable) 的概念是十分基本的。当我们说什么东西是“可调用的”，马上可以联想到的显而易见的答案便是函数。无论是用户定义的函数 (你所编写的) 还是内置的函数 (经常是在 CPython 解析器内由 C 实现的)，他们总是用来被调用的，不是么？</p>
 <p>当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 <code>__call__</code> 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的 ...</p>
                 <a class="readmore" href="./python-internals-how-callables-work.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./python-internals-how-callables-work.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -168,7 +206,7 @@
 <p>在数据库中搜索人名是一项独特的挑战。对于不同来源和不同年代的数据，你不但不能指望其中名字的拼写是正确的，甚至相同的名字如果多次出现时，它们的拼写都不一定一样。而储存的数据和搜索项之间也有可能因为个人喜好、文化差异、<a href="http://zh.wikipedia.org/wiki/%E5%90%8C%E9%9F%B3%E7%95%B0%E7%BE%A9%E8%AA%9E">同音词</a>、拼写错误、文盲或仅仅因为在某些时期根本没有标准拼法而出现差异。这些问题在历史学家、谱系学家和其他研究者的手写的文本记录中尤为常见。</p>
 <p>一个常用的解决这样的字符串搜索问题的方法是寻找与搜索目标相近的值。但是，使用传统的<a href="http://en.wikipedia.org/wiki/Approximate_string_matching">模糊匹配算法</a>计算两个任意字符串之间的相似度，代价是很大的，同时它也不适合用于搜索大规模数据集。一个更好的解决方案是为数据库里的每一项预先计算一个哈希值，有一些专门的哈希算法正是为此设计的。这些语音算法 ...</p>
                 <a class="readmore" href="./using-fuzzy-matching-to-search-by-sound-with-python.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./using-fuzzy-matching-to-search-by-sound-with-python.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -199,7 +237,7 @@
 <p>当然，在读这篇文章的时候，你并不需要对这个步骤有很深入的理解，不过这可以帮助你对整个过程有一个大体的了解。</p>
 <p>首先，编译器会根据源代码生成一棵语法分析树 (Parse Tree)，随后，再根据语法分析树建立抽象语法树 (AST, Abstract Syntax Tree)。从 AST 中可以生成出控制流图 (CFG, Control Flow Graph ...</p>
                 <a class="readmore" href="./static-modification-of-python-with-python-the-ast-module.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./static-modification-of-python-with-python-the-ast-module.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -225,7 +263,7 @@
 <p>无意中看到 Linux 代码的 <code>Documentation</code> 文件夹下有个文件叫做 <code>cpu-hotplug.txt</code>，于是就看了一下，发现可以在 <code>/sys/devices/system/cpu</code> 看到代表各 CPU 的文件夹按照 <code>cpuX</code> 的命名方式，如 <code>cpu0</code>、<code>cpu1</code>、<code>cpu2</code> 等。这些文件夹里面有一个 <code>online</code> 文件，如果其值为0则禁用该 CPU，如果为1则启用该 CPU。注意，这里需要 <code>root</code> 权限哦。</p>
 <p>因为我只要在单核和多核之间切换 ...</p>
                 <a class="readmore" href="./dynamic-modify-cpu-number.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./dynamic-modify-cpu-number.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -251,7 +289,7 @@
 <p>先说一句，下面的安装环境都是64位 Gentoo。</p>
 <p>最开始找到了 <a href="http://sourceforge.net/projects/lxr/">LXR Cross Referencer</a> 这个项目，一看最后更新时间还挺新，看起来是一直都还在维护的。然后在 Gentoo 的网站上查到 LXR 是可以直接用 portage 安装的，于是安装，安装相关的包，最后放弃了。出于什么原因我也不记得了 ...</p>
                 <a class="readmore" href="./setup-lxr.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./setup-lxr.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -278,36 +316,7 @@
 <p>当然，支持上面的方式固然是最好的，但遗憾的是很多网站并不支持带加号的邮箱，那就要稍稍麻烦点了。</p>
 <p>根据 <a href="http://fanfou.com/fanzeyi">@fanzeyi</a> 的说法，Gmail 的邮箱是自动忽略点，也就是“.”的，也就是说对于我上面的邮箱，如果写为 <code>quan ...</code></p>
                 <a class="readmore" href="./gmail-super-sub-mailbox.html">read more</a>
-                                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./advanced-prompt-of-bash.html" rel="bookmark"
-                           title="Permalink to 增强版的 Bash 提示符">增强版的 Bash 提示符</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2011-02-28T14:40:00">
-                2011&#24180;02&#26376;28&#26085;
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/technique.html">Technique</a>. </p>
-<p>tags: <a href="./tag/bash.html">bash</a></p>
-</footer><!-- /.post-info -->                <p>上周六参加了好久没有参加的的 SHLUG 月聚，恰逢 <a href="http://imtx.me/">TualatriX</a> 也带团来上海。自由讨论的时候，我看到 TualatriX 的终端十分色彩斑斓，便询问，他给我们展示了他的 bash 的两个特色功能：1、当上一条命令返回结果不为0时显示返回值并高亮显示提示符；2、自动检测git分支。他说这个在他的博客上都可以找到，今天想起来去找了一下，发现了这篇：<a href="http://imtx.me/archives/1298.html">史上最强的PS1 | I’m TualatriX</a>，感觉满强大的。</p>
-<p>不过，说实话，我觉的这个还不够完美，原因有二：一是我发觉高亮显示的时候那个配色相当不怎么样，二是我本来就讨厌提示符太长，这样一下就更长了……于是我就想起 ghosTM 的 zsh 里面有一些信息是放在右边的，我想把返回值也扔右边去，并且是右边上移一行。此外，由于很少使用 <code>git</code>，所以检测 <code>git</code> 分支的功能也就不需要了~</p>
-<p>先放一个最终效果图：
-<img alt="Bash 提示符的最终效果图" src="./static/images/advanced-prompt-of-bash-01.png" /></p>
-<p>然后直接写出了我的新的 <code>PS1</code>：</p>
-<div class="codehilite"><pre><span class="nv">PS1 ...</span></pre></div>
-                <a class="readmore" href="./advanced-prompt-of-bash.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="./gmail-super-sub-mailbox.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
@@ -345,5 +354,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

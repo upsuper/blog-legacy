@@ -250,6 +250,18 @@
 <p>在这里，应该被牢记的最重要的一点是迭代的状态应该被完全地保存在迭代器对象中。相比与 Python 实现，这需要多做许多工作。Python 的 <code>yield</code> 语句让我们可以用 Python 解析器自己来为我们保存这些状态。这也是为什么<a href="http://eli.thegreenplace.net/2009/08/29/co-routines-as-an-alternative-to-state-machines/">在 Python 中协程如此强大</a>——几乎没有显式的状态需要手工保存。正如我在文章一开始就提到的，在 C 扩展中我们没有这样的奢侈品，所以我们不得不自己动手。由于现在这个例子还非常简单，而且是线性的，这还相对简单一些。在更复杂的例子中，为了正确地设计状态对象和 <code>tp_iternext</code> 函数，需要更用心。</p>
 <p>这篇文章的完整代码以及简单的 Python 测试脚本，还有用于使用 distutils 构建这个扩展的 <code>setup.py</code> 都可以<a href="http://eli.thegreenplace.net/wp-content/uploads/2012/04/generator_c_ext.tgz">在这里下载</a>。</p>
     </div><!-- /.entry-content -->
+        <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "implementing-a-generator-yield-in-a-python-c-extension.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://upsuper-github.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
     
   </article>
 </section>
@@ -283,5 +295,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

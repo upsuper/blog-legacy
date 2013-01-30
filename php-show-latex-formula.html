@@ -84,6 +84,18 @@
 <p>最后再说说，我个人觉得，直接让客户端访问这个并不好，所以推荐加上权限控制，然后在 PHP 中是用 curl 获取，并做一次缓存。毕竟不管怎样，生成这个是要花费不少的 CPU，如果遇到大量公式的时候，应该会相当可怕……所以这种时候做一个缓存应该是很好的选择，毕竟那些 gif 都不大。这段代码就不写了，我想应该是很简单的~</p>
 <p>说回来，如果认真看这个程序的 README 还会发现，如果加上编译参数 -DCACHEPATH=地址 就可以在 cgi 级别使用 MD5 Hash 的文件缓存。不过再想想，其实没什么必要，一个是用 PHP 控制缓存文件要更方便，同时考虑到文件系统在一个目录下文件多于 10000 个时会出现严重性能问题，最好使用多级目录来做缓存，不过看代码似乎没有多级缓存。除此之外，我想还有一些不错的方法可以做一些初级判重，这些用 PHP 实现会比改 cgi 要简单的多了~建议大家可以自己再多看看编译说明，似乎有不少有趣的编译参数~</p>
     </div><!-- /.entry-content -->
+        <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "php-show-latex-formula.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://upsuper-github.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
     
   </article>
 </section>
@@ -117,5 +129,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

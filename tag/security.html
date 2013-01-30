@@ -34,8 +34,48 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../usb-key-for-linux.html">为 Linux 做一把 USB “钥匙”</a></h1> 
+                    <h1 class="entry-title"><a href="../https-and-server-name.html">HTTPS 与服务器名</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2013-01-23T18:11:00">
+                2013&#24180;01&#26376;23&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/study.html">Study</a>. </p>
+<p>tags: <a href="../tag/security.html">Security</a></p>
+</footer><!-- /.post-info --><p>一直以来都觉得用 HTTPS 的话，所有传输的信息都是密文传输的。正是因为如此，用 hosts 配合 HTTPS 来绕过墙访问一些敏感网站一直是一种看过去天衣无缝的完美方法：所有的程序都不需要修改，不需要知道如何使用代理，只要照常使用就可以了。唯一的缺陷是，hosts 的地址可能不时会失效，需要更换。而这唯一的缺陷，还可以用私设反向代理来解决。完美，毫无破绽。</p>
+<h2>提问</h2>
+<p>可当我对安全协议有一些了解之后，发现这件事情并没有那么简单。HTTPS 只是简单地将 HTTP 协议包裹进了 SSL/TLS，作为它们的应用数据。而 SSL/TLS 的协议流程，简单地来说可以分为握手和交换数据两大部分。而 HTTP 的数据，作为应用数据，显然是在传输阶段进行传送的，换句话说，握手这件事情，应该跟 HTTP 协议里的东西没有半毛钱关系。毕竟，握手的大多数内容都可以被认为是明文进行的嘛，如果握手的内容里有 HTTP 协议里的内容，不就泄密了？</p>
+<p>说不定还真是如此呢。</p>
+<p>我们知道 HTTPS 协议在连接服务器的时候，需要向服务器要求一个证书，服务器如果返回和访问的域名匹配的证书，才能认为它真的是我们要找的服务器。这不，前几天 GitHub 的 HTTPS 就被劫持了，访问时出示了一个无效的证书，于是被浏览器拦下来了。</p>
+<p>这就有一个问题了，既然证书是用来证明域名的，但是域名我们知道，实际上是由 HTTP 协议头中的 <code>Host:</code> 字段指出的，HTTP 协议的一切内容都是在握手结束之后才开始的，可证书又是在 SSL/TLS 的握手阶段由服务器提供的。那么服务器如何在发送证书之前，搞清楚客户端到底想要访问哪个域名，要求它出示哪张证书呢？</p>
+<p>最简单最原始的解决方法就是：一个 IP 地址绑定一个证书，而这个 IP 地址专为指定的域名服务。这显然不算是个坏主意，即使多个域名绑定在一台机器上，在 IP 地址被认为还有很多的年代，一台机器配好几个 IP 也并不稀奇，分别给这不同的 IP 绑上不同的域名和不同的证书就可以了。</p>
+<p>那么现在如果还想这么玩，大概就没那么容易了吧？毕竟 IPv4 的地址已经成了一种稀缺品。现在的凡人如果想要在一台机器上面、一个 IP 上面放多个不同的域名不同的网站，不得不使用基于名称的虚拟主机 (Name-based Virtual Host)，著名的 Apache 当然支持。可是我们不小心发现，Apache 对基于名称的虚拟主机，甚至也支持 HTTPS！这果然是一件奇怪的事，它是怎么做到的呢？</p>
+<h2>回答</h2>
+<p>我发现这个问题后，有两个猜想，一是服务器将其所持有的所有证书都发过来，客户端自己挑选自己需要的那个来作为服务器的证明；二是客户端有某种办法将需要的域名在握手阶段就告知服务器端，以便服务器端做出选择。</p>
+<p>第一种方法的弊病是显而易见的，如果证书很多的话，会浪费不少流量和时间，而且服务器所持有的证书也瞬间全部暴露了，这可没什么好处。但是第二种方法，在握手阶段告知就意味着域名会被明文传输，看起来似乎也不怎么妙啊。</p>
+<p>我当然不可能是第一个提出这个问题的人，Stack Overflow 上面早已有类似的<a href="http://stackoverflow.com/questions/517336/apache-name-virtual-host-with-ssl">提问</a>。而这种解决方法，正是上文所述的第二种——在要求服务器发送证书之前提前告知自己所请求的域名。这种技术叫做 SNI (Server Name Indication)，是一个 SSL/TLS 的扩展。这个扩展也已经被 IETF 标准化为了 <a href="http://tools.ietf.org/html/rfc6066#page-6">RFC 6066 的一部分</a>。这种方法正是在最初的握手过程中明文提交域名以供服务器参考。</p>
+<h2>思考</h2>
+<p>我的疑问算是被回答了，但是这显然是一个很麻烦的事情。我们知道墙的屏蔽方法无非是——网址关键词、DNS 污染和 IP 丢包。其中网址关键词本可以使用 HTTPS 的方式来规避掉的，这也是 hosts 方式的技术基础。但如果域名在握手阶段就被提前暴露了，剩下的还有什么用意义呢？</p>
+<p>RFC 6066 中也有提到<a href="http://tools.ietf.org/html/rfc6066#page-19">服务器名的安全考虑</a>，不过只是草草带过，并认为这并没有带来什么严重的安全问题。对于美国人民来说当然是没有的嘛。不过话说回来，证书里的域名也是明文保存的，所以确实可以说没有引入安全问题吧。只能祈祷墙不会嗅探到这种东西了？</p><p>There are <a href="../https-and-server-name.html#disqus_thread">comments</a>.</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../usb-key-for-linux.html" rel="bookmark"
+                           title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2011-01-14T20:25:00">
                 2011&#24180;01&#26376;14&#26085;
         </abbr>
@@ -45,7 +85,7 @@
         </address>
         <p>In <a href="../category/technique.html">Technique</a>. </p>
 <p>tags: <a href="../tag/linux.html">Linux</a><a href="../tag/security.html">Security</a></p>
-</footer><!-- /.post-info --><p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
+</footer><!-- /.post-info -->                <p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
 <p>这个<a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f">问题提出</a>后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~</p>
 <p>其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令</p>
 <div class="codehilite"><pre>sudo apt-get install pamusb-tools
@@ -53,62 +93,11 @@
 
 
 <p>直接安装。当然如果你连终端也懒得打开，可以直接点击这里：<a href="apt:pamusb-tools">安装 pamusb-tools</a>。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。</p>
-<p>另外，Fedora 源里有 pam_usb 包，Arch Linux 似乎在 AUR 里有，在 Gentoo 中似乎是被默认屏蔽的，可以通过下面指令安装：</p>
-<div class="codehilite"><pre><span class="nb">echo</span> <span class="s2">&quot;sys-auth/pam_usb&quot;</span> &gt;&gt; /etc/portage/package.keywords
-emerge -av <span class="s2">&quot;&gt;=sys-auth/pam_usb-0.4.1&quot;</span>
-</pre></div>
-
-
-<p>其他的发行版也可以直接从他们的<a href="http://pamusb.org/">项目主页</a>下载源码包编译安装~</p>
-<p>安装好了以后，首先插入你作为钥匙的U盘，然后在终端中运行</p>
-<div class="codehilite"><pre>sudo pamusb-conf --add-device MyUSBDevice
-</pre></div>
-
-
-<p>其中的 <code>MyUSBDevice</code> 可以任意修改，只是一个标识符而已。接下来根据提示操作即可。如果你的电脑此时连接着超过一个U盘、移动硬盘，或者某个U盘、移动硬盘包含超过一个分区（就像我给U盘分了2个区），就会提示选择安装到哪里。设置完确认保存到配置文件即可。</p>
-<p>下面添加认证用户，下面的命令是添加我为认证用户的：</p>
-<div class="codehilite"><pre>sudo pamusb-conf --add-user upsuper
-</pre></div>
-
-
-<p>原教程里面写的是添加 root 我认为是没有必要的，添加 <code>sudoer</code> 应该是已经足够了的。这条命令几乎不问什么问题，直接就完成了……这样以后在使用这把钥匙的时候就可以不需要输入相应用户的密码了。</p>
-<p>最后最重要的一步，是编辑认证系统的配置文件。打开 <code>/etc/pam.d/common-auth</code>（对于 Gentoo 来说是 <code>/etc/pam.d/system-auth</code>），将下面这行插入到所有条目的前面：</p>
-<div class="codehilite"><pre><span class="n">auth</span>    <span class="n">sufficient</span>      <span class="n">pam_usb</span><span class="p">.</span><span class="n">so</span>
-</pre></div>
-
-
-<p>现在你的 USB 钥匙已经可以用了！现在，另外再打开一个终端，随便 <code>sudo</code> 点什么，然后你应该不会再看到输入密码的画面，取而代之的是下面的东西：</p>
-<div class="codehilite"><pre><span class="o">*</span> <span class="n">pam_usb</span> <span class="n">v0</span><span class="p">.</span>4<span class="p">.</span>2
-<span class="o">*</span> <span class="n">Authentication</span> <span class="n">request</span> <span class="k">for</span> <span class="n">user</span> &quot;<span class="n">upsuper</span>&quot; <span class="p">(</span><span class="n">sudo</span><span class="p">)</span>
-<span class="o">*</span> <span class="n">Device</span> &quot;<span class="n">MyUSBDevice</span>&quot; <span class="n">is</span> <span class="n">connected</span> <span class="p">(</span><span class="n">good</span><span class="p">).</span>
-<span class="o">*</span> <span class="n">Performing</span> <span class="n">one</span> <span class="n">time</span> <span class="n">pad</span> <span class="n">verification</span><span class="p">...</span>
-<span class="o">*</span> <span class="n">Access</span> <span class="n">granted</span><span class="p">.</span>
-</pre></div>
-
-
-<p>然后运行成功了！不仅 <code>sudo</code> 可以验证，包括 <code>gksu</code> 和登入框等等都已经可以使用这把钥匙直接略过不需要输入密码了。</p>
-<p>现在你已经成功的制作了一个属于自己的 USB 钥匙！</p>
-<p>现在我们看看还有什么地方可以继续改进的……</p>
-<p>我们注意到，无论我们是否连接了我们的钥匙，以后 <code>sudo</code> 的时候都会出现那些讨厌的提示，怎么办呢……？其实这完全也是可以解决的：打开 <code>/etc/pamusb.conf</code> 文件，我们发现这其实根本就是一个 XML 文件……在里面的 <code>&lt;defaults&gt;</code> 标签中间添加</p>
-<div class="codehilite"><pre><span class="nt">&lt;option</span> <span class="na">name=</span><span class="s">&quot;quiet&quot;</span><span class="nt">&gt;</span>true<span class="nt">&lt;/option&gt;</span>
-</pre></div>
-
-
-<p>保存后就直接生效了~</p>
-<p>除此之外，我们发现在这里，我们的钥匙和原来的密码之间是一个替代的关系，如果你希望利用这个钥匙附加上密码提高安全性的话，可以将上面在 <code>/etc/pam.d/common-auth</code> 里面加入的那行中的 <code>sufficient</code> 改成 <code>required</code>，如果你干脆就不想再用密码了，那就把密码的那些删掉，留下一个 <code>required</code> 的 <code>pam_usb</code>~</p>
-<p>话说这还真是强大呐~不过用了这个以后，你这个USB钥匙也得要好好保管鸟~不过其实对我来说最爽的无外乎以后在众目睽睽之下不需要再手动输入密码啦~</p>
-<h2>参考资料</h2>
-<ul>
-<li><a href="http://ubuntuforums.org/showthread.php?t=17571">HOWTO: pam_usb login with USB memory stick – Ubuntu Forums</a></li>
-<li><a href="http://pamusb.org/doc/quickstart">doc:quickstart [pam_usb]</a></li>
-<li><a href="http://pamusb.org/doc/configuration">doc:configuration [pam_usb]</a></li>
-</ul>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<p>另外，Fedora 源里有 pam_usb 包，Arch ...</p>
+                <a class="readmore" href="../usb-key-for-linux.html">read more</a>
+                <p>There are <a href="../usb-key-for-linux.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    
@@ -132,7 +121,7 @@ emerge -av <span class="s2">&quot;&gt;=sys-auth/pam_usb-0.4.1&quot;</span>
 <p>由于本人的能力有限，文章中的不足和谬误也请大家多多指教！</p>
 <p>我想，稍微接触过一段时间 Linux 的人都会对 Linux 的权限有些许了解，其中最重要的莫过于——很多命令需要加 sudo 才能运行，而且我们也知道，sudo 几乎无所不能——不能删的就 sudo rm、不能复制 sudo cp、不能移动 sudo mv……（目前我仅发现在部分虚拟文件系统中 sudo 也没有权限做这些事情……）那么，sudo 究竟是何方神圣，Linux ...</p>
                 <a class="readmore" href="../access-control-of-linux.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../access-control-of-linux.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
@@ -169,5 +158,14 @@ emerge -av <span class="s2">&quot;&gt;=sys-auth/pam_usb-0.4.1&quot;</span>
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

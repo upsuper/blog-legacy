@@ -37,6 +37,36 @@
                     <ol id="posts-list" class="hfeed" start="9">
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../use-mouse-as-music-player-controller.html" rel="bookmark"
+                           title="Permalink to 鼠标控制音乐播放的小程序">鼠标控制音乐播放的小程序</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-11-03T20:06:00">
+                2009&#24180;11&#26376;03&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/gtk.html">GTK</a></p>
+</footer><!-- /.post-info -->                <p>看这个标题一定很奇怪：难道我以前控制音乐播放不用鼠标么？这个文章的标题看起来像鼠标刚刚发明的推广期的文章……不过，当然不是这样的！</p>
+<p>其实只是想：如何把我的小本合上放书架上，当作一个音乐播放器+功放，并用我的无线6键鼠当遥控器遥控控制之。</p>
+<p>想想其实还是蛮有意义的功能，这样我做作业的时候可以不用戴耳机，不用用MP3，直接把本当播放器；同时，我不会看到屏幕上的东西，可以安心做作业~再看看我的6键无限鼠，那额外的功能键平时根本不用，也想不出能有什么用……这么好的东西就这样被我浪费了……（话说，拿本当音乐播放器是不是更浪费？）</p>
+<p>说干就干！</p>
+<p>首先提出构想：左键用于暂停和播放，滚轮调节音量，侧边的两个功能键用来切换上一首和下一首。至于右键和中键……再说吧，说不定以后可以扩展更多功能？说不定以后高兴了弄个鼠标手势什么的~嘿嘿</p>
+<p>接下来查找资料。印象中我的 Audacious 是可以用 D-Bus 控制的。简单地查阅了一下相关资料，发现了一个叫做 MPRIS 的播放器控制接口。为此，我还专门学习了一下 python-dbus 的使用。</p>
+<p>插一句话：python-dbus 怎么没有中文教程啊 ...</p>
+                <a class="readmore" href="../use-mouse-as-music-player-controller.html">read more</a>
+                <p>There are <a href="../use-mouse-as-music-player-controller.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../using-fuzzy-matching-to-search-by-sound-with-python.html" rel="bookmark"
                            title="Permalink to [翻译] 在 Python 中使用模糊匹配根据发音搜索">[翻译] 在 Python 中使用模糊匹配根据发音搜索</a></h1>
                 </header>
@@ -57,7 +87,7 @@
 <p>在数据库中搜索人名是一项独特的挑战。对于不同来源和不同年代的数据，你不但不能指望其中名字的拼写是正确的，甚至相同的名字如果多次出现时，它们的拼写都不一定一样。而储存的数据和搜索项之间也有可能因为个人喜好、文化差异、<a href="http://zh.wikipedia.org/wiki/%E5%90%8C%E9%9F%B3%E7%95%B0%E7%BE%A9%E8%AA%9E">同音词</a>、拼写错误、文盲或仅仅因为在某些时期根本没有标准拼法而出现差异。这些问题在历史学家、谱系学家和其他研究者的手写的文本记录中尤为常见。</p>
 <p>一个常用的解决这样的字符串搜索问题的方法是寻找与搜索目标相近的值。但是，使用传统的<a href="http://en.wikipedia.org/wiki/Approximate_string_matching">模糊匹配算法</a>计算两个任意字符串之间的相似度，代价是很大的，同时它也不适合用于搜索大规模数据集。一个更好的解决方案是为数据库里的每一项预先计算一个哈希值，有一些专门的哈希算法正是为此设计的。这些语音算法 ...</p>
                 <a class="readmore" href="../using-fuzzy-matching-to-search-by-sound-with-python.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../using-fuzzy-matching-to-search-by-sound-with-python.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -83,7 +113,7 @@
 <p>Linux 死机有很多种情况，最常见的是系统负载过高导致的。如上次介绍的 fork 炸弹就是这个原理，此外还可以运行内存耗用极大的程序（如虚拟机），也会迅速提升系统负载。由于系统负载过高导致的卡死，一定是解决的越快越好！此时必须记住的是，不能再试图依赖任何图形界面的东西，如 Gnome 的系统监视器（这是我从 Windows 遗留下来的愚昧习惯……），这只会继续加重这种卡死的局面。那怎么办？</p>
 <p>不要怕，Linux 最初就是不需要图形界面的，因为有一个很强大的文字界面。按 Ctrl-Alt-F1（F1-F6 一般来说都可以），然后等一会儿，就会切换到 tty，也就是所谓的文字界面。这个时候需要用用户名密码登入。注意，可能键盘输入的速度比较慢，不过应该还是可以忍受的 ...</p>
                 <a class="readmore" href="../what-to-do-if-linux-crash.html">read more</a>
-                                </div><!-- /.entry-content -->
+                <p>There are <a href="../what-to-do-if-linux-crash.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
@@ -121,5 +151,14 @@
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
     </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>
