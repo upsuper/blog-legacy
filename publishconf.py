@@ -9,6 +9,7 @@ SITEURL = 'http://upsuper.github.com/blog'
 
 DELETE_OUTPUT_DIRECTORY = True
 
+DISQUS_SITENAME = 'upsuper-github'
 GOOGLE_ANALYTICS = 'UA-37354064-1'
 
 # Following items are often useful when publishing
