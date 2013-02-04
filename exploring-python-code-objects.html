@@ -162,11 +162,11 @@
 <h3>稍稍绕道到代码反编译</h3>
 <p><a href="http://docs.python.org/library/dis.html"><code>dis</code></a> 模块可以将代码对象反汇编为人类可读的一系列字节码指令，我们可以用它来精确的观察我们的代码对象中到底有些什么：</p>
 <div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">dis</span><span class="p">.</span><span class="n">dis</span><span class="p">(</span><span class="n">code_obj</span><span class="p">)</span>
-  2           0 <span class="n">LOAD_CONST</span>               0 <span class="p">(</span><span class="s">&#39;hello, world&#39;</span><span class="p">)</span>
-              3 <span class="n">PRINT_ITEM</span>          
-              4 <span class="n">PRINT_NEWLINE</span>       
-              5 <span class="n">LOAD_CONST</span>               1 <span class="p">(</span><span class="n">None</span><span class="p">)</span>
-              8 <span class="n">RETURN_VALUE</span>
+  <span class="mi">2</span>           <span class="mi">0</span> <span class="n">LOAD_CONST</span>               <span class="mi">0</span> <span class="p">(</span><span class="err">&#39;</span><span class="n">hello</span><span class="p">,</span> <span class="n">world</span><span class="err">&#39;</span><span class="p">)</span>
+              <span class="mi">3</span> <span class="n">PRINT_ITEM</span>          
+              <span class="mi">4</span> <span class="n">PRINT_NEWLINE</span>       
+              <span class="mi">5</span> <span class="n">LOAD_CONST</span>               <span class="mi">1</span> <span class="p">(</span><span class="n">None</span><span class="p">)</span>
+              <span class="mi">8</span> <span class="n">RETURN_VALUE</span>
 </pre></div>
 
 

@@ -55,11 +55,11 @@
 <p>但是这样加点有一个问题，就是我们无法像第一种方式那样很容易的区分来源，因此我们不得不进行某种编码。</p>
 <h2>顺序编码</h2>
 <p>第一种编码的思想大体上是按照传统的数据库中记录的自增 ID，转为二进制表示，具体的说就是，比如我这个邮箱有11位，那么我们可以以中间有打点或者没有打点作为二进制位中的0和1，比如就可以如下表示：</p>
-<div class="codehilite"><pre>0 <span class="n">quanxunzhen</span>
-1 <span class="n">quanxunzhen</span><span class="p">.</span>
-2 <span class="n">quanxunzhe</span><span class="p">.</span><span class="n">n</span>
-3 <span class="n">quanxunzhe</span><span class="p">.</span><span class="n">n</span><span class="p">.</span>
-29 <span class="n">quanxun</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">h</span><span class="p">.</span><span class="n">en</span><span class="p">.</span>
+<div class="codehilite"><pre><span class="mi">0</span> <span class="n">quanxunzhen</span>
+<span class="mi">1</span> <span class="n">quanxunzhen</span><span class="p">.</span>
+<span class="mi">2</span> <span class="n">quanxunzhe</span><span class="p">.</span><span class="n">n</span>
+<span class="mi">3</span> <span class="n">quanxunzhe</span><span class="p">.</span><span class="n">n</span><span class="p">.</span>
+<span class="mi">29</span> <span class="n">quanxun</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">h</span><span class="p">.</span><span class="n">en</span><span class="p">.</span>
 </pre></div>
 
 
@@ -77,16 +77,16 @@
 
 <p>不过我们可以明显的感觉到很蛋疼……Arch 还算好的，如果是新浪（Sina -&gt; 18 8 13 0）或者淫淫网（Renren -&gt; 17 4 13 17 4 13）就更蛋疼了……</p>
 <p>但是我们感觉到不是这样的，我们完全不需要那么多字母其实也可以认出他们来不是么？比如淫淫网我们可以用 rr，或者原名校内的 xn，新浪就 sn 什么的，这样需要的字母就少了，我们就可以利用变换进制的优势了~26对于二进制位需要5位，对于3进制恰好只要3位，当然算起来如果你的邮箱够长肯定还是用二进制可以增加的更短一些，对于我来说就是如此，比如上面的就可以这样变化了：</p>
-<div class="codehilite"><pre><span class="n">rr</span> <span class="o">-&gt;</span> 17 17 <span class="o">-&gt;</span> 10001 10001 <span class="o">-&gt;</span> <span class="n">q</span><span class="p">.</span><span class="n">uanx</span><span class="p">.</span><span class="n">u</span><span class="p">.</span><span class="n">nzhe</span><span class="p">.</span><span class="n">n</span>
-<span class="n">xn</span> <span class="o">-&gt;</span> 23 13 <span class="o">-&gt;</span> 10111 01101 <span class="o">-&gt;</span> <span class="n">q</span><span class="p">.</span><span class="n">ua</span><span class="p">.</span><span class="n">n</span><span class="p">.</span><span class="n">x</span><span class="p">.</span><span class="n">un</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">he</span><span class="p">.</span><span class="n">n</span>
-<span class="n">sn</span> <span class="o">-&gt;</span> 18 13 <span class="o">-&gt;</span> 10010 01101 <span class="o">-&gt;</span> <span class="n">q</span><span class="p">.</span><span class="n">uan</span><span class="p">.</span><span class="n">xun</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">he</span><span class="p">.</span><span class="n">n</span>
+<div class="codehilite"><pre><span class="n">rr</span> <span class="o">-&gt;</span> <span class="mi">17</span> <span class="mi">17</span> <span class="o">-&gt;</span> <span class="mi">10001</span> <span class="mi">10001</span> <span class="o">-&gt;</span> <span class="n">q</span><span class="p">.</span><span class="n">uanx</span><span class="p">.</span><span class="n">u</span><span class="p">.</span><span class="n">nzhe</span><span class="p">.</span><span class="n">n</span>
+<span class="n">xn</span> <span class="o">-&gt;</span> <span class="mi">23</span> <span class="mi">13</span> <span class="o">-&gt;</span> <span class="mi">10111</span> <span class="mo">01101</span> <span class="o">-&gt;</span> <span class="n">q</span><span class="p">.</span><span class="n">ua</span><span class="p">.</span><span class="n">n</span><span class="p">.</span><span class="n">x</span><span class="p">.</span><span class="n">un</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">he</span><span class="p">.</span><span class="n">n</span>
+<span class="n">sn</span> <span class="o">-&gt;</span> <span class="mi">18</span> <span class="mi">13</span> <span class="o">-&gt;</span> <span class="mi">10010</span> <span class="mo">01101</span> <span class="o">-&gt;</span> <span class="n">q</span><span class="p">.</span><span class="n">uan</span><span class="p">.</span><span class="n">xun</span><span class="p">.</span><span class="n">z</span><span class="p">.</span><span class="n">he</span><span class="p">.</span><span class="n">n</span>
 </pre></div>
 
 
 <p>如果三进制的话，我的 upsuper 也可以容下了：</p>
-<div class="codehilite"><pre><span class="n">rr</span> <span class="o">-&gt;</span> 17 17 <span class="o">-&gt;</span> 122 122 <span class="o">-&gt;</span> <span class="n">u</span><span class="p">.</span><span class="n">p</span><span class="p">..</span><span class="n">s</span><span class="p">..</span><span class="n">u</span><span class="p">.</span><span class="n">p</span><span class="p">..</span><span class="n">e</span><span class="p">..</span><span class="n">r</span>
-<span class="n">xn</span> <span class="o">-&gt;</span> 23 13 <span class="o">-&gt;</span> 212 111 <span class="o">-&gt;</span> <span class="n">u</span><span class="p">..</span><span class="n">p</span><span class="p">.</span><span class="n">s</span><span class="p">..</span><span class="n">u</span><span class="p">.</span><span class="n">p</span><span class="p">.</span><span class="n">e</span><span class="p">.</span><span class="n">r</span>
-<span class="n">sn</span> <span class="o">-&gt;</span> 18 13 <span class="o">-&gt;</span> 200 111 <span class="o">-&gt;</span> <span class="n">u</span><span class="p">..</span><span class="n">psu</span><span class="p">.</span><span class="n">p</span><span class="p">.</span><span class="n">e</span><span class="p">.</span><span class="n">r</span>
+<div class="codehilite"><pre><span class="n">rr</span> <span class="o">-&gt;</span> <span class="mi">17</span> <span class="mi">17</span> <span class="o">-&gt;</span> <span class="mi">122</span> <span class="mi">122</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="p">.</span><span class="n">p</span><span class="p">..</span><span class="n">s</span><span class="p">..</span><span class="n">u</span><span class="p">.</span><span class="n">p</span><span class="p">..</span><span class="n">e</span><span class="p">..</span><span class="n">r</span>
+<span class="n">xn</span> <span class="o">-&gt;</span> <span class="mi">23</span> <span class="mi">13</span> <span class="o">-&gt;</span> <span class="mi">212</span> <span class="mi">111</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="p">..</span><span class="n">p</span><span class="p">.</span><span class="n">s</span><span class="p">..</span><span class="n">u</span><span class="p">.</span><span class="n">p</span><span class="p">.</span><span class="n">e</span><span class="p">.</span><span class="n">r</span>
+<span class="n">sn</span> <span class="o">-&gt;</span> <span class="mi">18</span> <span class="mi">13</span> <span class="o">-&gt;</span> <span class="mi">200</span> <span class="mi">111</span> <span class="o">-&gt;</span> <span class="n">u</span><span class="p">..</span><span class="n">psu</span><span class="p">.</span><span class="n">p</span><span class="p">.</span><span class="n">e</span><span class="p">.</span><span class="n">r</span>
 </pre></div>
 
 

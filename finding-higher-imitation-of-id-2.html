@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>寻找更高仿的 ID 第二季</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="./theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie.css"/>
+                <script src="./js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="./css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="./">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="./category/blog.html">Blog</a></li>
+                                    <li ><a href="./category/research.html">Research</a></li>
+                                    <li class="active"><a href="./category/script.html">Script</a></li>
+                                    <li ><a href="./category/study.html">Study</a></li>
+                                    <li ><a href="./category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+        <section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="./finding-higher-imitation-of-id-2.html" rel="bookmark"
+           title="Permalink to 寻找更高仿的 ID 第二季">寻找更高仿的 ID 第二季</a></h1>
+          </header>
+
+    <div class="entry-content">
+      <footer class="post-info">
+        <abbr class="published" title="2010-09-11T15:31:00">
+                2010&#24180;09&#26376;11&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/script.html">Script</a>. </p>
+<p>tags: <a href="./tag/python.html">Python</a><a href="./tag/tieba.html">Tieba</a></p>
+</footer><!-- /.post-info -->      <p>继上一篇文章之后，我又下大力气对这个程序做了许多修改，在精确度和速度方面似乎都有些许提高。在此推出第二季~</p>
+<h2>使用真正的 12px 宋体</h2>
+<p>在上一次的程序中使用的 PIL 似乎是因为不支持宋体 <code>ttc</code> 文件中对于小字体下优化的点阵形式，才在选择小于 <code>19px</code> 的字号时不能正确渲染汉字。考虑到这一点，我就想到把 <code>ttc</code> 文件里面 <code>12px</code> 的点阵字体单独提取出来使用，毕竟贴吧上面显示 ID 都是用这个字号显示的。</p>
+<p>使用 FontForge 提取出来了 <code>simsun-12.bdf</code> 文件，就是宋体 <code>12px</code> 下的点阵。参考 PIL 的手册，发现 PIL 不能直接使用 <code>.bdf</code> 文件，需要使用一个叫做 <code>pilfont</code> 的脚本转换成专有的 <code>.pil</code> 文件才行。我想转换就转换呗。<code>simsun-12.bdf</code> 一个 2.4MB 的文件，转换完就剩不到 100KB，我就觉得肯定有问题，用 PIL 导入，发现还是不能渲染中文。后来知道，这个 <code>.pil</code> 文件根本不支持非拉丁字母的字符，它的储存空间限定了 256 个字符……</p>
+<p>无奈了，这意味着 PIL 完全无法支持中文点阵了……</p>
+<p>当然，办法总归是有的，那就是——抛弃 PIL！为什么我能有这样的想法呢，因为看到 .bdf 文件是 UNIX 标准的。UNIX 标准意味着什么呢？记不记得 UNIX 有一个非常好的传统叫做，尽量使用纯文本。是的，这虽然让有些文件会变得太大，不过同时也让这些东西更容易被其他程序读取，而 <code>.bdf</code> 恰好即使这么一种文件。</p>
+<p>这样读取 <code>.bdf</code> 点阵字体文件的程序自己写不就好了，什么额外的库都不需要……当然，纠错性极弱就是了~</p>
+<div class="codehilite"><pre><span class="n">line_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">line_count</span>
+    <span class="n">line_count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+    <span class="k">return</span> <span class="n">line</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;simsun-12.bdf&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">chars</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># 获得字符总数</span>
+        <span class="k">while</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;CHARS&#39;</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="c"># 读取所有字符</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
+            <span class="k">assert</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;STARTCHAR&#39;</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="c"># 编码</span>
+            <span class="k">assert</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ENCODING&#39;</span>
+            <span class="n">char</span> <span class="o">=</span> <span class="nb">unichr</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="c"># 绘制参数</span>
+            <span class="k">assert</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;BBX&#39;</span>
+            <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+            <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">x1</span><span class="p">,</span> <span class="mi">12</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span>
+            <span class="c"># 准备绘制文字</span>
+            <span class="n">base_image</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">14</span><span class="p">)]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">14</span><span class="p">)]</span>
+            <span class="c"># 读取并绘制文字</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;BITMAP&#39;</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">height</span><span class="p">):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">bits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+                <span class="n">bits</span> <span class="o">&gt;&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">-</span> <span class="n">width</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x0</span> <span class="o">+</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x0</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="n">base_image</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="mi">1</span>
+                    <span class="n">bits</span> <span class="o">&gt;&gt;=</span> <span class="mi">1</span>
+            <span class="n">chars</span><span class="p">[</span><span class="n">char</span><span class="p">]</span> <span class="o">=</span> <span class="n">base_image</span>
+            <span class="c"># 结束这个文字</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ENDCHAR&#39;</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">read_split</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ENDFONT&#39;</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;line&#39;</span><span class="p">,</span> <span class="n">line_count</span>
+        <span class="k">raise</span>
+</pre></div>
+
+
+<p>这样所有的字符就被读入，并变成一个单色像素二位数组了。</p>
+<p>当然，这个性能很低，在我的机器上转换读取文件的 2W+ 字符大概需要 18s，这可能也是为什么 PIL 要选择进行转换。事实上，使用纯文本储存一直以来都给 UNIX 风格的这一类软件带来一定性能缺陷。不过其实，这很值得，因为方便。</p>
+<p>不过这个时间确实是太长了，更何况我们到目前为止还什么都没处理。怎么办呢？两个想法：一、优化代码；二、保存处理的数据。</p>
+<p>第一种，基本上是没什么希望了，而且即使能优化，估计效果也不会太好，可能省个几秒封顶了。第二个显然不是个坏想法。</p>
+<p>Python 在数据的持续化方面还是有很多现成的东西的，比如 <code>pickle</code> 什么的。不过那个速度太慢，而且是纯文本！好吧，偶尔我也会不喜欢纯文本，因为在这里意义不大……因此选择了 <code>marshal</code>。<code>marshal</code> 也是一个用于数据持续化的库，不过仅能对 Python 的内部类型进行。我会看中它最重要的原因就是它的应用范围极其有限，只能持续化内部类型。如果一个 Python 标准库，它有很明显的限制，却没有标明不推荐或在新版中被剔除，说明它必然有一个其他库不可及的优势。对于 <code>marshal</code>，我猜它的优势就是效率。</p>
+<p>使用 <code>marshal</code> 就很简单了……</p>
+<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">marshal</span>
+<span class="n">marshal</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">chars</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;base_image&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">))</span>
+</pre></div>
+
+
+<p>这样后面的处理不需要不断重复这个低效的步骤了~</p>
+<h2>处理文字图像</h2>
+<p>原来是用 PIL 处理文字图像，现在抛弃 PIL 了，就得自己写了……不过这样也很好，自由发挥的空间很大了~</p>
+<p>我猜用的是 Matrix67 大牛的那种在附近留阴影的方法，不过似乎我写的不够好就是了，怎么测试效果都不大理想。除此之外，纯 Python 实现的算法效率和 PIL 这种包装还是没得比，很简单的算法却慢的不得了……</p>
+<p>下面是目前的处理代码：</p>
+<div class="codehilite"><pre><span class="c">#!/usr/bin/python</span>
+<span class="c"># - * - coding: utf8 - * -</span>
+
+<span class="kn">import</span> <span class="nn">marshal</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="n">base_chars</span> <span class="o">=</span> <span class="n">marshal</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&#39;base_image&#39;</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">))</span>
+<span class="n">chars</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">char</span><span class="p">,</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">base_chars</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="n">new_image</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">14</span><span class="p">):</span>
+        <span class="n">new_row</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">14</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">image</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="mi">81</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">image</span><span class="p">[</span><span class="n">y</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]:</span>
+                <span class="n">value</span> <span class="o">+=</span> <span class="mi">4</span>
+            <span class="k">if</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">13</span> <span class="ow">and</span> <span class="n">image</span><span class="p">[</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">x</span><span class="p">]:</span>
+                <span class="n">value</span> <span class="o">+=</span> <span class="mi">4</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">image</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">value</span> <span class="o">+=</span> <span class="mi">4</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">13</span> <span class="ow">and</span> <span class="n">image</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">value</span> <span class="o">+=</span> <span class="mi">4</span>
+            <span class="n">new_image</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">chars</span><span class="p">[</span><span class="n">char</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_image</span>
+
+<span class="n">marshal</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">chars</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;advanced_data&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">))</span>
+</pre></div>
+
+
+<p>处理效果不是很理想就是了，耗时大概也是 30s+。</p>
+<h2>寻找相似字符</h2>
+<p>其实这个部分就是一样的了……直接贴代码好了……</p>
+<div class="codehilite"><pre><span class="c">#!/usr/bin/python</span>
+<span class="c"># - * - coding: utf8 - * -</span>
+
+<span class="kn">import</span> <span class="nn">marshal</span>
+
+<span class="n">chars</span> <span class="o">=</span> <span class="n">marshal</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&#39;advanced_data&#39;</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">image_diff</span><span class="p">(</span><span class="n">image1</span><span class="p">,</span> <span class="n">image2</span><span class="p">):</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">image1</span><span class="p">,</span> <span class="n">image2</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">+=</span> <span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+<span class="n">remember_number</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">searched</span> <span class="o">=</span> <span class="n">marshal</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&#39;searched_chars&#39;</span><span class="p">,</span> <span class="s">&#39;rb&#39;</span><span class="p">))</span>
+<span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+    <span class="n">searched</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">input_string</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;ID: &#39;</span><span class="p">),</span> <span class="s">&#39;utf8&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">input_string</span><span class="p">:</span>
+        <span class="k">break</span>
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">input_string</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">chars</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">searched</span><span class="p">:</span>
+            <span class="n">diff_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">chars</span><span class="p">[</span><span class="n">char</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">chars</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="n">char</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">diff_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">image_diff</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">image</span><span class="p">),</span> <span class="n">c</span><span class="p">))</span>
+            <span class="n">diff_data</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">searched</span><span class="p">[</span><span class="n">char</span><span class="p">]</span> <span class="o">=</span> <span class="n">diff_data</span><span class="p">[:</span><span class="n">remember_number</span><span class="p">]</span>
+        <span class="k">print</span> <span class="n">char</span><span class="p">,</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">searched</span><span class="p">[</span><span class="n">char</span><span class="p">]:</span>
+            <span class="k">print</span> <span class="s">u&#39;({0}, {1})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">item</span><span class="p">),</span>
+        <span class="k">print</span>
+    <span class="k">print</span>
+
+<span class="n">marshal</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">searched</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;searched_chars&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">))</span>
+</pre></div>
+
+
+<p>和上次不同的是查找过的字会被保存下来，效率可以高一些……</p>
+<h2>继续改进</h2>
+<p>现在的主要问题就是如何提高相似度的识别精度了……目前的想法是通过逐像素比对测试两个字的相似度，最多加一些模糊化什么的处理。doggy 提出一个想法是计算连通区域面积的比例，我个人认为不大可行……我的想法是识别文字的笔画，把文字的骨架弄出来，然后对比什么的，可能效果更好吧？</p>
+<p>不知道各位还有没有其他什么想法？</p>
+<h2>参考资料</h2>
+<ul>
+<li><a href="http://www.pkucn.com/viewthread.php?tid=202692">我想把simsun.ttf里的12号点阵字体单独提取出来做成一个ttf – 北大中文论坛</a></li>
+<li><a href="http://en.wikipedia.org/wiki/Glyph_Bitmap_Distribution_Format">Glyph Bitmap Distribution Format – Wikipedia</a></li>
+<li><a href="http://www.adobe.com/devnet/font/pdfs/5005.BDF_Spec.pdf">Glyph Bitmap Distribution Format (BDF) Specification – Adobe Developer Support</a></li>
+<li><a href="http://docs.python.org/library/marshal.html">marshal — Internal Python object serialization – Python documentation</a></li>
+</ul>
+    </div><!-- /.entry-content -->
+        <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_identifier = "finding-higher-imitation-of-id-2.html";
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://upsuper-github.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+    </div>
+    
+  </article>
+</section>
+        <section id="extras" class="body">
+                                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+                            
+                                                    <li><a href="https://twitter.com/upsuperx">Twitter</a></li>
+                                                    <li><a href="https://github.com/upsuper">GitHub</a></li>
+                                                </ul>
+                </div><!-- /.social -->
+                </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+    <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-37354064-1']);
+    _gaq.push(['_trackPageview']);
+    (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+    </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

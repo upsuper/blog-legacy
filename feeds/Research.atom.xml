@@ -234,16 +234,16 @@
 
 
 &lt;p&gt;以下是我在 Firefox 3.0.6 下执行的结果：&lt;/p&gt;
-&lt;div class="codehilite"&gt;&lt;pre&gt;196 207
-195 215
-199 203
-196 203
-200 197
-110 111
-104 111
-107 111
-108 113
-105 107
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="mi"&gt;196&lt;/span&gt; &lt;span class="mi"&gt;207&lt;/span&gt;
+&lt;span class="mi"&gt;195&lt;/span&gt; &lt;span class="mi"&gt;215&lt;/span&gt;
+&lt;span class="mi"&gt;199&lt;/span&gt; &lt;span class="mi"&gt;203&lt;/span&gt;
+&lt;span class="mi"&gt;196&lt;/span&gt; &lt;span class="mi"&gt;203&lt;/span&gt;
+&lt;span class="mi"&gt;200&lt;/span&gt; &lt;span class="mi"&gt;197&lt;/span&gt;
+&lt;span class="mi"&gt;110&lt;/span&gt; &lt;span class="mi"&gt;111&lt;/span&gt;
+&lt;span class="mi"&gt;104&lt;/span&gt; &lt;span class="mi"&gt;111&lt;/span&gt;
+&lt;span class="mi"&gt;107&lt;/span&gt; &lt;span class="mi"&gt;111&lt;/span&gt;
+&lt;span class="mi"&gt;108&lt;/span&gt; &lt;span class="mi"&gt;113&lt;/span&gt;
+&lt;span class="mi"&gt;105&lt;/span&gt; &lt;span class="mi"&gt;107&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -274,16 +274,16 @@
 
 
 &lt;p&gt;结果则如下：&lt;/p&gt;
-&lt;div class="codehilite"&gt;&lt;pre&gt;0&lt;span class="p"&gt;.&lt;/span&gt;0039599   0&lt;span class="p"&gt;.&lt;/span&gt;0461071
-0&lt;span class="p"&gt;.&lt;/span&gt;0070710   0&lt;span class="p"&gt;.&lt;/span&gt;0408709
-0&lt;span class="p"&gt;.&lt;/span&gt;0052779   0&lt;span class="p"&gt;.&lt;/span&gt;0322330
-0&lt;span class="p"&gt;.&lt;/span&gt;0061541   0&lt;span class="p"&gt;.&lt;/span&gt;0294971
-0&lt;span class="p"&gt;.&lt;/span&gt;0051920   0&lt;span class="p"&gt;.&lt;/span&gt;0230181
-0&lt;span class="p"&gt;.&lt;/span&gt;0039949   0&lt;span class="p"&gt;.&lt;/span&gt;0204601
-0&lt;span class="p"&gt;.&lt;/span&gt;0038750   0&lt;span class="p"&gt;.&lt;/span&gt;0246589
-0&lt;span class="p"&gt;.&lt;/span&gt;0043111   0&lt;span class="p"&gt;.&lt;/span&gt;0245950
-0&lt;span class="p"&gt;.&lt;/span&gt;0047810   0&lt;span class="p"&gt;.&lt;/span&gt;0232542
-0&lt;span class="p"&gt;.&lt;/span&gt;0038841   0&lt;span class="p"&gt;.&lt;/span&gt;0230379
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="mf"&gt;0.0039599&lt;/span&gt;   &lt;span class="mf"&gt;0.0461071&lt;/span&gt;
+&lt;span class="mf"&gt;0.0070710&lt;/span&gt;   &lt;span class="mf"&gt;0.0408709&lt;/span&gt;
+&lt;span class="mf"&gt;0.0052779&lt;/span&gt;   &lt;span class="mf"&gt;0.0322330&lt;/span&gt;
+&lt;span class="mf"&gt;0.0061541&lt;/span&gt;   &lt;span class="mf"&gt;0.0294971&lt;/span&gt;
+&lt;span class="mf"&gt;0.0051920&lt;/span&gt;   &lt;span class="mf"&gt;0.0230181&lt;/span&gt;
+&lt;span class="mf"&gt;0.0039949&lt;/span&gt;   &lt;span class="mf"&gt;0.0204601&lt;/span&gt;
+&lt;span class="mf"&gt;0.0038750&lt;/span&gt;   &lt;span class="mf"&gt;0.0246589&lt;/span&gt;
+&lt;span class="mf"&gt;0.0043111&lt;/span&gt;   &lt;span class="mf"&gt;0.0245950&lt;/span&gt;
+&lt;span class="mf"&gt;0.0047810&lt;/span&gt;   &lt;span class="mf"&gt;0.0232542&lt;/span&gt;
+&lt;span class="mf"&gt;0.0038841&lt;/span&gt;   &lt;span class="mf"&gt;0.0230379&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 

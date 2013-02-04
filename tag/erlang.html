@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <title>鬼の领地 - Erlang</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="../theme/css/main.css" type="text/css" />
+                <link href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="鬼の领地 Atom Feed" />
+                
+        <!--[if IE]>
+                <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+        <!--[if lte IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie.css"/>
+                <script src="../js/IE8.js" type="text/javascript"></script><![endif]-->
+
+        <!--[if lt IE 7]>
+                <link rel="stylesheet" type="text/css" media="all" href="../css/ie6.css"/><![endif]-->
+
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="../">鬼の领地 </a></h1>
+                <nav><ul>
+                                                                                                    <li ><a href="../category/blog.html">Blog</a></li>
+                                    <li ><a href="../category/research.html">Research</a></li>
+                                    <li ><a href="../category/script.html">Script</a></li>
+                                    <li ><a href="../category/study.html">Study</a></li>
+                                    <li ><a href="../category/technique.html">Technique</a></li>
+                                </ul></nav>
+        </header><!-- /#banner -->
+                
+            
+
+                            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="../bmp-to-html-tool.html">BMP to HTML 小程序</a></h1> 
+                    <footer class="post-info">
+        <abbr class="published" title="2010-03-10T17:46:00">
+                2010&#24180;03&#26376;10&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/erlang.html">Erlang</a><a href="../tag/html.html">HTML</a></p>
+</footer><!-- /.post-info --><p>什么叫 BMP 到 HTML 呢……？就是生成一个网页，里面用不同颜色的字符拼出那个图片……很无聊的功能嗯，而且原理上说，生成的 HTML 文件如果要表现整个 BMP 的所有细节，大小肯定大大超过原 BMP 文件……</p>
+<p>为什么会做这个呢？主要是受到我们 C++ 老师的启发，尝试去做的。不过我没有用 C++ 写，而是选用了寒假学的 Erlang，这也是我写的第一个 Erlang 程序。</p>
+<p>为什么会选用 Erlang 呢？主要是基于两点原因：1、寒假学了半天，一点都没有练过，就拿这个来练练；2、看中了 Erlang 强大的模式匹配和比特语法。比特语法在 Erlang 里面原来是用来解决网络传输协议中的二进制数据的，不过这里拿来处理二进制文件着实是一个很好的选择~不过其实 Erlang 真正最重要的特性：面向并发，我完全没有用到，而是继续使用了顺序编程。主要是，BMP to HTML 没什么可以并发化的，而且就算并发了，也是大传输小计算，并没有什么很大的优势。因为是第一次写 Erlang 程序，如果有 Erlang 高手路过，还请多多指点咯~</p>
+<p>另外一点，为什么选用 BMP 这种几乎被人抛弃的格式呢？因为最容易呗……而且我这里还用了 BMP 中最简单的一种：真彩色无压缩格式。这是最直接的图形表示方式了，就是一个点一个点的，每个点三个字节表示一种颜色。所以还是很简单的。</p>
+<p>先看看最后的效果：
+<img alt="效果图" src="../static/images/bmp-to-html-tool.png" /></p>
+<p>下面说干就干。</p>
+<h2>BMP 文件结构</h2>
+<p>首先要知道的就是 BMP 的格式。在维基百科里的相关条目有很详细的记载，甚至于文件头的 C 结构都已经直接给出来了。不过这个当然对我没有很大的用途，因为用的是 Erlang 嘛~识别文件头要比 C 方便多了~下面我先说说 BMP 的文件结构：</p>
+<h3>BMP 文件头</h3>
+<p>一个 BMP 文件最开始是 BMP 文件头。这个文件头的大小是固定的14字节，包含 BMP 文件的 Magic Number (魔术数字，即文件识别码) 2字节、整个文件大小4字节、保留区4字节、图像数据在文件中的起始位置4字节。</p>
+<p>其中 Magic Number 我们最常见的是 Windows BMP 文件的 <code>BM</code>，除此之外，还有 <code>BA</code>、<code>CI</code>、<code>CP</code>、<code>IC</code>、<code>PT</code> 这几种，应该是不太常见吧。</p>
+<p>整个文件的大小其实我觉得在这里是没有什么用途的，而整整4字节的保留区也是令我很难理解的。整个14字节的头当中，最重要的应该就是图像数据的偏移。如果这个偏移量是相对于整个文件而言的，因此直接把读取指针指向偏移量的位置就是图像数据。</p>
+<h3>DIB 头</h3>
+<p>这个信息其实是关于图像描述最有意义的部分。这里面将会描述这张图片几乎一切你需要的信息。</p>
+<p>DIB 头最开始的32位，也就是4个字节，描述了 DIB 头的长度。根据 DIB 头的长度不同，共有4种 BMP 图片：</p>
+<ul>
+<li>12字节 – OS/2 V1 格式，OS/2 和 Windows 3.0 以后所有版本支持</li>
+<li>64字节 – OS/2 V2 格式</li>
+<li>40字节 – Windows V3，Windows 3.0 以后所有版本支持</li>
+<li>108字节 – Windows V4，Windows 95/NT4 以后所有版本支持</li>
+<li>124字节 – Windows V5，Windows 98/2000 以后所有版本支持</li>
+</ul>
+<p>鉴于 Windows V4、V5 都与 V3 的格式兼容，我在程序里面事实上仅仅实现了 V3 的头识别。</p>
+<p>V3 头的40字节分布，我觉得已经很复杂了……分别是：</p>
+<ul>
+<li>DIB 头大小，4字节，这里为40</li>
+<li>图像宽度，4字节</li>
+<li>图像高度，4字节</li>
+<li>Color planes (不知道是什么东西)，2字节，必须为1</li>
+<li>颜色位数，2字节，可以为1、4、8、16、24、32，我的程序中只识别24位色</li>
+<li>压缩方式，4字节，我的程序里只能识别不压缩的……值为0</li>
+<li>图像信息大小，4字节，与整个文件大小不一样，这里表示的是图像信息那块数据的大小</li>
+<li>横向分辨率，4字节，单位像素/米</li>
+<li>纵向分辨率，4字节，单位像素/米</li>
+<li>调色板颜色数，4字节，如果为0则默认为2n</li>
+<li>重要颜色数量，4字节，不知道干什么用的，直接忽略好了……</li>
+</ul>
+<p>介绍完了这个 DIB 头，其实很很没意思就是了。真正有用的，也就这么几个：长度、宽度。如果要识别能力强一点，识别一下调色板相关的，也就差不多了。</p>
+<h3>调色板</h3>
+<p>因为我没有用到调色板，所以也没有细看这块内容，直接跳过……</p>
+<h3>图像数据</h3>
+<p>显然对于我的最基本选择要求：24位色、无压缩，图像信息是很简单的，就是每个像素占3个字节。</p>
+<p>不过仍然有两点需要注意：1、颜色储存依次是是蓝、绿、红，而非红、绿、蓝；2、每行的字节数必须是4的整倍数。也就是 BMP 文件每行最后会有1-3个字节用于补足，这个补足用字节数正是宽度除以4的余数。</p>
+<h2>Erlang 程序</h2>
+<p>BMP 图片的基本信息探究清楚了，下面就可以开始写咯~</p>
+<h3>导出函数</h3>
+<p>第一部分就是模块的声明和导出函数</p>
+<div class="codehilite"><pre><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">bmp</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">bmp_to_html</span><span class="o">/</span><span class="mi">2</span><span class="p">]).</span>
+
+<span class="p">-</span><span class="ni">define</span><span class="p">(</span><span class="no">ULI</span><span class="p">,</span> <span class="n">unsigned</span><span class="o">-</span><span class="n">little</span><span class="o">-</span><span class="n">integer</span><span class="p">).</span>
+
+<span class="nf">bmp_to_html</span><span class="p">(</span><span class="nv">Bmp</span><span class="p">,</span> <span class="nv">Html</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="n">bmp_to_html</span><span class="p">(</span><span class="nv">Bmp</span><span class="p">)</span> <span class="k">of</span>
+        <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">}</span> <span class="o">-&gt;</span>
+            <span class="nn">file</span><span class="p">:</span><span class="nf">write_file</span><span class="p">(</span><span class="nv">Html</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">);</span>
+        <span class="nv">Error</span> <span class="o">-&gt;</span>
+            <span class="p">{</span><span class="nv">Bmp</span><span class="p">,</span> <span class="nv">Error</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+
+<span class="nf">bmp_to_html</span><span class="p">(</span><span class="nv">File</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nn">file</span><span class="p">:</span><span class="nf">open</span><span class="p">(</span><span class="nv">File</span><span class="p">,</span> <span class="p">[</span><span class="n">read</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">raw</span><span class="p">])</span> <span class="k">of</span>
+        <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">F</span><span class="p">}</span> <span class="o">-&gt;</span>
+            <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="p">[</span><span class="s">&quot;&lt;span style=</span><span class="se">\&quot;</span><span class="s">font-size: 1px; line-height: 1px;</span><span class="se">\&quot;</span><span class="s">&gt;&quot;</span><span class="p">,</span>
+                    <span class="n">convert_bmp</span><span class="p">(</span><span class="nv">F</span><span class="p">),</span><span class="s">&quot;&lt;/span&gt;&quot;</span><span class="p">]};</span>
+        <span class="nv">Error</span> <span class="o">-&gt;</span>
+            <span class="p">{</span><span class="nv">File</span><span class="p">,</span> <span class="nv">Error</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+</pre></div>
+
+
+<p>我在 <code>bmp</code> 模块内导出了一个 <code>bmp_to_html</code> 的函数，他读取一个 <code>bmp</code> 文件，转换并写入一个 <code>html</code> 文件。中间定义了一个宏 <code>ULI</code>，很容易理解的~其实定义这个的主要原因是那个 little……由于 Erlang 最初是为网络协议做的这个比特语法，因此默认是 Big endian 的，而 x86 系的 CPU 却总是使用 Little endian 的……</p>
+<h3>读取 BMP 文件信息</h3>
+<div class="codehilite"><pre><span class="nf">convert_bmp</span><span class="p">(</span><span class="nv">F</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="p">{</span><span class="nv">Offset</span><span class="p">,</span> <span class="p">{</span><span class="nv">Size</span><span class="p">,</span> <span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">}}</span> <span class="o">=</span> <span class="n">read_header</span><span class="p">(</span><span class="nv">F</span><span class="p">),</span>
+    <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">}</span> <span class="o">=</span> <span class="nn">file</span><span class="p">:</span><span class="nf">pread</span><span class="p">(</span><span class="nv">F</span><span class="p">,</span> <span class="nv">Offset</span><span class="p">,</span> <span class="nv">Size</span><span class="p">),</span>
+    <span class="nv">L</span> <span class="o">=</span> <span class="nb">binary_to_list</span><span class="p">(</span><span class="nv">Bin</span><span class="p">),</span>
+    <span class="n">each_pixel</span><span class="p">(</span><span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">L</span><span class="p">).</span>
+
+<span class="nf">read_header</span><span class="p">(</span><span class="nv">F</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">}</span> <span class="o">=</span> <span class="nn">file</span><span class="p">:</span><span class="nf">pread</span><span class="p">(</span><span class="nv">F</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span>
+    <span class="k">case</span> <span class="nv">Bin</span> <span class="k">of</span>
+        <span class="o">&lt;&lt;</span><span class="s">&quot;BM&quot;</span><span class="p">,</span> <span class="p">_</span><span class="nv">FileSize</span><span class="p">:</span>  <span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span><span class="p">,</span>
+                <span class="p">_</span><span class="nv">Creator</span><span class="p">:</span>   <span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span><span class="p">,</span>
+                <span class="nv">Offset</span><span class="p">:</span>     <span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span>
+        <span class="o">&gt;&gt;</span> <span class="o">-&gt;</span>
+            <span class="p">{</span><span class="nv">Offset</span><span class="p">,</span> <span class="n">read_dib_header</span><span class="p">(</span><span class="nv">F</span><span class="p">)};</span>
+        <span class="p">_</span><span class="nv">Other</span> <span class="o">-&gt;</span>
+            <span class="p">{</span><span class="n">error</span><span class="p">,</span> <span class="n">unsupported</span><span class="p">,</span> <span class="p">_</span><span class="nv">Other</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+
+<span class="nf">read_dib_header</span><span class="p">(</span><span class="nv">F</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">}</span> <span class="o">=</span> <span class="nn">file</span><span class="p">:</span><span class="nf">pread</span><span class="p">(</span><span class="nv">F</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="k">case</span> <span class="nv">Bin</span> <span class="k">of</span>
+        <span class="o">&lt;&lt;</span><span class="mi">40</span><span class="p">:</span><span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span><span class="o">&gt;&gt;</span> <span class="o">-&gt;</span>
+            <span class="p">{</span><span class="n">ok</span><span class="p">,</span> <span class="o">&lt;&lt;</span> <span class="nv">Width</span><span class="p">:</span>  <span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span><span class="p">,</span>
+                    <span class="nv">Height</span><span class="p">:</span> <span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span><span class="p">,</span>
+                    <span class="p">_:</span>      <span class="mi">16</span><span class="o">/?</span><span class="nv">ULI</span><span class="p">,</span>
+                    <span class="p">_:</span>      <span class="mi">16</span><span class="o">/?</span><span class="nv">ULI</span><span class="p">,</span>
+                    <span class="mi">0</span><span class="p">:</span>      <span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span><span class="p">,</span>
+                    <span class="nv">Size</span><span class="p">:</span>   <span class="mi">32</span><span class="o">/?</span><span class="nv">ULI</span>
+            <span class="o">&gt;&gt;</span><span class="p">}</span> <span class="o">=</span> <span class="nn">file</span><span class="p">:</span><span class="nf">pread</span><span class="p">(</span><span class="nv">F</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+            <span class="p">{</span><span class="nv">Size</span><span class="p">,</span> <span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">};</span>
+        <span class="p">_</span><span class="nv">Other</span> <span class="o">-&gt;</span>
+            <span class="p">{</span><span class="n">error</span><span class="p">,</span> <span class="n">unsupported</span><span class="p">,</span> <span class="p">_</span><span class="nv">Other</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+</pre></div>
+
+
+<p>很明显，为了简化程序，BMP 文件头和 DIB 头的识别都只写了一点点，够用就行~</p>
+<h3>转换图像数据</h3>
+<p>这是最后的部分了，将图像数据转换为 HTML 代码~</p>
+<div class="codehilite"><pre><span class="nf">each_pixel</span><span class="p">(</span><span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">each_pixel</span><span class="p">(</span><span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">,</span> <span class="p">[]).</span>
+
+<span class="nf">each_pixel</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">_,</span> <span class="p">_,</span> <span class="p">_,</span> <span class="nv">Output</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">Output</span><span class="p">;</span>
+<span class="nf">each_pixel</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nv">Y</span><span class="p">,</span> <span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">,</span> <span class="nv">Output</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">NewBin</span> <span class="o">=</span> <span class="n">drop_begin</span><span class="p">(</span><span class="nv">Bin</span><span class="p">,</span> <span class="nv">Width</span> <span class="ow">rem</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="nv">NewOutput</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_line</span><span class="p">()</span> <span class="p">|</span> <span class="nv">Output</span><span class="p">],</span>
+    <span class="n">each_pixel</span><span class="p">(</span><span class="nv">Width</span><span class="p">,</span> <span class="nv">Y</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">NewBin</span><span class="p">,</span> <span class="nv">NewOutput</span><span class="p">);</span>
+<span class="nf">each_pixel</span><span class="p">(_,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">_,</span> <span class="p">_,</span> <span class="p">_,</span> <span class="nv">Output</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">Output</span><span class="p">;</span>
+<span class="nf">each_pixel</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">,</span> <span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">Bin</span><span class="p">,</span> <span class="nv">Output</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="p">[</span><span class="nv">B</span><span class="p">,</span><span class="nv">G</span><span class="p">,</span><span class="nv">R</span><span class="p">|</span><span class="nv">NewBin</span><span class="p">]</span> <span class="o">=</span> <span class="nv">Bin</span><span class="p">,</span>
+    <span class="nv">NewOutput</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_html</span><span class="p">(</span><span class="nv">R</span><span class="p">,</span> <span class="nv">G</span><span class="p">,</span> <span class="nv">B</span><span class="p">)</span> <span class="p">|</span> <span class="nv">Output</span><span class="p">],</span>
+    <span class="n">each_pixel</span><span class="p">(</span><span class="nv">X</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">Y</span><span class="p">,</span> <span class="nv">Width</span><span class="p">,</span> <span class="nv">Height</span><span class="p">,</span> <span class="nv">NewBin</span><span class="p">,</span> <span class="nv">NewOutput</span><span class="p">).</span>
+
+<span class="nf">drop_begin</span><span class="p">(</span><span class="nv">Bin</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">Bin</span><span class="p">;</span>
+<span class="nf">drop_begin</span><span class="p">([_|</span><span class="nv">Bin</span><span class="p">],</span> <span class="nv">Num</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="n">drop_begin</span><span class="p">(</span><span class="nv">Bin</span><span class="p">,</span> <span class="nv">Num</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span>
+
+<span class="nf">new_line</span><span class="p">()</span> <span class="o">-&gt;</span>
+    <span class="p">[</span><span class="s">&quot;&lt;br&gt;&quot;</span><span class="p">].</span>
+
+<span class="nf">to_html</span><span class="p">(</span><span class="nv">R</span><span class="p">,</span> <span class="nv">G</span><span class="p">,</span> <span class="nv">B</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nn">io_lib</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">&quot;&lt;font color=</span><span class="se">\&quot;</span><span class="s">#</span><span class="si">~.16B~.16B~.16B</span><span class="se">\&quot;</span><span class="s">&gt;█&lt;/font&gt;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="nv">R</span><span class="p">,</span> <span class="nv">G</span><span class="p">,</span> <span class="nv">B</span><span class="p">]).</span>
+</pre></div>
+
+
+<p>这是最后的部分了~其中字符选用了一个非常黑的字符“█”嗯~</p>
+<p>至于为什么用 <code>font</code> 这个不推荐的标签，其实是我觉得这个文件本身就很冗长了，再变成样式就……所以……</p>
+<h3>使用</h3>
+<p>差不多了，整个程序全部拼在一起，就出来了~</p>
+<p>最后，在 Erlang 的命令行中输入：</p>
+<div class="codehilite"><pre><span class="nf">c</span><span class="p">(</span><span class="n">bmp</span><span class="p">).</span>
+<span class="nn">bmp</span><span class="p">:</span><span class="nf">bmp_to_html</span><span class="p">(</span><span class="s">&quot;BMP 文件&quot;</span><span class="p">,</span> <span class="s">&quot;HTML 文件&quot;</span><span class="p">).</span>
+</pre></div>
+
+
+<p>就好了~</p>
+<p>我用了一个 2.6KB 的 BMP 文件，转换出了一个 26.3KB 的 HTML 文件……真够大……</p>
+<h2>参考资料</h2>
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/BMP_file_format">BMP file format – Wikipedia, the free encyclopedia</a></li>
+<li><a href="http://www.trapexit.org/Converting_Between_Octal_and_Hex">Erlang Community – Converting Between Octal and Hex – Trapexit</a></li>
+</ul><p>There are <a href="../bmp-to-html-tool.html#disqus_thread">comments</a>.</p>                </article>
+                                    <p class="paginator">
+        Page 1 / 1
+    </p>
+                            </aside><!-- /#featured -->
+                                                </ol><!-- /#posts-list -->
+                        </section><!-- /#content -->
+                    <section id="extras" class="body">
+                                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://upsuper.github.com/blog/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+                            
+                                                    <li><a href="https://twitter.com/upsuperx">Twitter</a></li>
+                                                    <li><a href="https://github.com/upsuper">GitHub</a></li>
+                                                </ul>
+                </div><!-- /.social -->
+                </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+    <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-37354064-1']);
+    _gaq.push(['_trackPageview']);
+    (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+    </script>
+<script type="text/javascript">
+    var disqus_shortname = 'upsuper-github';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

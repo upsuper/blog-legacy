@@ -369,6 +369,95 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../two-scripts-for-fanfou.html" rel="bookmark"
+                           title="Permalink to 关于饭否的两个小脚本">关于饭否的两个小脚本</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-02-02T12:06:00">
+                2011&#24180;02&#26376;02&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/fanfou.html">Fanfou</a><a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>前几天因为某些原因，我把饭否上所有的好友和关注者全部清空了。当然，如果没有程序的帮忙，估计还不等我删完我也就后悔了。</p>
+<p>我没有那么狠心的把饭否的消息给清空，因为消息是不可恢复的（而且也太多了），但好友和关注者是可以的。做事情都给自己留后路显然是我一贯的风格，不然的话，我大概早从我家阳台跳下去了……</p>
+<p>两段脚本都不长，第一段是备份饭否的好友列表和关注者列表的，做的毫无泛用性，因为 bash 编程我并不很熟，只知道可以用 <code>wget</code> 来抓取。本来这种事情其实可以直接用 API 抓的，不过我想抓下我能直接看的东西，所以最终还是导出了 Cookie 抓网页。</p>
+<p>第一段代码如下：</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+
+mkdir friends
+<span class="k">for </span>i in <span class="o">{</span>1..11<span class="o">}</span>
+<span class="k">do</span>
+<span class="k">    </span>wget -k -e <span class="nv">robots</span><span class="o">=</span>off --load-cookies cookies.txt -P friends/ <span class="se">\</span>
+        http ...</pre></div>
+                <a class="readmore" href="../two-scripts-for-fanfou.html">read more</a>
+                <p>There are <a href="../two-scripts-for-fanfou.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../finding-higher-imitation-of-id-2.html" rel="bookmark"
+                           title="Permalink to 寻找更高仿的 ID 第二季">寻找更高仿的 ID 第二季</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-09-11T15:31:00">
+                2010&#24180;09&#26376;11&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/tieba.html">Tieba</a></p>
+</footer><!-- /.post-info -->                <p>继上一篇文章之后，我又下大力气对这个程序做了许多修改，在精确度和速度方面似乎都有些许提高。在此推出第二季~</p>
+<h2>使用真正的 12px 宋体</h2>
+<p>在上一次的程序中使用的 PIL 似乎是因为不支持宋体 <code>ttc</code> 文件中对于小字体下优化的点阵形式，才在选择小于 <code>19px</code> 的字号时不能正确渲染汉字。考虑到这一点，我就想到把 <code>ttc</code> 文件里面 <code>12px</code> 的点阵字体单独提取出来使用，毕竟贴吧上面显示 ID 都是用这个字号显示的。</p>
+<p>使用 FontForge 提取出来了 <code>simsun-12.bdf</code> 文件，就是宋体 <code>12px</code> 下的点阵。参考 PIL 的手册，发现 PIL 不能直接使用 <code>.bdf</code> 文件，需要使用一个叫做 <code>pilfont</code> 的脚本转换成专有的 <code>.pil</code> 文件才行。我想转换就转换呗。<code>simsun-12.bdf</code> 一个 ...</p>
+                <a class="readmore" href="../finding-higher-imitation-of-id-2.html">read more</a>
+                <p>There are <a href="../finding-higher-imitation-of-id-2.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../finding-higher-imitation-of-id.html" rel="bookmark"
+                           title="Permalink to 寻找更高仿的 ID">寻找更高仿的 ID</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-09-09T18:22:00">
+                2010&#24180;09&#26376;09&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a><a href="../tag/tieba.html">Tieba</a></p>
+</footer><!-- /.post-info -->                <p>今天大学军训完了，不想做什么正经事，就想到前一段时间想做的寻找相似汉字的程序，用以寻找更高仿的贴吧 ID。用程序来寻找相似汉字，从另一个角度，也是从 Matrix67 大牛的一篇日志里得到的启发。不过 Matrix67 大牛使用的是 Mathematica 来寻找，我不大会 Mathematica，就想用我熟悉的 Python 来解决，毕竟 Python 是一个很强大的东西~</p>
+<p>其实寻找的思路很简单，就是把某个汉字当作图片弄出来，让后对比两个图片的相似程度。因此做这个程序的第一步就是研究如何用 Python 处理图片和文字。Python 有一个非常著名的第三方库，名叫 Python Imaging Library，简称 PIL，就是专门用来处理图片的。</p>
+<h2>文字 to 图像</h2>
+<p>PIL 可以很轻松的将文字转换为图像，并且提供了虽然不能说是强大，但暂时够用的图像处理函数。</p>
+<p>处理文字生成的图像，显然和彩色没有太大关系，因此可以使用灰度图像节省计算需要的空间和时间。此外我们知道，文字到图像有一个中间媒介 ...</p>
+                <a class="readmore" href="../finding-higher-imitation-of-id.html">read more</a>
+                <p>There are <a href="../finding-higher-imitation-of-id.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../use-mouse-as-music-player-controller.html" rel="bookmark"
                            title="Permalink to 鼠标控制音乐播放的小程序">鼠标控制音乐播放的小程序</a></h1>
                 </header>

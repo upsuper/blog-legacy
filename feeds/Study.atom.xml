@@ -127,11 +127,11 @@
 &lt;h3&gt;稍稍绕道到代码反编译&lt;/h3&gt;
 &lt;p&gt;&lt;a href="http://docs.python.org/library/dis.html"&gt;&lt;code&gt;dis&lt;/code&gt;&lt;/a&gt; 模块可以将代码对象反汇编为人类可读的一系列字节码指令，我们可以用它来精确的观察我们的代码对象中到底有些什么：&lt;/p&gt;
 &lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;dis&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dis&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;code_obj&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-  2           0 &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;               0 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;hello, world&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-              3 &lt;span class="n"&gt;PRINT_ITEM&lt;/span&gt;          
-              4 &lt;span class="n"&gt;PRINT_NEWLINE&lt;/span&gt;       
-              5 &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;               1 &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-              8 &lt;span class="n"&gt;RETURN_VALUE&lt;/span&gt;
+  &lt;span class="mi"&gt;2&lt;/span&gt;           &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;               &lt;span class="mi"&gt;0&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="n"&gt;hello&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;world&lt;/span&gt;&lt;span class="err"&gt;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+              &lt;span class="mi"&gt;3&lt;/span&gt; &lt;span class="n"&gt;PRINT_ITEM&lt;/span&gt;          
+              &lt;span class="mi"&gt;4&lt;/span&gt; &lt;span class="n"&gt;PRINT_NEWLINE&lt;/span&gt;       
+              &lt;span class="mi"&gt;5&lt;/span&gt; &lt;span class="n"&gt;LOAD_CONST&lt;/span&gt;               &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+              &lt;span class="mi"&gt;8&lt;/span&gt; &lt;span class="n"&gt;RETURN_VALUE&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -406,8 +406,8 @@
 
 
 &lt;p&gt;结果是：&lt;/p&gt;
-&lt;div class="codehilite"&gt;&lt;pre&gt;0
-&lt;span class="p"&gt;[&lt;/span&gt;0&lt;span class="p"&gt;,&lt;/span&gt; 2&lt;span class="p"&gt;,&lt;/span&gt; 3&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -431,7 +431,7 @@
 
 
 &lt;p&gt;输出一定是：&lt;/p&gt;
-&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="p"&gt;[[&lt;/span&gt;0&lt;span class="p"&gt;,&lt;/span&gt; 2&lt;span class="p"&gt;,&lt;/span&gt; 3&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;4&lt;span class="p"&gt;,&lt;/span&gt; 5&lt;span class="p"&gt;,&lt;/span&gt; 6&lt;span class="p"&gt;]]&lt;/span&gt;
+&lt;div class="codehilite"&gt;&lt;pre&gt;&lt;span class="p"&gt;[[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;6&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 

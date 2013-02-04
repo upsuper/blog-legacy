@@ -62,16 +62,16 @@
 <p>然后是 Apache 和它的 <code>mod_perl</code>，因为之前安装了，并没有太大困难，这里也不详述了。</p>
 <p>最麻烦的问题来了，对于源里没有的 <code>Search-Xapian</code> 和 <code>CGI-Ajax</code> 怎么办呢？先把 Xapian 的主要部分给安装了吧。</p>
 <p>安装 <code>xapian</code> 和 <code>xapian-bindings</code> 这两个包。因为这两个包的最新版本对 amd64 平台都是 unstable 的，所以要在 <code>/etc/portage/package.keywords</code> 里面加入</p>
-<div class="codehilite"><pre><span class="p">=</span><span class="n">dev</span><span class="o">-</span><span class="n">libs</span><span class="o">/</span><span class="n">xapian</span><span class="o">-</span>1<span class="p">.</span>2<span class="p">.</span>7<span class="o">-</span><span class="n">r1</span> <span class="o">~</span><span class="n">amd64</span>
-<span class="p">=</span><span class="n">dev</span><span class="o">-</span><span class="n">libs</span><span class="o">/</span><span class="n">xapian</span><span class="o">-</span><span class="n">bindings</span><span class="o">-</span>1<span class="p">.</span>2<span class="p">.</span>7<span class="o">-</span><span class="n">r2</span> <span class="o">~</span><span class="n">amd64</span>
+<div class="codehilite"><pre><span class="o">=</span><span class="n">dev</span><span class="o">-</span><span class="n">libs</span><span class="o">/</span><span class="n">xapian</span><span class="o">-</span><span class="mf">1.2.7</span><span class="o">-</span><span class="n">r1</span> <span class="o">~</span><span class="n">amd64</span>
+<span class="o">=</span><span class="n">dev</span><span class="o">-</span><span class="n">libs</span><span class="o">/</span><span class="n">xapian</span><span class="o">-</span><span class="n">bindings</span><span class="o">-</span><span class="mf">1.2.7</span><span class="o">-</span><span class="n">r2</span> <span class="o">~</span><span class="n">amd64</span>
 </pre></div>
 
 
 <p>（是的，在 Gentoo 的查询系统上显示，<code>xapian</code> 的 1.2.5 是稳定版本，我也曾经试图安装那个版本，然后仅安装非稳定版的 <code>-bindings</code>，但是之后安装的 <code>Search-Xapian</code> 还是会要求新的 1.2.7，所以就这样吧。另外一般状况下，最前面是写 <code>&gt;=</code> 的，但是我出于个人喜好和完美主义，写了 <code>=</code>。）接下去直接安装这两个包即可。记得检查已经在 <code>USE</code> 里面加入了 <code>perl</code>。</p>
 <p>接下去安装那两个包。</p>
 <p>Gentoo 有个很神奇的工具，也是我这次才发现的，叫做 <code>g-cpan</code>，可以把 CPAN 上面的包自动打包安装为 <code>portage</code> 的包。不过如果是第一次使用必须要先配置一下，在 <code>/etc/make.conf</code> 最后加上</p>
-<div class="codehilite"><pre><span class="n">ACCEPT_KEYWORDS</span><span class="p">=</span>&quot;<span class="n">amd64</span>&quot;
-<span class="n">PORTDIR_OVERLAY</span><span class="p">=</span>&quot;<span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">portage</span>&quot;
+<div class="codehilite"><pre><span class="n">ACCEPT_KEYWORDS</span><span class="o">=</span><span class="s">&quot;amd64&quot;</span>
+<span class="n">PORTDIR_OVERLAY</span><span class="o">=</span><span class="s">&quot;/usr/local/portage&quot;</span>
 </pre></div>
 
 

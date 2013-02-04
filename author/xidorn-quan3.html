@@ -37,6 +37,144 @@
                     <ol id="posts-list" class="hfeed" start="9">
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../simple-script-for-using-vc6-compiler.html" rel="bookmark"
+                           title="Permalink to 方便使用 VC6 编译器的小脚本">方便使用 VC6 编译器的小脚本</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2009-12-30T18:46:00">
+                2009&#24180;12&#26376;30&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/c.html">C</a><a href="../tag/sh.html">sh</a><a href="../tag/wine.html">wine</a></p>
+</footer><!-- /.post-info -->                <p>因为一些原因，有时候不得不在 Linux 下使用 VC6 编译器。（比如学校的作业要求能在 VC6 下编译通过之类的要求）之前的用法太麻烦了，要把待编译的文件复制到 VC6 的安装目录，还要写很长的一串东西。要是能像调用 GCC 那么方便就好了~</p>
+<p>于是就有了下面这个小脚本：</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+<span class="c"># - * - coding: UTF-8 - * -</span>
+
+<span class="nv">VC6_DIR</span><span class="o">=</span><span class="s2">&quot;这里写上VC6的安装地址&quot;</span>
+
+<span class="nv">BIN</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Bin&quot;</span>
+<span class="nb">export </span><span class="nv">INCLUDE</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Include&quot;</span>
+<span class="nb">export </span><span class="nv">LIB</span><span class="o">=</span><span class="s2">&quot;$VC6_DIR/VC98/Lib&quot;</span>
+
+<span class="nv">ARGS</span><span class="o">=</span>
+
+<span class="k">while </span><span class="nb">getopts</span> <span class="s2">&quot;o:c&quot;</span> optname
+<span class="k">do</span>
+<span class="k">  case</span> <span class="s2">&quot;$optname&quot;</span> in
+  <span class="s2">&quot;o&quot;</span><span class="o">)</span>
+    <span class="nv">ARGS ...</span></pre></div>
+                <a class="readmore" href="../simple-script-for-using-vc6-compiler.html">read more</a>
+                <p>There are <a href="../simple-script-for-using-vc6-compiler.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../static-modification-of-python-with-python-the-ast-module.html" rel="bookmark"
+                           title="Permalink to [翻译] AST 模块：用 Python 修改 Python 代码">[翻译] AST 模块：用 Python 修改 Python 代码</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2012-03-03T16:47:00">
+                2012&#24180;03&#26376;03&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://blueprintforge.com/blog/2012/02/27/static-modification-of-python-with-python-the-ast-module/">Static Modification of Python With Python: The AST Module</a></p>
+<p>修改代码在有时会变的十分有用，比如在进行测试和分析的时候。在这篇文章中，我们将看到如何使用 <code>ast</code> 模块对 Python 代码进行修改，同时还将看到一些使用了这个技术的工具。</p>
+<h2>CPython 的编译过程</h2>
+<div style="float: left; margin-right: 20px;"><img src="../static/images/pep339.png" /></div>
+
+<p>在开始之前，我们应该先看看 CPython 的编译过程，这个过程在 <a href="http://www.python.org/dev/peps/pep-0339/">PEP 339</a> 中有详细的描述。</p>
+<p>当然，在读这篇文章的时候，你并不需要对这个步骤有很深入的理解，不过这可以帮助你对整个过程有一个大体的了解。</p>
+<p>首先，编译器会根据源代码生成一棵语法分析树 (Parse Tree)，随后，再根据语法分析树建立抽象语法树 (AST, Abstract Syntax Tree)。从 AST 中可以生成出控制流图 (CFG, Control Flow Graph ...</p>
+                <a class="readmore" href="../static-modification-of-python-with-python-the-ast-module.html">read more</a>
+                <p>There are <a href="../static-modification-of-python-with-python-the-ast-module.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../two-scripts-for-fanfou.html" rel="bookmark"
+                           title="Permalink to 关于饭否的两个小脚本">关于饭否的两个小脚本</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-02-02T12:06:00">
+                2011&#24180;02&#26376;02&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/script.html">Script</a>. </p>
+<p>tags: <a href="../tag/fanfou.html">Fanfou</a><a href="../tag/python.html">Python</a></p>
+</footer><!-- /.post-info -->                <p>前几天因为某些原因，我把饭否上所有的好友和关注者全部清空了。当然，如果没有程序的帮忙，估计还不等我删完我也就后悔了。</p>
+<p>我没有那么狠心的把饭否的消息给清空，因为消息是不可恢复的（而且也太多了），但好友和关注者是可以的。做事情都给自己留后路显然是我一贯的风格，不然的话，我大概早从我家阳台跳下去了……</p>
+<p>两段脚本都不长，第一段是备份饭否的好友列表和关注者列表的，做的毫无泛用性，因为 bash 编程我并不很熟，只知道可以用 <code>wget</code> 来抓取。本来这种事情其实可以直接用 API 抓的，不过我想抓下我能直接看的东西，所以最终还是导出了 Cookie 抓网页。</p>
+<p>第一段代码如下：</p>
+<div class="codehilite"><pre><span class="c">#!/bin/bash</span>
+
+mkdir friends
+<span class="k">for </span>i in <span class="o">{</span>1..11<span class="o">}</span>
+<span class="k">do</span>
+<span class="k">    </span>wget -k -e <span class="nv">robots</span><span class="o">=</span>off --load-cookies cookies.txt -P friends/ <span class="se">\</span>
+        http ...</pre></div>
+                <a class="readmore" href="../two-scripts-for-fanfou.html">read more</a>
+                <p>There are <a href="../two-scripts-for-fanfou.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../usb-key-for-linux.html" rel="bookmark"
+                           title="Permalink to 为 Linux 做一把 USB “钥匙”">为 Linux 做一把 USB “钥匙”</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2011-01-14T20:25:00">
+                2011&#24180;01&#26376;14&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a><a href="../tag/security.html">Security</a></p>
+</footer><!-- /.post-info -->                <p>我曾经很早以前就在想，能不能将U盘作为登入我系统的验证机制。当时的想法是，这样比较有趣~不过后来发现另外一个重要的用途就是，防止在众目睽睽之下输入密码……</p>
+<p>这个<a href="https://groups.google.com/group/shlug/browse_thread/thread/d507a796d11df859/15b0bce269c51f7f">问题提出</a>后，邮件列表里很快就有人告诉我，Linux 已经有一个现成的机制了，这就是 pam_usb。不过我在网上搜了半晌都没搜到相关的中文资料，前几天弄成了，就写出来供大家参考~</p>
+<p>其实来说，是很简单的。首先，当然，要准备一个U盘~（废话），然后安装 pam_usb。在 Ubuntu 下的话，源里就有，可以输入命令</p>
+<div class="codehilite"><pre>sudo apt-get install pamusb-tools
+</pre></div>
+
+
+<p>直接安装。当然如果你连终端也懒得打开，可以直接点击这里：<a href="apt:pamusb-tools">安装 pamusb-tools</a>。当然，在后面的步骤中你终归还是要打开终端的，所以还是先开了吧~这个东西目前暂时还没什么图形界面的样子（当然做一个相信也不难）。</p>
+<p>另外，Fedora 源里有 pam_usb 包，Arch ...</p>
+                <a class="readmore" href="../usb-key-for-linux.html">read more</a>
+                <p>There are <a href="../usb-key-for-linux.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../use-mouse-as-music-player-controller.html" rel="bookmark"
                            title="Permalink to 鼠标控制音乐播放的小程序">鼠标控制音乐播放的小程序</a></h1>
                 </header>

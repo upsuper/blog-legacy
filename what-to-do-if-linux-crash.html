@@ -54,12 +54,12 @@
 <p>除了上面这种情况外，一些底层软件的 bug 也可能导致一些奇怪的死机问题。我某位同学近日就因为莫名其妙的死机强制重启把 ext4 的分区给伤了。（最后是 sysreccd 修复了，貌似是分区表部分损坏）据其说，死机是键鼠均无反应。一般来说，系统负载高导致的死机，在可怕键盘也会有反应，有人说如果死机到键盘无响应“负载都无限大了”，亦有人说这可能是 X Server 与驱动配合有问题导致的。不过我们考虑一下遇到这种情况怎么办？</p>
 <p>OK，这是今天才学到的方法，叫做 reisub，这个方法可以在各种情况下安全地重启计算机。大家在键盘上找，可以找到一个叫做“Sys Rq”的键，在台机的键盘上通常与 Prt Sc 共键，在笔记本可能在其他位置，如 Delete。以台机为例，要使用这种方法需要按住 Alt-Print(Sys Rq)，然后依次按下 reisub 这几个键，按完 b 系统就会重启。</p>
 <p>下面解释一下这个方法：其实 Sys Rq 是一种叫做系统请求的东西，按住 Alt-Print 的时候就相当于按住了 Sys Rq 键，这个时候输入的一切都会直接由 Linux 内核来处理，它可以进行许多低级操作。这个时候 reisub 中的每一个字母都是一个独立操作，他们分别表示：</p>
-<div class="codehilite"><pre><span class="n">unRaw</span>      将键盘控制从 <span class="n">X</span> <span class="n">Server</span> 那里抢回来
- <span class="n">tErminate</span> 给所有进程发送 <span class="n">SIGTERM</span> 信号，让他们自己解决善后
- <span class="n">kIll</span>      给所有进程发送 <span class="n">SIGKILL</span> 信号，强制他们马上关闭
-  <span class="n">Sync</span>     将所有数据同步至磁盘
-  <span class="n">Unmount</span>  将所有分区挂载为只读模式
-<span class="n">reBoot</span>     重启
+<div class="codehilite"><pre><span class="n">unRaw</span>      <span class="err">将键盘控制从</span> <span class="n">X</span> <span class="n">Server</span> <span class="err">那里抢回来</span>
+ <span class="n">tErminate</span> <span class="err">给所有进程发送</span> <span class="n">SIGTERM</span> <span class="err">信号，让他们自己解决善后</span>
+ <span class="n">kIll</span>      <span class="err">给所有进程发送</span> <span class="n">SIGKILL</span> <span class="err">信号，强制他们马上关闭</span>
+  <span class="n">Sync</span>     <span class="err">将所有数据同步至磁盘</span>
+  <span class="n">Unmount</span>  <span class="err">将所有分区挂载为只读模式</span>
+<span class="n">reBoot</span>     <span class="err">重启</span>
 </pre></div>
 
 
