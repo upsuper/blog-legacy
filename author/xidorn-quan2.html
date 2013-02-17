@@ -54,7 +54,7 @@
 <p>tags: <a href="../tag/security.html">Security</a></p>
 </footer><!-- /.post-info -->                <p>一直以来都觉得用 HTTPS 的话，所有传输的信息都是密文传输的。正是因为如此，用 hosts 配合 HTTPS 来绕过墙访问一些敏感网站一直是一种看过去天衣无缝的完美方法：所有的程序都不需要修改，不需要知道如何使用代理，只要照常使用就可以了。唯一的缺陷是，hosts 的地址可能不时会失效，需要更换。而这唯一的缺陷，还可以用私设反向代理来解决。完美，毫无破绽。</p>
 <h2>提问</h2>
-<p>可当我对安全协议有一些了解之后，发现这件事情并没有那么简单。HTTPS 只是简单地将 HTTP 协议包裹进了 SSL/TLS，作为它们的应用数据。而 SSL/TLS 的协议流程，简单地来说可以分为握手和交换数据两大部分。而 HTTP 的数据，作为应用数据，显然是在传输阶段进行传送的，换句话说，握手这件事情，应该跟 HTTP 协议里的东西没有半毛钱关系。毕竟，握手的大多数内容都可以被认为是明文进行的嘛，如果握手的内容里有 HTTP ...</p>
+<p>可当我对安全协议有一些了解之后，发现这件事情并没有那么简单。HTTPS 只是简单地将 HTTP 协议包裹进了 SSL/TLS，作为它们的应用数据。而 SSL/TLS 的协议流程，简单地来说可以分为握手和交换数据两大部分。而 HTTP 的数据，作为应用数据，显然是在交换数据阶段进行传送的，换句话说，握手这件事情，应该跟 HTTP 协议里的东西没有半毛钱关系。毕竟，握手的大多数内容都可以被认为是明文进行的嘛，如果握手的内容里有 HTTP ...</p>
                 <a class="readmore" href="../https-and-server-name.html">read more</a>
                 <p>There are <a href="../https-and-server-name.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
@@ -150,6 +150,35 @@
 <p>关于这个博客本身，目前是准备使用 ...</p>
                 <a class="readmore" href="../new-blog-in-github.html">read more</a>
                 <p>There are <a href="../new-blog-in-github.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../new-homepage-2013.html" rel="bookmark"
+                           title="Permalink to 2013年新首页">2013年新首页</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2013-02-17T19:28:00">
+                2013&#24180;02&#26376;17&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/blog.html">Blog</a>. </p>
+<p>tags: <a href="../tag/homepage.html">Homepage</a><a href="../tag/html.html">HTML</a><a href="../tag/css.html">CSS</a><a href="../tag/svg.html">SVG</a></p>
+</footer><!-- /.post-info -->                <p>由于之前跟其他人一起合租的一个虚拟主机空间很快就要到期了，而我的域名 upsuper.org 一直停靠在那上面，没有迁移到自己后来买的 VPS 上，于是今天决定把域名指过去。之前已经花了一番功夫把博客里面的大把文章转移到了这个 GitHub 上面的新博客里，剩下的主要就是首页了。</p>
+<p>当年做的首页很久没有维护了，有一些链接甚至应该已经是死链了。而现在感觉能放上去的链接实在太少了，不好保留原来的样式，所以就新做了一个。既然重新做，这自然又是练手的好时机，一面看看自己（自我感觉良好）的设计，一面学习学习那些新的技术。</p>
+<p>之前在做 <a href="https://github.com/upsuper/white">white</a> 这个应用的时候，就研究过 CSS3 里许多有趣的东西，其中不少就被我用在了这次做新首页上。</p>
+<h2>设计</h2>
+<p>参考了 <a href="http://reeoo.com/">Reeoo</a> 网站里面的一些设计之后，脑中大概形成了新首页的设计：中间照旧地放上标志性的 Logo，旁边将链接围成一圈，然后绕着中心旋转；作为平衡，在链接圈外加一圈逆向旋转的虚线；鼠标放到链接上时停止旋转，并且呈现某种与所指链接有关的效果。</p>
+<p>以最近所活跃的网站作为链接选择的标准，最后选择了<a href="http://upsuper.github.com/blog/">这个博客</a>、<a href="https://twitter.com/upsuperx">Twitter 页面</a>、<a href="https://github.com/upsuper">GitHub ...</a></p>
+                <a class="readmore" href="../new-homepage-2013.html">read more</a>
+                <p>There are <a href="../new-homepage-2013.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             
 
@@ -301,32 +330,6 @@
 <span class="nt">&lt;html</span> <span class="na">xmlns=</span><span class="s">&quot;http://www.w3.org/1999 ...</span></pre></div>
                 <a class="readmore" href="../replacing-css-via-jquery.html">read more</a>
                 <p>There are <a href="../replacing-css-via-jquery.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../setup-lxr.html" rel="bookmark"
-                           title="Permalink to 安装配置 LXR">安装配置 LXR</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2011-10-03T15:07:00">
-                2011&#24180;10&#26376;03&#26085;
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/technique.html">Technique</a>. </p>
-<p>tags: <a href="../tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info -->                <p>专业课学习操作系统，满心欢喜地以为可以是 Linux 代码导读，结果选用了一本八十年代的教材，介绍 UNIX v6 的。于是自己从图书馆借来了内核开发的入门读物《Linux 内核设计与实现》。既然是介绍内核的书，自然少不了代码，但是书中又不可能将每个提到的代码的相关信息全部写出来，这时就得自己去查看代码。查看代码的话，虽然 Linux 的代码可以很容易地得到，但那来看终归有些麻烦，各种调用需要查找半天。于是想起了很有名的一个网站 <a href="http://lxr.linux.no">LXR</a>，Linux 交叉引用。这个网站好是好，就是网络原因速度太慢，于是就想自己装一个。</p>
-<p>先说一句，下面的安装环境都是64位 Gentoo。</p>
-<p>最开始找到了 <a href="http://sourceforge.net/projects/lxr/">LXR Cross Referencer</a> 这个项目，一看最后更新时间还挺新，看起来是一直都还在维护的。然后在 Gentoo 的网站上查到 LXR 是可以直接用 portage 安装的，于是安装，安装相关的包，最后放弃了。出于什么原因我也不记得了 ...</p>
-                <a class="readmore" href="../setup-lxr.html">read more</a>
-                <p>There are <a href="../setup-lxr.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">
