@@ -150,6 +150,42 @@
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../imperfect-solution-for-chinese-filename-in-zip.html" rel="bookmark"
+                           title="Permalink to 半完美解决 zip 文件中中文文件名乱码的问题">半完美解决 zip 文件中中文文件名乱码的问题</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-05-10T22:33:00">
+                2010&#24180;05&#26376;10&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/linux.html">Linux</a><a href="../tag/zip.html">ZIP</a><a href="../tag/encoding.html">Encoding</a></p>
+</footer><!-- /.post-info -->                <p>前一段由于收了某个 <code>zip</code> 文件，用 Ubuntu 自带的归档管理器打开，哎呦，那真不是一般的蛋疼……因为里面全是中文文件名，那个乱码啊……</p>
+<p>于是我就下决心要解决这个问题。</p>
+<p>虽然我的系统还在 9.10，但看到网上一篇文章教人如何在 10.04 中解决这个问题，我就了解了，这个问题至今没有解决。那么什么叫做“半完美”呢？大概意思就是说，对我来说差不多完美了，不过还是很可能出问题的……</p>
+<h2>命令行方法</h2>
+<p>一般的方法是利用命令行的方式：</p>
+<div class="codehilite"><pre><span class="nv">LANG</span><span class="o">=</span>C 7z x xxxx.zip
+convmv -f gbk -t utf8 *
+</pre></div>
+
+
+<p>用这个方法，我就写了一个 <code>unzip</code> 的小脚本：</p>
+<div class="codehilite"><pre><span class="c">#! /bin/sh</span>
+<span class="nv">LANG</span><span class="o">=</span>C /usr/lib/p7zip ...</pre></div>
+                <a class="readmore" href="../imperfect-solution-for-chinese-filename-in-zip.html">read more</a>
+                <p>There are <a href="../imperfect-solution-for-chinese-filename-in-zip.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../automatically-run-top-in-tty.html" rel="bookmark"
                            title="Permalink to 在 tty 里添加一个开机自启动的任务管理器">在 tty 里添加一个开机自启动的任务管理器</a></h1>
                 </header>
