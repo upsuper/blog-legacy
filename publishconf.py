@@ -10,7 +10,7 @@ SITEURL = 'http://upsuper.github.com/blog'
 DELETE_OUTPUT_DIRECTORY = True
 
 DISQUS_SITENAME = 'upsuper-github'
-GOOGLE_ANALYTICS = 'UA-37354064-1'
+GOOGLE_ANALYTICS = 'UA-4908719-6'
 
 FILES_TO_COPY = [('CNAME', 'CNAME')]
 
