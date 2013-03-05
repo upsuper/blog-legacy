@@ -12,6 +12,8 @@ DELETE_OUTPUT_DIRECTORY = True
 DISQUS_SITENAME = 'upsuper-github'
 GOOGLE_ANALYTICS = 'UA-37354064-1'
 
+FILES_TO_COPY = [('CNAME', 'CNAME')]
+
 # Following items are often useful when publishing
 
 # Uncomment following line for absolute URLs in production:
