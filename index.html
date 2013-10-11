@@ -34,8 +34,65 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="./new-homepage-2013.html">2013年新首页</a></h1> 
+                    <h1 class="entry-title"><a href="./mask-part-of-file-in-git.html">在 Git 中隐藏文件里的部分内容</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2013-10-11T15:44:00">
+                2013&#24180;10&#26376;11&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="./category/technique.html">Technique</a>. </p>
+<p>tags: <a href="./tag/git.html">Git</a></p>
+</footer><!-- /.post-info --><p>我们都知道，在 Git 里面，可以通过 <code>.gitignore</code> 或者 <code>.git/info/exclude</code> 来指定一些不希望被 Git 跟踪的文件。但是有的时候，我们只希望一个文件中的一部分内容不被跟踪，这样的内容可能是密码这类不希望被其他人知道的信息，也可能是一些临时性的调试语句，只是自己看看，不想让它进入源中。</p>
+<p>往常来说，因为无法指定让 Git 不跟踪这些内容，就不得不在添加修改的时候用 <code>git add -p</code> 仔细剔除它们，不仅十分麻烦，而且在没有其他修改的时候仍然会看到本地工作目录存在修改，很是不爽。我就想，既然 git 如此强大，这件事情应该也是可以做到的吧？答案当然是肯定的。</p>
+<p>简单地来说，方法是利用 git 的 filter 功能，这个功能支持在 checkout 之后更新工作目录时对文件进行修改，也支持 checkin 经过过滤器修改的文件内容（而不是工作目录中的文件本身）。而后面那个，正可以实现我所需要的功能。</p>
+<p>在这里举一个简单的例子来说明这个方法。如果我有一个 <code>config</code> 文件，其中有一行 <code>key = "123456"</code>，我希望其中的密钥不要被跟踪，但是保留这个文件的其他内容，那么执行下面的命令就可以了：</p>
+<div class="codehilite"><pre>git config filter.remove_pw.clean <span class="s2">&quot;sed &#39;s/^key *= *\&quot;.*\&quot;/key = \&quot;\&quot;/&#39;&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;config filter=remove_pw&quot;</span> &gt;&gt; .git/info/attributes
+</pre></div>
+
+
+<p>这里稍微解释一下，第一个命令向 <code>.git/config</code> 添加了一个名叫 <code>remove_pw</code> 的 filter，其中 <code>remove_pw</code> 这个名字可以任意指定。后面跟的 <code>sed</code> 命令的作用就是清理掉文件中的密钥部分。第二个命令则向 <code>.git/info/attributes</code> 添加了一条规则，即对 <code>config</code> 文件应用刚才添加的那个 filter。</p>
+<p>知道了原理一切就很简单了，如果我们不希望被跟踪的不是一行密钥，而是一段调试代码，我们可以在这个代码的两端加上标识，比如说这样：</p>
+<div class="codehilite"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#define N 10</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">f</span><span class="p">[</span><span class="n">N</span><span class="p">];</span>
+    <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">];</span>
+    <span class="cm">/* IGNORE */</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d: %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="cm">/* END */</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>然后将上面的 filter 后面的命令修改为 <code>awk '/\/\* IGNORE \*\// {f=1} f!=1 {print} /\/\* END \*\// {f=0}'</code>，最后在 <code>attributes</code> 里面将它应用到 <code>*.c</code> 文件，这样就大功告成了~</p>
+<p>可以看到，Git 的 filter 功能还是相当强大的。在 Git 文档的示例里面还介绍了一个例子使用 filter 功能来加密解密文件呢。具体可以参考 <a href="https://www.kernel.org/pub/software/scm/git/docs/gitattributes.html#_tt_filter_tt">gitattributes 的文档中 filter 小节</a>。</p><p>There are <a href="./mask-part-of-file-in-git.html#disqus_thread">comments</a>.</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="./new-homepage-2013.html" rel="bookmark"
+                           title="Permalink to 2013年新首页">2013年新首页</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2013-02-17T19:28:00">
                 2013&#24180;02&#26376;17&#26085;
         </abbr>
@@ -45,52 +102,16 @@
         </address>
         <p>In <a href="./category/blog.html">Blog</a>. </p>
 <p>tags: <a href="./tag/homepage.html">Homepage</a><a href="./tag/html.html">HTML</a><a href="./tag/css.html">CSS</a><a href="./tag/svg.html">SVG</a></p>
-</footer><!-- /.post-info --><p>由于之前跟其他人一起合租的一个虚拟主机空间很快就要到期了，而我的域名 upsuper.org 一直停靠在那上面，没有迁移到自己后来买的 VPS 上，于是今天决定把域名指过去。之前已经花了一番功夫把博客里面的大把文章转移到了这个 GitHub 上面的新博客里，剩下的主要就是首页了。</p>
+</footer><!-- /.post-info -->                <p>由于之前跟其他人一起合租的一个虚拟主机空间很快就要到期了，而我的域名 upsuper.org 一直停靠在那上面，没有迁移到自己后来买的 VPS 上，于是今天决定把域名指过去。之前已经花了一番功夫把博客里面的大把文章转移到了这个 GitHub 上面的新博客里，剩下的主要就是首页了。</p>
 <p>当年做的首页很久没有维护了，有一些链接甚至应该已经是死链了。而现在感觉能放上去的链接实在太少了，不好保留原来的样式，所以就新做了一个。既然重新做，这自然又是练手的好时机，一面看看自己（自我感觉良好）的设计，一面学习学习那些新的技术。</p>
 <p>之前在做 <a href="https://github.com/upsuper/white">white</a> 这个应用的时候，就研究过 CSS3 里许多有趣的东西，其中不少就被我用在了这次做新首页上。</p>
 <h2>设计</h2>
 <p>参考了 <a href="http://reeoo.com/">Reeoo</a> 网站里面的一些设计之后，脑中大概形成了新首页的设计：中间照旧地放上标志性的 Logo，旁边将链接围成一圈，然后绕着中心旋转；作为平衡，在链接圈外加一圈逆向旋转的虚线；鼠标放到链接上时停止旋转，并且呈现某种与所指链接有关的效果。</p>
-<p>以最近所活跃的网站作为链接选择的标准，最后选择了<a href="http://upsuper.github.com/blog/">这个博客</a>、<a href="https://twitter.com/upsuperx">Twitter 页面</a>、<a href="https://github.com/upsuper">GitHub 页面</a>、<a href="http://bangumi.tv/user/upsuper">Bangumi 页面</a>和我的 Gmail 地址作为链接。一开始的想法是在鼠标悬停到链接上时将中间的 Logo 换成对应网站的 Logo，但是考察了一圈这几个网站的图片，感觉风格差异太大，放在一起好像很不好看。而且我也不会画画，没法把它们统一风格，于是就作罢了。</p>
-<p>因为不怎么会使用那些画图软件，所以干脆就直接用纸笔来画效果图，在脑子里想象成品应该长的样子。当然我在纸上画画的功力也不怎么样，连一个圆都画不圆，也只是勉强能作为参考的水准。</p>
-<h2>实现</h2>
-<p>因为想到 CSS3 应该已经相当强力了，所以一开始是想完全使用 CSS3 来实现的，想着图形只要用 <code>transform</code> 变换一下都可以实现，圆形就用 <code>border-radius</code> 画，旋转动画只要用 <code>animation</code> 就可以了，这样除了中心的 Logo 以外，便一张图片都不需要了。当然，这种想法是美好的，可惜现实是残酷的：即使是 CSS3 也远没有到我曾经设想的想实现什么就能实现什么的水平，而且浏览器实现还有各种这样那样的问题……</p>
-<h3>扇形链接 问题一</h3>
-<p>第一个遇到的阻碍便是周围绕转的扇形链接，最初的想法如上面说，是希望使用 <code>transform</code> 这个属性的 <code>matrix</code> 函数来做任意变换。我总是想着，都能上矩阵了，应该是没什么做不到的吧。在这上面花了不少时间研究，想计算出一个矩阵。最后突然想到，矩阵变换根本不能做非线性运算，也就是说根本不可能把一个矩形变成扇形，遂放弃这种方法。</p>
-<p>虽然放弃用纯 CSS 了，但是不想放弃这个设计，所以就考虑了别的方法。第一个想到的就是 SVG 了，因为 SVG 可以直接内嵌在 HTML 里面，想过去真是方便。但是潜在 HTML 里面的话，又会影响 HTML 的“文档性”，感觉不爽。因此就采用了现在的方法，使用独立的 SVG 图片在 CSS 里面引用其为背景。这种做法也算是一个折中，因为 SVG 也是代码编写的，所以某种意义上也算是没有增加图片的数量吧。</p>
-<h3>扇形链接 问题二</h3>
-<p>这个问题虽然用 SVG 在视觉效果上轻松解决了，但是随之也带来了另一个问题：如何让链接覆盖整个扇形区域呢？如果链接是一块区域的话自然比但只有文字部分更方便点击，但是如果使用普通的矩形块来覆盖的话，相邻的扇形就会有链接重叠的部分，点击的时候就可能进入到预期外的页面，无论如何这样都是非常糟糕的。这个时候又想到了 <code>transform</code>。</p>
-<div style="float: right;"><img src="./static/images/new-homepage-2013-a.png" /></div>
-
-<p>这个 <code>transform</code> 虽然不能把矩形变成扇形，但变成梯形总是可以的吧？因为视觉形状已经由 SVG 图片代劳了，实际链接的有效区域只要保证覆盖必要的区域并且不会相互覆盖即可，多覆盖一些是无所谓的~于是变成梯形，让梯形斜边与扇形两边重合，梯形下底与扇形大弧相切，上底连接小弧两端点即可。</p>
-<p>查了一番资料，一个坏消息和一个好消息。坏消息是，单纯的 2D 变换连梯形都做不出来，好消息是我们还有 3D 变换。结合了 <code>perspective</code> 和 <code>transform</code> 两个属性，调了很久终于调成功了。5个连接的实际范围如右图红色部分所示。因为多出来的部分没有相互重合，所以关系不是很大，总之这样在绝大多数情况下对链接的预期和实际情况是相符的。</p>
-<h3>扇形链接 更多问题</h3>
-<p>但是这么做了之后，再次引出一个新的问题 (orz 就这个东西问题真多)：因为链接被变形了，链接里面的文字也扭曲得没法看了。本来试图用 CSS 变换回来，可试来试去效果都不好，最后决定用 JavaScript 将文字提取出来放到链接外面，单独对其设置样式。这样就既保证了 HTML 的文档性，又方便了实现。</p>
-<p>在测试 Chrome 下的情况的时候，出现了一个新的问题是在扇形区域的一些部分，链接是无法点击的。经过研究发现是链接的形状仍为矩形的父元素遮蔽了一部分其他链接的区域。这个解决起来就轻车熟路了，直接将父元素的 <code>pointer-events</code> 设置为 <code>none</code>，并将链接的这个属性设置为 <code>auto</code> 就可以了。这种做法带来的唯一的麻烦是你就通不过 <a href="http://jigsaw.w3.org/css-validator/">W3C 的 CSS 验证</a>了，不过无所谓啦这个。</p>
-<h3>虚线外框</h3>
-<p>另一个问题就是外圈反向旋转的虚线，本以为直接使用 <code>border</code> 的 <code>dashed</code> 做虚线边框，然后 <code>border-radius</code> 把它弄成圆的就可以了。这种方法在 Chrome 上是可行的，但是到了 Firefox 上就行不通了：整个圆竟然变成了实线。我在 Mozilla 的 Bugzilla 上面还找到了这个问题相关的 Bug 两枚：<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=382721">Bug 382721</a>、<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=652650">Bug 652650</a>，看起来也是老问题了，至今没有解决呢。最后无奈，虚线边框也使用 SVG 解决了。</p>
-<h3>旋转与悬浮效果</h3>
-<p>至于旋转并没有花什么力气倒是顺利解决了，毕竟这个就是 CSS3 的主打功能之一。CSS3 的动画用起来还是很方便的，唯一的问题是 WebKit 内核的浏览器还必须使用 <code>-webkit-</code> 前缀的东西才行。在悬停的时候，使用 <code>animation-play-state: paused</code> 就可以暂停，一行 JavaScript 都不需要。</p>
-<p>因为放弃了在中间显示图标的设计，最后决定改变背景色。在鼠标悬浮在某个连接时，使用这个网站的印象色作为页面背景色，并且使用 <code>trasition</code> 来做渐变。为了方便编写，我直接把每个链接对应的色彩写在 <code>dataset</code> 里。这也算是很轻松地实现了，只是选色选了一会儿。直接截取网站的主要印象色太过于鲜亮了，完全不适合作为背景色，最后还是到维基百科的 <a href="http://en.wikipedia.org/wiki/Web_Colors">Web colors</a> 这个条目里挑选了几个淡一些的颜色。</p>
-<h3>关于兼容性</h3>
-<p>因为知道这次用了很多很新的东西，所以彻底放弃对 IE 的支持了，甚至于连要求升级的页面都懒得做了。不过即使是 Firefox 和 Chrome 对我所用的这些特性也仍然达不到完美的程度。属性需要前缀这种事情都已经没什么好说的了。</p>
-<div style="float: right;"><img src="./static/images/new-homepage-2013-b.png" /></div>
-
-<p>Chrome 里面最让我不满意的一个地方：有问题的 <code>border-radius</code> 实现。说实话这个东西的问题还真是不少，Firefox 下有虚线变实线的问题，Chrome 下也有 Chrome 的问题，这个问题就是 <code>border-radius</code> 的边缘不符合预期。为了限制链接不泄露到圆外，同时使得鼠标不在圆内时不会导致旋转暂停，我在整个圆的容器上加上了 <code>border-radius</code> 把它变成圆形，并且使用 <code>overflow: hidden</code> 防止任何内部元素泄漏到圆外。这种想法想必是很有意义的，不过能不能实现嘛……</p>
-<p>如右图，左边的是 Firefox 中经过上面处理后的5个链接的有效区域，右边是 Chrome 的。Firefox 在这里很完美地达成了我们的愿望，可是 Chrome 呢……看过去似乎也很努力地想要去实现了，只可惜看起来跟狗啃的一样，和我们的期待相去甚远……本来还想使用中心的 Logo 来屏蔽泄漏到中间部分的链接区域，也因为同样的原因在 Chrome 下无法使用而作罢了。</p>
-<h2>总结</h2>
-<p>总体来说，这真是一篇又臭又长的文章，不过里面用到的一些技巧自认为还蛮有意思的。写出来一方面作为一个记录，另一方面也找点东西填充一下久不更新的博客，毕竟不能每次都开一个新博客然后就没下文了嘛。</p>
-<p>把首页搞定之后，接下来也就是好好琢磨一下怎么整一整这个博客的主题了。之前在 GitHub 上看 <a href="https://github.com/getpelican/pelican-themes/">Pelican 官方收集的主题</a>，觉得能看的都没几个，更别说满意的了，果然技术宅们都不怎么擅长设计呢。相比起来，我大概还算不错的了吧？</p>
-<h2>参考资料</h2>
-<ul>
-<li>Mozilla Developer Network: <a href="https://developer.mozilla.org/en-US/docs/CSS">CSS</a>, <a href="https://developer.mozilla.org/en-US/docs/SVG">SVG</a></li>
-<li><a href="http://www.useragentman.com/blog/2011/01/07/css3-matrix-transform-for-the-mathematically-challenged/">The CSS3 matrix() Transform for the Mathematically Challenged</a></li>
-</ul><p>There are <a href="./new-homepage-2013.html#disqus_thread">comments</a>.</p>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<p>以最近所活跃的网站作为链接选择的标准，最后选择了<a href="http://upsuper.github.com/blog/">这个博客</a>、<a href="https://twitter.com/upsuperx">Twitter 页面</a>、<a href="https://github.com/upsuper">GitHub ...</a></p>
+                <a class="readmore" href="./new-homepage-2013.html">read more</a>
+                <p>There are <a href="./new-homepage-2013.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    
@@ -315,32 +336,6 @@
 <p>因为我只要在单核和多核之间切换 ...</p>
                 <a class="readmore" href="./dynamic-modify-cpu-number.html">read more</a>
                 <p>There are <a href="./dynamic-modify-cpu-number.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="./setup-lxr.html" rel="bookmark"
-                           title="Permalink to 安装配置 LXR">安装配置 LXR</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2011-10-03T15:07:00">
-                2011&#24180;10&#26376;03&#26085;
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="./author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="./category/technique.html">Technique</a>. </p>
-<p>tags: <a href="./tag/linux.html">Linux</a></p>
-</footer><!-- /.post-info -->                <p>专业课学习操作系统，满心欢喜地以为可以是 Linux 代码导读，结果选用了一本八十年代的教材，介绍 UNIX v6 的。于是自己从图书馆借来了内核开发的入门读物《Linux 内核设计与实现》。既然是介绍内核的书，自然少不了代码，但是书中又不可能将每个提到的代码的相关信息全部写出来，这时就得自己去查看代码。查看代码的话，虽然 Linux 的代码可以很容易地得到，但那来看终归有些麻烦，各种调用需要查找半天。于是想起了很有名的一个网站 <a href="http://lxr.linux.no">LXR</a>，Linux 交叉引用。这个网站好是好，就是网络原因速度太慢，于是就想自己装一个。</p>
-<p>先说一句，下面的安装环境都是64位 Gentoo。</p>
-<p>最开始找到了 <a href="http://sourceforge.net/projects/lxr/">LXR Cross Referencer</a> 这个项目，一看最后更新时间还挺新，看起来是一直都还在维护的。然后在 Gentoo 的网站上查到 LXR 是可以直接用 portage 安装的，于是安装，安装相关的包，最后放弃了。出于什么原因我也不记得了 ...</p>
-                <a class="readmore" href="./setup-lxr.html">read more</a>
-                <p>There are <a href="./setup-lxr.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">

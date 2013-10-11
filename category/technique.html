@@ -34,8 +34,65 @@
 
                             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="../implementing-a-generator-yield-in-a-python-c-extension.html">[翻译] 使用 Python C 扩展实现生成器/yield</a></h1> 
+                    <h1 class="entry-title"><a href="../mask-part-of-file-in-git.html">在 Git 中隐藏文件里的部分内容</a></h1> 
                     <footer class="post-info">
+        <abbr class="published" title="2013-10-11T15:44:00">
+                2013&#24180;10&#26376;11&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/git.html">Git</a></p>
+</footer><!-- /.post-info --><p>我们都知道，在 Git 里面，可以通过 <code>.gitignore</code> 或者 <code>.git/info/exclude</code> 来指定一些不希望被 Git 跟踪的文件。但是有的时候，我们只希望一个文件中的一部分内容不被跟踪，这样的内容可能是密码这类不希望被其他人知道的信息，也可能是一些临时性的调试语句，只是自己看看，不想让它进入源中。</p>
+<p>往常来说，因为无法指定让 Git 不跟踪这些内容，就不得不在添加修改的时候用 <code>git add -p</code> 仔细剔除它们，不仅十分麻烦，而且在没有其他修改的时候仍然会看到本地工作目录存在修改，很是不爽。我就想，既然 git 如此强大，这件事情应该也是可以做到的吧？答案当然是肯定的。</p>
+<p>简单地来说，方法是利用 git 的 filter 功能，这个功能支持在 checkout 之后更新工作目录时对文件进行修改，也支持 checkin 经过过滤器修改的文件内容（而不是工作目录中的文件本身）。而后面那个，正可以实现我所需要的功能。</p>
+<p>在这里举一个简单的例子来说明这个方法。如果我有一个 <code>config</code> 文件，其中有一行 <code>key = "123456"</code>，我希望其中的密钥不要被跟踪，但是保留这个文件的其他内容，那么执行下面的命令就可以了：</p>
+<div class="codehilite"><pre>git config filter.remove_pw.clean <span class="s2">&quot;sed &#39;s/^key *= *\&quot;.*\&quot;/key = \&quot;\&quot;/&#39;&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;config filter=remove_pw&quot;</span> &gt;&gt; .git/info/attributes
+</pre></div>
+
+
+<p>这里稍微解释一下，第一个命令向 <code>.git/config</code> 添加了一个名叫 <code>remove_pw</code> 的 filter，其中 <code>remove_pw</code> 这个名字可以任意指定。后面跟的 <code>sed</code> 命令的作用就是清理掉文件中的密钥部分。第二个命令则向 <code>.git/info/attributes</code> 添加了一条规则，即对 <code>config</code> 文件应用刚才添加的那个 filter。</p>
+<p>知道了原理一切就很简单了，如果我们不希望被跟踪的不是一行密钥，而是一段调试代码，我们可以在这个代码的两端加上标识，比如说这样：</p>
+<div class="codehilite"><pre><span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#define N 10</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">f</span><span class="p">[</span><span class="n">N</span><span class="p">];</span>
+    <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">];</span>
+    <span class="cm">/* IGNORE */</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d: %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="cm">/* END */</span>
+    <span class="n">scanf</span><span class="p">(</span><span class="s">&quot;%d&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">i</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>然后将上面的 filter 后面的命令修改为 <code>awk '/\/\* IGNORE \*\// {f=1} f!=1 {print} /\/\* END \*\// {f=0}'</code>，最后在 <code>attributes</code> 里面将它应用到 <code>*.c</code> 文件，这样就大功告成了~</p>
+<p>可以看到，Git 的 filter 功能还是相当强大的。在 Git 文档的示例里面还介绍了一个例子使用 filter 功能来加密解密文件呢。具体可以参考 <a href="https://www.kernel.org/pub/software/scm/git/docs/gitattributes.html#_tt_filter_tt">gitattributes 的文档中 filter 小节</a>。</p><p>There are <a href="../mask-part-of-file-in-git.html#disqus_thread">comments</a>.</p>                </article>
+                            </aside><!-- /#featured -->
+                            <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+                                                
+
+                 
+                        <li><article class="hentry">    
+                <header>
+                    <h1><a href="../implementing-a-generator-yield-in-a-python-c-extension.html" rel="bookmark"
+                           title="Permalink to [翻译] 使用 Python C 扩展实现生成器/yield">[翻译] 使用 Python C 扩展实现生成器/yield</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
         <abbr class="published" title="2012-04-13T21:53:00">
                 2012&#24180;04&#26376;13&#26085;
         </abbr>
@@ -45,7 +102,7 @@
         </address>
         <p>In <a href="../category/technique.html">Technique</a>. </p>
 <p>tags: <a href="../tag/python.html">Python</a><a href="../tag/c.html">C</a></p>
-</footer><!-- /.post-info --><p>原文：<a href="http://eli.thegreenplace.net/2012/04/05/implementing-a-generatoryield-in-a-python-c-extension/">Implementing a generator/yield in a Python C extension</a></p>
+</footer><!-- /.post-info -->                <p>原文：<a href="http://eli.thegreenplace.net/2012/04/05/implementing-a-generatoryield-in-a-python-c-extension/">Implementing a generator/yield in a Python C extension</a></p>
 <p>在 Python 中，生成器 (generator) 是一个返回迭代器 (iterator) 对象的函数。虽然有很多方法来实现，不过最优雅和常用的形式是使用 <code>yield</code> 语句。</p>
 <p>举例来说，这是一个简单的例子：</p>
 <div class="codehilite"><pre><span class="k">def</span> <span class="nf">pyrevgen</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
@@ -55,203 +112,11 @@
 
 
 <p>这里的 <code>pyrevgen</code> 函数就是一个生成器。给定一个序列，它将会返回一个迭代器用以逆序输出这个串的元素并附上序号。比如说：</p>
-<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]):</span>
-<span class="o">...</span> <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-<span class="o">...</span>
-<span class="mi">0</span> <span class="n">c</span>
-<span class="mi">1</span> <span class="n">b</span>
-<span class="mi">2</span> <span class="n">a</span>
-</pre></div>
-
-
-<p>这篇文章的目的是说明使用 Python 的 C API ，换言之，在一个 C 的扩展模块中，如何实现相同的功能。我们主要关注的是 Python 3，对于 Python 2 来说原理是一样的，不过细节上可能会有一些差异。</p>
-<p><code>yield</code> 是 Python 中一个非常强大的东西，在 C 中没有与之对应的能力 (除非你使用一些协程宏函数，不过这不在我们这里的讨论范围之内)。因此我们不得不显式地返回一个迭代器对象，并且处理迭代的细节。</p>
-<p>在 Python 中写一个<a href="http://docs.python.org/dev/library/stdtypes.html#iterator-types">迭代器</a>我们需要创建一个实现了 <code>__iter__</code> 和 <code>__next__</code> 特殊函数的类，C API 中与之对应的方法分别是 <code>tp_iter</code> 和 <code>tp_iternext</code>。</p>
-<p>我们来创建一个叫做 <code>spam</code> 的新的扩展模块，他将导出一个对象——<code>revgen</code> 类型，这个类型可以像上面的 Python 代码一样被调用。换句话说，Python 可以这样使用它：</p>
-<div class="codehilite"><pre><span class="kn">import</span> <span class="nn">spam</span>
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">spam</span><span class="o">.</span><span class="n">revgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]):</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-</pre></div>
-
-
-<p>我们开始吧 (在这篇文章的末尾会给出完整代码的链接)：</p>
-<div class="codehilite"><pre><span class="n">PyTypeObject</span> <span class="n">PyRevgen_Type</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">PyVarObject_HEAD_INIT</span><span class="p">(</span><span class="o">&amp;</span><span class="n">PyType_Type</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="s">&quot;revgen&quot;</span><span class="p">,</span>                       <span class="cm">/* tp_name */</span>
-    <span class="k">sizeof</span><span class="p">(</span><span class="n">RevgenState</span><span class="p">),</span>            <span class="cm">/* tp_basicsize */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_itemsize */</span>
-    <span class="p">(</span><span class="n">destructor</span><span class="p">)</span><span class="n">revgen_dealloc</span><span class="p">,</span>     <span class="cm">/* tp_dealloc */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_print */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getattr */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_setattr */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_reserved */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_repr */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_number */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_sequence */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_mapping */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_hash */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_call */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_str */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getattro */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_setattro */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_as_buffer */</span>
-    <span class="n">Py_TPFLAGS_DEFAULT</span><span class="p">,</span>             <span class="cm">/* tp_flags */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_doc */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_traverse */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_clear */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_richcompare */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_weaklistoffset */</span>
-    <span class="n">PyObject_SelfIter</span><span class="p">,</span>              <span class="cm">/* tp_iter */</span>
-    <span class="p">(</span><span class="n">iternextfunc</span><span class="p">)</span><span class="n">revgen_next</span><span class="p">,</span>      <span class="cm">/* tp_iternext */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_methods */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_members */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_getset */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_base */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_dict */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_descr_get */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_descr_set */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_dictoffset */</span>
-    <span class="mi">0</span><span class="p">,</span>                              <span class="cm">/* tp_init */</span>
-    <span class="n">PyType_GenericAlloc</span><span class="p">,</span>            <span class="cm">/* tp_alloc */</span>
-    <span class="n">revgen_new</span><span class="p">,</span>                     <span class="cm">/* tp_new */</span>
-<span class="p">};</span>
-
-<span class="k">static</span> <span class="k">struct</span> <span class="n">PyModuleDef</span> <span class="n">spammodule</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
-    <span class="s">&quot;spam&quot;</span><span class="p">,</span>                  <span class="cm">/* m_name */</span>
-    <span class="s">&quot;&quot;</span><span class="p">,</span>                      <span class="cm">/* m_doc */</span>
-    <span class="o">-</span><span class="mi">1</span><span class="p">,</span>                      <span class="cm">/* m_size */</span>
-<span class="p">};</span>
-
-    <span class="n">PyMODINIT_FUNC</span>
-<span class="nf">PyInit_spam</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">PyObject</span> <span class="o">*</span><span class="n">module</span> <span class="o">=</span> <span class="n">PyModule_Create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">spammodule</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="n">PyType_Ready</span><span class="p">(</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-    <span class="n">Py_INCREF</span><span class="p">((</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">);</span>
-    <span class="n">PyModule_AddObject</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&quot;revgen&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">PyRevgen_Type</span><span class="p">);</span>
-
-    <span class="k">return</span> <span class="n">module</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>这是创建一个新模块和一个新类型的标准代码。模块初始化函数 (<code>PyInit_spam</code>) 添加了一个叫做 <code>revgen</code> 的对象到模块，这个对象是类型 <code>PyRevgen_Type</code>。通过调用这个对象，用户可以创建这个类型的一个新实例。</p>
-<p>下面的结构 (<code>PyObject</code> 的子类) 是将用来表示 <code>revgen</code> 的实例的：</p>
-<div class="codehilite"><pre><span class="cm">/* RevgenState - reverse generator instance.</span>
-<span class="cm"> *</span>
-<span class="cm"> * sequence: ref to the sequence that&#39;s being iterated</span>
-<span class="cm"> * seq_index: index of the next element in the sequence to yield</span>
-<span class="cm"> * enum_index: next enumeration index to yield</span>
-<span class="cm"> *</span>
-<span class="cm"> * In pseudo-notation, the yielded tuple at each step is:</span>
-<span class="cm"> *  enum_index, sequence[seq_index]</span>
-<span class="cm"> *</span>
-<span class="cm">*/</span>
-<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
-    <span class="n">PyObject_HEAD</span>
-    <span class="n">Py_ssize_t</span> <span class="n">seq_index</span><span class="p">,</span> <span class="n">enum_index</span><span class="p">;</span>
-    <span class="n">PyObject</span> <span class="o">*</span><span class="n">sequence</span><span class="p">;</span>
-<span class="p">}</span> <span class="n">RevgenState</span><span class="p">;</span>
-</pre></div>
-
-
-<p>这里需要特别点出的一个非常有趣的东西是对我们在迭代的序列的引用。每当 <code>next</code> 被调用时，迭代器需要它来访问那个序列。</p>
-<p>这里是用来创建新的实例的那个函数，它被赋给了 <code>tp_new</code>。注意我们没有给 <code>tp_init</code> 赋值，所以默认的“什么都不做”的初始化器将会被使用：</p>
-<div class="codehilite"><pre><span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
-<span class="nf">revgen_new</span><span class="p">(</span><span class="n">PyTypeObject</span> <span class="o">*</span><span class="n">type</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">PyObject</span> <span class="o">*</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">PyObject</span> <span class="o">*</span><span class="n">sequence</span><span class="p">;</span>
-
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PyArg_UnpackTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&quot;revgen&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sequence</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-
-    <span class="cm">/* We expect an argument that supports the sequence protocol */</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">PySequence_Check</span><span class="p">(</span><span class="n">sequence</span><span class="p">))</span> <span class="p">{</span>
-        <span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_TypeError</span><span class="p">,</span> <span class="s">&quot;revgen() expects a sequence&quot;</span><span class="p">);</span>
-        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="n">Py_ssize_t</span> <span class="n">len</span> <span class="o">=</span> <span class="n">PySequence_Length</span><span class="p">(</span><span class="n">sequence</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">len</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-
-    <span class="cm">/* Create a new RevgenState and initialize its state - pointing to the last</span>
-<span class="cm">     * index in the sequence.</span>
-<span class="cm">    */</span>
-    <span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span> <span class="o">=</span> <span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="p">)</span><span class="n">type</span><span class="o">-&gt;</span><span class="n">tp_alloc</span><span class="p">(</span><span class="n">type</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">rgstate</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-
-    <span class="n">Py_INCREF</span><span class="p">(</span><span class="n">sequence</span><span class="p">);</span>
-    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span> <span class="o">=</span> <span class="n">sequence</span><span class="p">;</span>
-    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">=</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="n">PyObject</span> <span class="o">*</span><span class="p">)</span><span class="n">rgstate</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>这是个非常直观的 <code>tp_new</code> 实现，它保证了要迭代的对象是一个序列，同时初始化了状态，准备好第一次 <code>next</code> 调用时将要返回的最后一个元素。与之对应的销毁函数也并没有什么特别的：</p>
-<div class="codehilite"><pre><span class="k">static</span> <span class="kt">void</span>
-<span class="nf">revgen_dealloc</span><span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="cm">/* We need XDECREF here because when the generator is exhausted,</span>
-<span class="cm">     * rgstate-&gt;sequence is cleared with Py_CLEAR which sets it to NULL.</span>
-<span class="cm">    */</span>
-    <span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">);</span>
-    <span class="n">Py_TYPE</span><span class="p">(</span><span class="n">rgstate</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">tp_free</span><span class="p">(</span><span class="n">rgstate</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>现在剩下的就是看看 <code>tp_iter</code> 和 <code>tp_iternext</code> 的实现。因为我们的类型是一个迭代器，我们可以简单的将 <code>PyObject_SelfIter</code> 函数赋给 <code>tp_iter</code>。<code>tp_iternext</code> 才是发生有趣的事情的地方。它正是执行内置函数 <code>next</code> 时真正调用的东西，也是 <code>for</code> 循环使用迭代器时调用的：</p>
-<div class="codehilite"><pre><span class="k">static</span> <span class="n">PyObject</span> <span class="o">*</span>
-<span class="nf">revgen_next</span><span class="p">(</span><span class="n">RevgenState</span> <span class="o">*</span><span class="n">rgstate</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="cm">/* seq_index &lt; 0 means that the generator is exhausted.</span>
-<span class="cm">     * Returning NULL in this case is enough. The next() builtin will raise the</span>
-<span class="cm">     * StopIteration error for us.</span>
-<span class="cm">    */</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">PyObject</span> <span class="o">*</span><span class="n">elem</span> <span class="o">=</span> <span class="n">PySequence_GetItem</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">,</span>
-                                            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span><span class="p">);</span>
-        <span class="cm">/* Exceptions from PySequence_GetItem are propagated to the caller</span>
-<span class="cm">         * (elem will be NULL so we also return NULL).</span>
-<span class="cm">        */</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="p">{</span>
-            <span class="n">PyObject</span> <span class="o">*</span><span class="n">result</span> <span class="o">=</span> <span class="n">Py_BuildValue</span><span class="p">(</span><span class="s">&quot;lO&quot;</span><span class="p">,</span> <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span><span class="p">,</span> <span class="n">elem</span><span class="p">);</span>
-            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span><span class="o">--</span><span class="p">;</span>
-            <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">enum_index</span><span class="o">++</span><span class="p">;</span>
-            <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="cm">/* The reference to the sequence is cleared in the first generator call</span>
-<span class="cm">     * after its exhaustion (after the call that returned the last element).</span>
-<span class="cm">     * Py_CLEAR will be harmless for subsequent calls since it&#39;s idempotent</span>
-<span class="cm">     * on NULL.</span>
-<span class="cm">    */</span>
-    <span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">seq_index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">rgstate</span><span class="o">-&gt;</span><span class="n">sequence</span><span class="p">);</span>
-    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-
-<p>在这里，应该被牢记的最重要的一点是迭代的状态应该被完全地保存在迭代器对象中。相比与 Python 实现，这需要多做许多工作。Python 的 <code>yield</code> 语句让我们可以用 Python 解析器自己来为我们保存这些状态。这也是为什么<a href="http://eli.thegreenplace.net/2009/08/29/co-routines-as-an-alternative-to-state-machines/">在 Python 中协程如此强大</a>——几乎没有显式的状态需要手工保存。正如我在文章一开始就提到的，在 C 扩展中我们没有这样的奢侈品，所以我们不得不自己动手。由于现在这个例子还非常简单，而且是线性的，这还相对简单一些。在更复杂的例子中，为了正确地设计状态对象和 <code>tp_iternext</code> 函数，需要更用心。</p>
-<p>这篇文章的完整代码以及简单的 Python 测试脚本，还有用于使用 distutils 构建这个扩展的 <code>setup.py</code> 都可以<a href="http://eli.thegreenplace.net/wp-content/uploads/2012/04/generator_c_ext.tgz">在这里下载</a>。</p><p>There are <a href="../implementing-a-generator-yield-in-a-python-c-extension.html#disqus_thread">comments</a>.</p>                </article>
-                            </aside><!-- /#featured -->
-                            <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-                                                
+<div class="codehilite"><pre><span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">pyrevgen</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b ...</span></pre></div>
+                <a class="readmore" href="../implementing-a-generator-yield-in-a-python-c-extension.html">read more</a>
+                <p>There are <a href="../implementing-a-generator-yield-in-a-python-c-extension.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
 
                  
                         <li><article class="hentry">    
@@ -485,38 +350,6 @@ convmv -f gbk -t utf8 *
 <div class="codehilite"><pre><span class="nb">exec</span> /sbin/getty -8 ...</pre></div>
                 <a class="readmore" href="../automatically-run-top-in-tty.html">read more</a>
                 <p>There are <a href="../automatically-run-top-in-tty.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../little-vc6-fix.md.html" rel="bookmark"
-                           title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2010-03-21T10:40:00">
-                2010&#24180;03&#26376;21&#26085;
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/technique.html">Technique</a>. </p>
-<p>tags: <a href="../tag/c.html">C</a><a href="../tag/microsoft.html">Microsoft</a></p>
-</footer><!-- /.post-info -->                <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
-<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="../simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
-<p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
-<p>在网上一找，还真找到一个简单的方法：</p>
-<div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
-</pre></div>
-
-
-<p>其实我也不知道这个是什么机理 ...</p>
-                <a class="readmore" href="../little-vc6-fix.md.html">read more</a>
-                <p>There are <a href="../little-vc6-fix.md.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">

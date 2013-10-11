@@ -165,6 +165,32 @@ convmv -f gbk -t utf8 *
                  
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../mask-part-of-file-in-git.html" rel="bookmark"
+                           title="Permalink to 在 Git 中隐藏文件里的部分内容">在 Git 中隐藏文件里的部分内容</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2013-10-11T15:44:00">
+                2013&#24180;10&#26376;11&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/git.html">Git</a></p>
+</footer><!-- /.post-info -->                <p>我们都知道，在 Git 里面，可以通过 <code>.gitignore</code> 或者 <code>.git/info/exclude</code> 来指定一些不希望被 Git 跟踪的文件。但是有的时候，我们只希望一个文件中的一部分内容不被跟踪，这样的内容可能是密码这类不希望被其他人知道的信息，也可能是一些临时性的调试语句，只是自己看看，不想让它进入源中。</p>
+<p>往常来说，因为无法指定让 Git 不跟踪这些内容，就不得不在添加修改的时候用 <code>git add -p</code> 仔细剔除它们，不仅十分麻烦，而且在没有其他修改的时候仍然会看到本地工作目录存在修改，很是不爽。我就想，既然 git 如此强大，这件事情应该也是可以做到的吧？答案当然是肯定的。</p>
+<p>简单地来说，方法是利用 git 的 filter 功能，这个功能支持在 checkout 之后更新工作目录时对文件进行修改，也支持 checkin 经过过滤器修改的文件内容（而不是工作目录中的文件本身 ...</p>
+                <a class="readmore" href="../mask-part-of-file-in-git.html">read more</a>
+                <p>There are <a href="../mask-part-of-file-in-git.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../new-blog-in-github.html" rel="bookmark"
                            title="Permalink to 在 GitHub 上建一个新的博客">在 GitHub 上建一个新的博客</a></h1>
                 </header>
@@ -309,33 +335,6 @@ convmv -f gbk -t utf8 *
 <p>当然，还有方法也可以调用，但他们仅仅是被限制在对象中的特殊函数而已，没什么有趣的地方。还有什么可以被调用呢？你可能知道，也可能不知道，只要一个对象所属的类定义了 <code>__call__</code> 魔术方法，它也是可以被调用的。所以对象可以像函数那样使用。再深入思考一点，类也是可以被调用的 ...</p>
                 <a class="readmore" href="../python-internals-how-callables-work.html">read more</a>
                 <p>There are <a href="../python-internals-how-callables-work.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
-            </article></li>
-                            
-
-                 
-                        <li><article class="hentry">    
-                <header>
-                    <h1><a href="../python-variable-type-and-reference.html" rel="bookmark"
-                           title="Permalink to 探索 Python 的变量、类型和引用">探索 Python 的变量、类型和引用</a></h1>
-                </header>
-                
-                <div class="entry-content">
-                <footer class="post-info">
-        <abbr class="published" title="2009-06-25T22:23:00">
-                2009&#24180;06&#26376;25&#26085;
-        </abbr>
-
-                <address class="vcard author">
-                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
-        </address>
-        <p>In <a href="../category/study.html">Study</a>. </p>
-<p>tags: <a href="../tag/python.html">Python</a></p>
-</footer><!-- /.post-info -->                <p>我一开始为 Python 的强大和简洁所震撼，看了些 Python 的教程，学了不少东西。前面那些探索就以后再写吧……今天先讲讲今天知道的东西。</p>
-<p>在探索到 Python 函数的参数传递的时候，我不禁赞叹 Python 灵活的参数设计，但慢慢的，开始迷惑与传递参数的修改和返回。</p>
-<p>众所周知，在 C++ 中传递参数分为传值和传引用两种，但 Python 没有，那到底传进去的东西，修改一下，能不能传出来呢？这是一个很奇怪和让人费解的问题，不是么？在查阅了一些资料后，对 Python 关于变量、类型和引用的一些基本方式有了一些了解，进而基于这种理解并结合实验，了解了参数传递的奥妙。</p>
-<p>Python 的变量是没有类型的，这与以往看到的大部分语言都不一样。但 Python 却是区分类型的，那类型在哪里呢？事实是，类型是跟着内存中的对象走的。Python 的所有变量其实都是指向内存中的对象的一个指针，所有的变量都是！此外，对象还分两类 ...</p>
-                <a class="readmore" href="../python-variable-type-and-reference.html">read more</a>
-                <p>There are <a href="../python-variable-type-and-reference.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
             </article></li>
                             </ol><!-- /#posts-list -->
                             <p class="paginator">

@@ -37,6 +37,38 @@
                     <ol id="posts-list" class="hfeed" start="9">
                         <li><article class="hentry">    
                 <header>
+                    <h1><a href="../little-vc6-fix.md.html" rel="bookmark"
+                           title="Permalink to 写了个小小的 vc-fix">写了个小小的 vc-fix</a></h1>
+                </header>
+                
+                <div class="entry-content">
+                <footer class="post-info">
+        <abbr class="published" title="2010-03-21T10:40:00">
+                2010&#24180;03&#26376;21&#26085;
+        </abbr>
+
+                <address class="vcard author">
+                By <a class="url fn" href="../author/xidorn-quan.html">Xidorn Quan</a>
+        </address>
+        <p>In <a href="../category/technique.html">Technique</a>. </p>
+<p>tags: <a href="../tag/c.html">C</a><a href="../tag/microsoft.html">Microsoft</a></p>
+</footer><!-- /.post-info -->                <p>我们的 C++ 老师给我布置了 C++ 的大作业来替代其他同学交的无聊题目。大作业的第一题就是完整的高精度库，并且要求使用运算符重载。因为原来用 C 写过，这次写，思路上没有太大问题，不过全部程序被我 C++ 化了，代码看过去很诡异……呃……</p>
+<p>我自己的机子上，自然使用 g++ 编译，不过我猜老师会要求 VC6 能够编译……我就用<a href="../simple-script-for-using-vc6-compiler.html">上次安装的 VC6</a> 编译了一下，发现好几个错误和无数警告……其实也是我意料之中的。</p>
+<p>其中我觉得最讨厌的莫过于 <code>for</code> 循环的循环变量不被视为 <code>for</code> 循环的局部变量这一点，导致大量变量被其认为是重复定义，这个是 VC6 和标准就语言上相去最远的问题了……不想每个都去改，麻烦死了。</p>
+<p>在网上一找，还真找到一个简单的方法：</p>
+<div class="codehilite"><pre><span class="cp">#define for if(0) ; else for</span>
+</pre></div>
+
+
+<p>其实我也不知道这个是什么机理 ...</p>
+                <a class="readmore" href="../little-vc6-fix.md.html">read more</a>
+                <p>There are <a href="../little-vc6-fix.md.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                            
+
+                 
+                        <li><article class="hentry">    
+                <header>
                     <h1><a href="../replacing-css-via-jquery.html" rel="bookmark"
                            title="Permalink to 基于 jQuery 的 CSS 更换术">基于 jQuery 的 CSS 更换术</a></h1>
                 </header>
